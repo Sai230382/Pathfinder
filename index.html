@@ -1,0 +1,2603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligent Consulting</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0a1628;color:#f1f5f9;-webkit-font-smoothing:antialiased}
+:root{
+  --bg-primary:#0a1628;--bg-secondary:#111827;--bg-card:#1e293b;--bg-card-hover:#263548;
+  --border-subtle:#334155;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --accent-cyan:#00d4ff;--accent-purple:#7c5cfc;--accent-blue:#3b82f6;--accent-green:#10b981;
+  --accent-yellow:#f59e0b;--accent-red:#ef4444;--accent-orange:#f97316;
+  --font-heading:'Playfair Display',Georgia,serif;--font-body:'Inter',-apple-system,sans-serif;
+  --slide-padding:48px;--card-radius:12px;
+}
+
+/* === NAV === */
+#slide-nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);padding:10px 20px;border-radius:40px;border:1px solid var(--border-subtle)}
+.nav-dots{display:flex;gap:8px}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:all .3s ease;border:none}
+.nav-dot.active{background:var(--accent-cyan);box-shadow:0 0 8px rgba(0,212,255,.5);transform:scale(1.2)}
+.nav-dot:hover{background:var(--text-secondary)}
+.slide-counter{font-size:13px;color:var(--text-muted);font-weight:500;min-width:40px;text-align:center}
+.nav-arrows{display:flex;gap:4px}
+.nav-arrows button{background:none;border:1px solid var(--border-subtle);color:var(--text-secondary);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.nav-arrows button:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+
+/* === SCENARIO TOGGLE === */
+#scenario-toggle{position:fixed;top:20px;right:24px;z-index:100;display:flex;gap:4px;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);padding:4px;border-radius:10px;border:1px solid var(--border-subtle);opacity:0;pointer-events:none}
+#scenario-toggle.visible{opacity:1;pointer-events:all}
+.scenario-btn{padding:8px 16px;border:none;border-radius:8px;background:transparent;color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font-body)}
+.scenario-btn:hover{color:var(--text-secondary)}
+.scenario-btn.active{background:var(--accent-cyan);color:#0a1628;font-weight:600}
+
+/* === EXPORT === */
+#export-btn{position:fixed;top:20px;left:24px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s}
+#export-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+
+/* === SLIDES === */
+.slides-container{position:relative;width:100%;height:100vh;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:var(--slide-padding);opacity:0;visibility:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
+.slide::-webkit-scrollbar{width:6px}
+.slide::-webkit-scrollbar-thumb{background:var(--border-subtle);border-radius:3px}
+.slide.active{opacity:1;visibility:visible}
+.slide-heading{font-family:var(--font-heading);font-size:2rem;margin-bottom:8px;background:linear-gradient(135deg,var(--text-primary),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.slide-subtitle{color:var(--text-secondary);font-size:.95rem;margin-bottom:24px}
+
+/* === SLIDE 1: TITLE === */
+.slide-title{align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#0a1628,#1a2332,#0f172a);position:relative}
+.slide-title .title-content{position:relative;z-index:2}
+#particles-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
+.logo-mark{width:64px;height:64px;margin:0 auto 24px}
+.logo-mark svg{width:100%;height:100%}
+.title-main{font-family:var(--font-heading);font-size:3.2rem;line-height:1.2;margin-bottom:16px}
+.title-divider{width:80px;height:3px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));margin:0 auto 20px;border-radius:2px;transform:scaleX(0)}
+.title-sub{font-family:var(--font-body);font-weight:300;font-size:1.25rem;color:var(--text-secondary);margin-bottom:32px}
+.title-meta{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:48px}
+.meta-item{background:var(--bg-card);padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:500;color:var(--accent-cyan);border:1px solid rgba(0,212,255,.2)}
+.meta-dot{width:4px;height:4px;border-radius:50%;background:var(--text-muted)}
+.title-cta{font-size:.8rem;color:var(--text-muted)}
+
+/* === SLIDE 2: INPUT FORM === */
+.slide-input{padding-top:32px}
+.input-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;overflow-y:auto;padding-bottom:80px}
+.form-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:20px}
+.form-card h3{font-family:var(--font-heading);font-size:1.1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.form-card h3 .card-icon{font-size:1.2rem}
+.form-card.full-width{grid-column:1/-1}
+.location-rows{display:flex;flex-direction:column;gap:12px}
+.location-row{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+.location-row select,.location-row input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:8px;font-family:var(--font-body);font-size:.85rem}
+.location-row select{min-width:180px;cursor:pointer}
+.location-row input[type="number"]{width:90px;text-align:center}
+.location-row .remove-loc{background:none;border:1px solid var(--accent-red);color:var(--accent-red);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.location-row .remove-loc:hover{background:var(--accent-red);color:white}
+.add-loc-btn{background:none;border:1px dashed var(--border-subtle);color:var(--accent-cyan);padding:10px;border-radius:8px;cursor:pointer;font-family:var(--font-body);font-size:.85rem;transition:all .2s;width:100%}
+.add-loc-btn:hover{border-color:var(--accent-cyan);background:rgba(0,212,255,.05)}
+.channel-mix-section{display:flex;flex-direction:column;gap:12px}
+.channel-mix-group{background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+.channel-mix-group .mix-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.channel-mix-group .mix-header span{font-size:.85rem;font-weight:600}
+.channel-mix-group .mix-header .validation-badge{font-size:.75rem;padding:2px 8px;border-radius:10px;font-weight:600}
+.validation-badge.valid{background:rgba(16,185,129,.15);color:var(--accent-green)}
+.validation-badge.invalid{background:rgba(239,68,68,.15);color:var(--accent-red)}
+.channel-inputs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.channel-input-group{display:flex;flex-direction:column;gap:4px}
+.channel-input-group label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.channel-input-group input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px;border-radius:6px;font-family:var(--font-body);font-size:.85rem;text-align:center}
+.tier-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tier-input-group{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.02);padding:16px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+.tier-input-group label{font-size:.85rem;font-weight:600;color:var(--text-secondary)}
+.tier-input-group input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:6px;font-family:var(--font-body);font-size:1.1rem;text-align:center;width:80px}
+.tier-input-group .tier-desc{font-size:.7rem;color:var(--text-muted);text-align:center}
+.tier-validation{text-align:center;margin-top:8px;font-size:.8rem;font-weight:600}
+.rate-cards{display:flex;gap:12px;flex-wrap:wrap}
+.rate-card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.04);flex:1;min-width:140px}
+.rate-card .flag{font-size:1.5rem}
+.rate-card .rate-info{flex:1}
+.rate-card .rate-info .country-name{font-size:.8rem;color:var(--text-muted)}
+.rate-card input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:6px 10px;border-radius:6px;font-family:var(--font-body);font-size:.9rem;width:70px;text-align:center}
+.offshore-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.offshore-option{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border-subtle);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)}
+.offshore-option:hover{border-color:var(--accent-cyan)}
+.offshore-option.selected{border-color:var(--accent-green);background:rgba(16,185,129,.08)}
+.offshore-option input[type="checkbox"]{accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer}
+.offshore-option .off-info{display:flex;flex-direction:column}
+.offshore-option .off-name{font-size:.85rem;font-weight:500}
+.offshore-option .off-rate{font-size:.7rem;color:var(--text-muted)}
+.analyze-btn{grid-column:1/-1;padding:16px 32px;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font-body);background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628;transition:all .3s;letter-spacing:.5px}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.3)}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* === SLIDE 3: MAP === */
+.slide-map{padding-top:32px}
+.map-layout{display:flex;gap:24px;flex:1;min-height:0}
+.map-container{flex:1.4;position:relative;display:flex;align-items:stretch;justify-content:center;min-height:350px}
+.leaflet-container{background:#0d1b2a!important;border-radius:var(--card-radius);width:100%;height:100%;min-height:400px}
+.leaflet-control-attribution{display:none!important}
+.leaflet-control-zoom{display:none!important}
+.map-bubble{text-align:center;pointer-events:all!important}
+.bubble-marker{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;pointer-events:all!important}
+.bubble-marker .bubble-dot{width:52px;height:52px;border-radius:50%;border:2.5px solid var(--accent-cyan);background:rgba(30,41,59,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 0 16px rgba(0,212,255,.25)}
+.bubble-marker:hover .bubble-dot{transform:scale(1.08);box-shadow:0 0 28px rgba(0,212,255,.45)}
+.bubble-marker .bubble-dot .fte-num{font-size:1.05rem;font-weight:700;color:var(--text-primary);line-height:1}
+.bubble-marker .bubble-dot .fte-code{font-size:.5rem;color:var(--accent-cyan);font-weight:600;text-transform:uppercase;letter-spacing:.5px;line-height:1}
+.bubble-marker .bubble-name{font-size:.65rem;color:var(--text-secondary);font-weight:600;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:1px}
+.bubble-marker.green .bubble-dot{border-color:var(--accent-green);box-shadow:0 0 16px rgba(16,185,129,.25)}
+.bubble-marker.green:hover .bubble-dot{box-shadow:0 0 28px rgba(16,185,129,.45)}
+.bubble-marker.green .bubble-dot .fte-code{color:var(--accent-green)}
+.bubble-marker.green .bubble-name{color:var(--accent-green)}
+.bubble-marker.inactive .bubble-dot{border-color:var(--border-subtle);background:rgba(30,41,59,.5);width:36px;height:36px;cursor:default}
+.bubble-marker.inactive .bubble-dot .fte-num{font-size:.65rem;color:var(--text-muted)}
+.bubble-marker.inactive .bubble-dot .fte-code{color:var(--text-muted)}
+.bubble-marker.inactive .bubble-name{color:var(--text-muted);font-size:.6rem}
+/* Location selector tabs on slide 3 */
+.location-tabs{display:flex;gap:6px;margin-bottom:12px}
+.location-tab{padding:6px 14px;border:1px solid var(--border-subtle);border-radius:8px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;font-weight:500;font-family:var(--font-body);transition:all .2s;display:flex;align-items:center;gap:6px}
+.location-tab:hover{border-color:var(--accent-cyan);color:var(--text-secondary)}
+.location-tab.active{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);color:var(--accent-cyan);font-weight:600}
+.location-tab .tab-flag{font-size:1rem}
+/* Flow line animation */
+.flow-line-label{background:rgba(10,22,40,.85);color:var(--accent-cyan);padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600;font-family:'Inter',sans-serif;white-space:nowrap;border:1px solid rgba(0,212,255,.3)}
+.detail-panel{width:320px;background:var(--bg-card);border-radius:var(--card-radius);border:1px solid var(--border-subtle);padding:24px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+.panel-header{display:flex;justify-content:space-between;align-items:center}
+.panel-header h3{font-family:var(--font-heading);font-size:1.3rem}
+.panel-headcount{background:rgba(0,212,255,.15);color:var(--accent-cyan);padding:4px 12px;border-radius:12px;font-size:.85rem;font-weight:600}
+.chart-wrapper{position:relative;width:100%;max-width:220px;margin:0 auto}
+.tier-bars{display:flex;flex-direction:column;gap:8px}
+.tier-row{display:flex;align-items:center;gap:8px}
+.tier-label{font-size:.75rem;color:var(--text-muted);width:24px;font-weight:600}
+.tier-bar-bg{flex:1;height:20px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.tier-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:.7rem;font-weight:600;color:white}
+.tier-bar-l1{background:linear-gradient(90deg,var(--accent-blue),#60a5fa)}
+.tier-bar-l2{background:linear-gradient(90deg,var(--accent-purple),#a78bfa)}
+.tier-bar-l3{background:linear-gradient(90deg,var(--accent-orange),#fb923c)}
+.volume-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.volume-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;text-align:center}
+.volume-icon{font-size:1.1rem;margin-bottom:4px}
+.volume-value{font-size:1rem;font-weight:700;color:var(--text-primary)}
+.volume-label{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+.panel-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600}
+
+/* === SLIDE 4: MATRIX === */
+.slide-matrix{padding-top:32px}
+.fte-calculator{display:flex;gap:24px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:16px 24px;margin-bottom:20px;flex-wrap:wrap}
+.fte-stat{display:flex;align-items:center;gap:8px}
+.fte-label{font-size:.8rem;color:var(--text-muted)}
+.fte-value{font-size:1.3rem;font-weight:700;color:var(--accent-cyan)}
+.fte-unit{font-size:.75rem;color:var(--text-muted)}
+.matrix-container{flex:1;overflow-y:auto}
+.analysis-table{width:100%;border-collapse:separate;border-spacing:0 4px}
+.analysis-table thead th{text-align:left;padding:10px 12px;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border-subtle);background:var(--bg-primary)}
+.analysis-table tbody tr{background:var(--bg-card);transition:background .2s}
+.analysis-table tbody tr:hover{background:var(--bg-card-hover)}
+.analysis-table tbody td{padding:12px;font-size:.85rem;vertical-align:middle}
+.analysis-table tbody td:first-child{border-radius:8px 0 0 8px}
+.analysis-table tbody td:last-child{border-radius:0 8px 8px 0}
+.row-green{border-left:3px solid var(--accent-green)}
+.row-yellow{border-left:3px solid var(--accent-yellow)}
+.row-red{border-left:3px solid var(--accent-red)}
+.channel-badge{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.channel-icon{font-size:1rem}
+.tier-badge{padding:2px 10px;border-radius:4px;font-size:.75rem;font-weight:600;background:rgba(255,255,255,.08)}
+.toggle-switch{position:relative;width:44px;height:24px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border-subtle);border-radius:12px;cursor:pointer;transition:all .3s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--accent-green)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(20px)}
+.confidence-bar{display:flex;align-items:center;gap:8px}
+.confidence-track{width:50px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.confidence-fill{height:100%;border-radius:3px}
+.confidence-fill.high{background:var(--accent-green)}
+.confidence-fill.medium{background:var(--accent-yellow)}
+.confidence-fill.low{background:var(--accent-red)}
+.confidence-value{font-size:.75rem;font-weight:600}
+.destination-badge{padding:3px 10px;border-radius:6px;font-size:.75rem;font-weight:500;background:rgba(0,212,255,.1);color:var(--accent-cyan)}
+.destination-badge.none{background:rgba(255,255,255,.05);color:var(--text-muted)}
+.rationale{font-size:.75rem;color:var(--text-secondary);max-width:200px;line-height:1.4}
+
+/* === AI INSIGHTS (shared styles for modal) === */
+.factor-badges{display:flex;gap:6px;flex-wrap:wrap}
+.factor-badge{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);font-size:.78rem;color:var(--text-secondary);transition:all .2s;cursor:default;flex-shrink:0}
+.factor-badge:hover{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.06)}
+.factor-badge .fb-icon{font-size:.9rem;flex-shrink:0}
+.factor-badge .fb-name{font-weight:500;color:var(--text-secondary);white-space:nowrap}
+.factor-badge .fb-dots{display:flex;gap:3px;margin-left:2px}
+.factor-badge .fb-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12)}
+.factor-badge .fb-dot.filled{background:var(--accent-green)}
+.factor-badge .fb-dot.filled.medium{background:var(--accent-yellow)}
+.factor-badge .fb-dot.filled.low{background:var(--accent-red)}
+.factor-badge .fb-level{font-weight:700;font-size:.7rem;margin-left:2px;white-space:nowrap}
+.factor-badge .fb-level.very-high{color:var(--accent-green)}
+.factor-badge .fb-level.high{color:var(--accent-green)}
+.factor-badge .fb-level.medium{color:var(--accent-yellow)}
+.factor-badge .fb-level.low{color:var(--accent-red)}
+.pairing-cards{display:flex;flex-direction:column;gap:12px}
+.pairing-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:var(--card-radius);padding:18px;display:flex;flex-direction:column;gap:12px;transition:all .2s}
+.pairing-card:hover{border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.03)}
+.pairing-top{display:flex;justify-content:space-between;align-items:center}
+.pairing-route{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem}
+.pairing-route .route-arrow{color:var(--accent-cyan);font-size:1.1rem}
+.pairing-route .route-ftes{font-size:.75rem;color:var(--text-muted);font-weight:400;margin-left:4px}
+.affinity-badge{padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.affinity-badge.high{background:rgba(16,185,129,.15);color:var(--accent-green);border:1px solid rgba(16,185,129,.2)}
+.affinity-badge.medium{background:rgba(249,115,22,.12);color:var(--accent-orange);border:1px solid rgba(249,115,22,.2)}
+.affinity-badge.low{background:rgba(239,68,68,.12);color:var(--accent-red);border:1px solid rgba(239,68,68,.2)}
+.pairing-bars{display:flex;flex-direction:column;gap:6px}
+.pairing-bar{display:flex;align-items:center;gap:10px}
+.pairing-bar .bar-desc{font-size:.73rem;color:var(--text-secondary);min-width:155px;white-space:nowrap}
+.pairing-bar .bar-desc .bar-factor{color:var(--accent-cyan);font-weight:600;opacity:.8}
+.pairing-bar .bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;min-width:60px}
+.pairing-bar .bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.pairing-bar .bar-level{font-size:.65rem;font-weight:700;min-width:65px;text-align:right}
+.bar-fill.lang{background:var(--accent-cyan)}.bar-fill.tz{background:var(--accent-blue)}.bar-fill.cost{background:var(--accent-green)}.bar-fill.cult{background:var(--accent-purple)}.bar-fill.chan{background:var(--accent-orange)}
+.bar-level.very-high{color:var(--accent-green)}.bar-level.high{color:var(--accent-green)}.bar-level.medium{color:var(--accent-yellow)}.bar-level.low{color:var(--accent-red)}
+.pairing-insight{font-size:.82rem;color:rgba(0,212,255,.9);font-weight:500;line-height:1.5;padding:10px 12px;background:rgba(0,212,255,.05);border-radius:8px;border-left:3px solid var(--accent-cyan);font-style:italic}
+.pairing-reasons{display:flex;flex-direction:column;gap:5px;padding-top:4px;border-top:1px solid rgba(255,255,255,.04)}
+.pairing-reasons .reason{font-size:.76rem;color:var(--text-secondary);padding-left:16px;position:relative;line-height:1.5}
+.pairing-reasons .reason::before{content:'\2713';position:absolute;left:0;top:1px;color:var(--accent-green);font-weight:700;font-size:.72rem}
+.risk-callouts{display:flex;flex-direction:column;gap:8px}
+.risk-callout{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.15);font-size:.8rem;color:var(--accent-orange);line-height:1.5}
+.risk-callout .risk-icon{font-size:1rem;flex-shrink:0;margin-top:2px}
+.insights-summary{font-size:.85rem;color:var(--text-secondary);line-height:1.6;padding:14px 18px;background:rgba(0,212,255,.04);border-radius:10px;border-left:3px solid var(--accent-cyan);margin-top:4px}
+
+/* === SLIDE 5: TRANSFORM === */
+.slide-transform{padding-top:32px}
+.transform-content{display:flex;flex-direction:column;flex:1;min-height:0}
+.transform-map-wrapper{flex:1;display:flex;align-items:stretch;justify-content:center;position:relative;min-height:350px}
+.before-after-panel{display:flex;align-items:center;justify-content:center;gap:32px;padding:20px 0;flex-wrap:wrap}
+.ba-column{text-align:center}
+.ba-column h4{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px}
+.ba-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.ba-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;padding:12px 20px;text-align:center;min-width:100px}
+.ba-card .ba-location{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.ba-card .ba-count{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
+.ba-card.highlight{border-color:var(--accent-cyan);background:rgba(0,212,255,.05)}
+.ba-arrow{font-size:2rem;color:var(--accent-cyan)}
+
+/* === SLIDE 6: FINANCIAL === */
+.slide-financial{padding-top:32px}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.dashboard-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:20px;display:flex;flex-direction:column}
+.dashboard-card h4{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600}
+.dashboard-card .chart-area{flex:1;position:relative;min-height:0}
+.dashboard-card canvas{width:100%!important}
+.savings-card{display:flex;flex-direction:column;justify-content:center}
+.savings-hero{text-align:center;margin-bottom:20px}
+.savings-label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.savings-amount{font-size:2.8rem;font-weight:700;background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.savings-percent{font-size:1.2rem;color:var(--accent-green);font-weight:600;margin-top:4px}
+.savings-breakdown{display:flex;flex-direction:column;gap:8px}
+.breakdown-row{display:flex;justify-content:space-between;font-size:.85rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.breakdown-row span:first-child{color:var(--text-secondary)}
+.breakdown-row span:last-child{font-weight:600;color:var(--text-primary)}
+
+/* === SLIDE 7: ROADMAP === */
+.slide-roadmap{padding-top:32px}
+.timeline-container{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+.timeline-track-wrapper{position:relative;height:6px;margin:40px 60px 0}
+.timeline-track{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:3px}
+.timeline-progress{height:100%;width:0;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));border-radius:3px}
+.timeline-markers{position:absolute;top:-8px;left:0;right:0;display:flex;justify-content:space-between}
+.timeline-marker{width:22px;height:22px;border-radius:50%;background:var(--bg-primary);border:3px solid var(--border-subtle);z-index:2;transform:scale(0)}
+.timeline-marker.reached{border-color:var(--accent-cyan);background:var(--accent-cyan);box-shadow:0 0 12px rgba(0,212,255,.4)}
+.phase-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;padding:0 20px}
+.phase-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:24px;opacity:0;transform:translateY(40px)}
+.phase-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.phase-badge{padding:4px 12px;border-radius:6px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.phase-badge.p1{background:rgba(0,212,255,.15);color:var(--accent-cyan)}
+.phase-badge.p2{background:rgba(124,92,252,.15);color:var(--accent-purple)}
+.phase-badge.p3{background:rgba(16,185,129,.15);color:var(--accent-green)}
+.phase-duration{font-size:.75rem;color:var(--text-muted);font-weight:500}
+.phase-card h4{font-family:var(--font-heading);font-size:1.2rem;margin-bottom:16px}
+.milestone-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.milestone-list li{font-size:.8rem;color:var(--text-secondary);padding-left:20px;position:relative;line-height:1.5}
+.milestone-list li::before{content:'';position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:var(--accent-cyan);opacity:.6}
+.risk-indicator{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.risk-dot{width:8px;height:8px;border-radius:50%}
+.risk-low .risk-dot{background:var(--accent-green)}.risk-low{color:var(--accent-green)}
+.risk-medium .risk-dot{background:var(--accent-yellow)}.risk-medium{color:var(--accent-yellow)}
+.risk-high .risk-dot{background:var(--accent-red)}.risk-high{color:var(--accent-red)}
+.fte-target{margin-top:12px;font-size:.8rem;color:var(--text-muted)}
+.fte-target strong{color:var(--accent-cyan);font-size:1.1rem}
+
+/* === SLIDE 8: SUMMARY === */
+.slide-summary{padding-top:32px;justify-content:center}
+.summary-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}
+.metric-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:28px 20px;text-align:center;opacity:0;transform:translateY(30px) scale(.9)}
+.metric-icon{width:48px;height:48px;margin:0 auto 16px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.metric-icon.savings-icon{background:rgba(16,185,129,.15)}
+.metric-icon.fte-icon{background:rgba(59,130,246,.15)}
+.metric-icon.percent-icon{background:rgba(124,92,252,.15)}
+.metric-icon.roi-icon{background:rgba(249,115,22,.15)}
+.metric-value{font-size:2.2rem;font-weight:700;color:var(--text-primary);line-height:1;margin-bottom:8px}
+.metric-label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.next-steps{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:28px;margin-bottom:24px}
+.next-steps h3{font-family:var(--font-heading);font-size:1.3rem;margin-bottom:16px}
+.steps-list{list-style:none;counter-reset:steps;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.steps-list li{counter-increment:steps;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--text-secondary);padding:12px;border-radius:8px;background:rgba(255,255,255,.02)}
+.steps-list li::before{content:counter(steps);width:28px;height:28px;border-radius:50%;background:rgba(0,212,255,.15);color:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.cta-section{display:flex;justify-content:center;gap:12px}
+.cta-button{padding:12px 28px;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.cta-button.primary{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628}
+.cta-button.primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,212,255,.3)}
+.cta-button.secondary{background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border-subtle)}
+.cta-button.secondary:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+
+/* === AI OVERLAY === */
+.ai-overlay{position:fixed;inset:0;background:rgba(10,22,40,.92);backdrop-filter:blur(8px);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;visibility:hidden}
+.ai-overlay.visible{opacity:1;visibility:visible}
+.ai-brain{width:64px;height:64px;margin-bottom:24px;position:relative}
+.ai-brain-circle{width:64px;height:64px;border-radius:50%;border:3px solid var(--accent-cyan);border-top-color:transparent}
+.ai-brain-inner{position:absolute;inset:12px;border-radius:50%;border:2px solid var(--accent-purple);border-bottom-color:transparent}
+.ai-typing-text{font-size:1rem;color:var(--text-secondary);min-height:24px;font-family:'Courier New',monospace}
+.ai-typing-text::after{content:'|';animation:blink .5s steps(2) infinite}
+.ai-progress-bar{width:300px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:20px;overflow:hidden}
+.ai-progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));border-radius:2px}
+
+@keyframes blink{50%{opacity:0}}
+
+/* === ANALYSIS PANEL (slide-over) === */
+.ai-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease}
+.ai-modal-overlay.visible{opacity:1;visibility:visible}
+.ai-modal{position:fixed;top:0;right:0;bottom:0;width:520px;max-width:92vw;background:#0c1829;border-left:1px solid rgba(0,212,255,.12);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease;z-index:301;box-shadow:-8px 0 40px rgba(0,0,0,.5)}
+.ai-modal-overlay.visible .ai-modal{transform:translateX(0)}
+.ai-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);flex-shrink:0}
+.ai-modal-header h3{font-family:var(--font-heading);font-size:1.1rem;color:var(--text-primary);display:flex;align-items:center;gap:10px}
+.ai-modal-header .ai-badge{font-size:.55rem;padding:3px 10px;border-radius:10px;background:rgba(0,212,255,.12);color:var(--accent-cyan);font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:1px solid rgba(0,212,255,.2)}
+.ai-modal-close{background:none;border:1px solid rgba(255,255,255,.1);color:var(--text-muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.ai-modal-close:hover{border-color:var(--accent-red);color:var(--accent-red);background:rgba(239,68,68,.1)}
+.ai-modal-body{padding:20px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;flex:1}
+.ai-modal-section{display:flex;flex-direction:column;gap:8px}
+.ai-modal-section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(0,212,255,.5);font-weight:600;padding-bottom:3px;border-bottom:1px solid rgba(0,212,255,.06)}
+.ai-insights-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border:1px solid rgba(0,212,255,.3);border-radius:10px;background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(124,92,252,.08));color:var(--accent-cyan);font-size:.8rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .25s;letter-spacing:.3px}
+.ai-insights-btn:hover{border-color:var(--accent-cyan);background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(124,92,252,.15));transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,212,255,.2)}
+.ai-insights-btn .btn-icon{font-size:1rem}
+.ai-insights-btn .btn-pulse{width:8px;height:8px;border-radius:50%;background:var(--accent-cyan);animation:pulse-glow 2s infinite}
+@keyframes pulse-glow{0%,100%{opacity:1;box-shadow:0 0 4px rgba(0,212,255,.4)}50%{opacity:.6;box-shadow:0 0 12px rgba(0,212,255,.6)}}
+
+/* === PRINT-ONLY PAGES (hidden on screen) === */
+.print-page{display:none}
+
+/* === PRINT === */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif}
+  .slides-container{position:static!important;width:100%!important;height:auto!important;overflow:visible!important}
+  .slide{display:block!important;position:relative!important;opacity:1!important;visibility:visible!important;transform:none!important;page-break-after:always;padding:40px;min-height:100vh;background:white!important;overflow:visible!important;height:auto!important}
+  #slide-2,.cta-section{display:none!important}
+  #slide-nav,#scenario-toggle,#export-btn,.ai-overlay,.ai-modal-overlay,.title-cta,#particles-canvas,.ai-insights-btn{display:none!important}
+  .slide-heading{-webkit-text-fill-color:#1a1a1a;background:none;color:#1a1a1a}
+  .dashboard-card,.phase-card,.metric-card,.detail-panel,.ba-card,.next-steps{border:1px solid #ddd;background:#fafafa}
+  .savings-amount{-webkit-text-fill-color:#10b981;background:none}
+  .leaflet-container{border:1px solid #ddd}
+  .title-main{-webkit-text-fill-color:#1a1a1a!important;background:none!important;color:#1a1a1a!important}
+  .title-sub{color:#555!important}
+  .slide-subtitle{color:#555!important}
+
+  /* Print pages visible */
+  .print-page{display:block!important;page-break-after:always;padding:48px 56px;min-height:100vh;background:white!important;color:#1a1a1a;position:relative;box-sizing:border-box}
+  .print-page *{color:#1a1a1a}
+
+  /* Report header */
+  .rpt-header{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:2px solid #0a1628;margin-bottom:28px}
+  .rpt-logo{width:40px;height:40px}
+  .rpt-logo svg circle,.rpt-logo svg line{stroke:#0a1628!important}
+  .rpt-header-text{flex:1}
+  .rpt-title{font-size:1.5rem;font-weight:700;color:#0a1628!important;letter-spacing:-.5px;line-height:1.2}
+  .rpt-date{font-size:.75rem;color:#888!important;margin-top:2px}
+  .rpt-badge{font-size:.55rem;padding:3px 10px;border-radius:8px;background:#e8f4f8;color:#0a7e8c;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:1px solid #c5e4ea;align-self:center}
+
+  /* Section titles */
+  .rpt-section{margin-bottom:24px}
+  .rpt-section-title{font-size:.72rem;text-transform:uppercase;letter-spacing:1.5px;color:#888!important;font-weight:600;padding-bottom:6px;border-bottom:1px solid #e5e5e5;margin-bottom:14px}
+
+  /* Engagement table */
+  .rpt-table{width:100%;border-collapse:collapse;font-size:.82rem}
+  .rpt-table th{text-align:left;padding:8px 12px;background:#f5f7fa;border:1px solid #e0e0e0;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#555!important}
+  .rpt-table td{padding:8px 12px;border:1px solid #e0e0e0;vertical-align:top}
+  .rpt-table td.rpt-label{font-weight:600;color:#333!important;width:200px;background:#fafbfc}
+  .rpt-table td.rpt-value{color:#1a1a1a!important}
+  .rpt-table .rpt-highlight{font-weight:700;color:#0a7e8c!important}
+
+  /* Key findings */
+  .rpt-findings{list-style:none;padding:0;margin:0}
+  .rpt-findings li{padding:8px 0 8px 20px;position:relative;font-size:.85rem;line-height:1.6;color:#333!important;border-bottom:1px solid #f0f0f0}
+  .rpt-findings li:last-child{border-bottom:none}
+  .rpt-findings li::before{content:'';position:absolute;left:0;top:14px;width:8px;height:8px;border-radius:50%;background:#0a7e8c}
+
+  /* Affinity scorecard */
+  .rpt-scorecard{width:100%;border-collapse:collapse;font-size:.75rem}
+  .rpt-scorecard th{padding:7px 8px;background:#f5f7fa;border:1px solid #e0e0e0;font-weight:600;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#555!important;text-align:center}
+  .rpt-scorecard th:first-child{text-align:left}
+  .rpt-scorecard td{padding:6px 8px;border:1px solid #e0e0e0;text-align:center;font-size:.73rem}
+  .rpt-scorecard td:first-child{text-align:left;font-weight:500}
+  .rpt-level-vh{color:#0a7e8c!important;font-weight:700}
+  .rpt-level-h{color:#16a34a!important;font-weight:600}
+  .rpt-level-m{color:#d97706!important;font-weight:600}
+  .rpt-level-l{color:#dc2626!important;font-weight:600}
+
+  /* Footer */
+  .rpt-footer{position:absolute;bottom:40px;left:56px;right:56px;display:flex;justify-content:space-between;font-size:.65rem;color:#aaa!important;border-top:1px solid #e5e5e5;padding-top:10px}
+
+  /* Page 2: Recommendation cards */
+  .rpt-pairing{margin-bottom:20px;padding:16px;border:1px solid #e0e0e0;border-radius:8px;background:#fafbfc;page-break-inside:avoid}
+  .rpt-pairing-route{font-size:.95rem;font-weight:700;color:#0a1628!important;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .rpt-pairing-route .rpt-ftes{font-size:.75rem;font-weight:400;color:#888!important}
+  .rpt-pairing-insight{font-size:.82rem;color:#0a7e8c!important;font-style:italic;line-height:1.5;margin-bottom:10px;padding:8px 10px;background:#e8f4f8;border-radius:6px;border-left:3px solid #0a7e8c}
+  .rpt-factors-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .rpt-factor-tag{font-size:.68rem;padding:3px 8px;border-radius:4px;border:1px solid #e0e0e0;background:white;display:flex;align-items:center;gap:4px}
+  .rpt-factor-tag .rpt-fn{color:#888!important;font-weight:500}
+  .rpt-pairing-reasons{list-style:none;padding:0;margin:0}
+  .rpt-pairing-reasons li{font-size:.78rem;color:#333!important;padding:3px 0 3px 16px;position:relative;line-height:1.5}
+  .rpt-pairing-reasons li::before{content:'\2713';position:absolute;left:0;color:#16a34a!important;font-weight:700;font-size:.72rem}
+
+  /* Risk section */
+  .rpt-risk{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border:1px solid #fcd4a0;background:#fff8f0;border-radius:6px;font-size:.8rem;color:#92400e!important;margin-bottom:8px}
+  .rpt-risk-icon{flex-shrink:0}
+
+  /* Methodology */
+  .rpt-methodology{font-size:.78rem;color:#555!important;line-height:1.6;padding:12px 14px;background:#f5f7fa;border-radius:6px;border:1px solid #e5e5e5}
+  .rpt-methodology strong{color:#333!important}
+}
+@media(max-width:1024px){
+  :root{--slide-padding:24px}
+  .map-layout{flex-direction:column}.detail-panel{width:100%}
+  .dashboard-grid{grid-template-columns:1fr}.phase-cards{grid-template-columns:1fr}
+  .summary-metrics{grid-template-columns:repeat(2,1fr)}.steps-list{grid-template-columns:1fr}
+  .input-form-grid{grid-template-columns:1fr}
+  .ai-modal{width:100%;max-width:100vw}
+}
+@media(max-width:768px){.title-main{font-size:2rem}.title-meta{flex-direction:column;gap:8px}.fte-calculator{flex-direction:column;gap:12px}.channel-inputs{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<nav id="slide-nav">
+  <div class="nav-dots" id="nav-dots"></div>
+  <div class="slide-counter" id="slide-counter">1 / 8</div>
+  <div class="nav-arrows">
+    <button id="prev-btn" aria-label="Previous slide">&#8592;</button>
+    <button id="next-btn" aria-label="Next slide">&#8594;</button>
+  </div>
+</nav>
+
+<div id="scenario-toggle">
+  <button class="scenario-btn" data-scenario="Conservative">Conservative</button>
+  <button class="scenario-btn active" data-scenario="Moderate">Moderate</button>
+  <button class="scenario-btn" data-scenario="Aggressive">Aggressive</button>
+</div>
+
+<button id="export-btn" onclick="exportReport()">Export PDF</button>
+
+<div class="ai-overlay" id="ai-overlay">
+  <div class="ai-brain">
+    <div class="ai-brain-circle"></div>
+    <div class="ai-brain-inner"></div>
+  </div>
+  <div class="ai-typing-text" id="ai-typing-text"></div>
+  <div class="ai-progress-bar"><div class="ai-progress-fill" id="ai-progress-fill"></div></div>
+</div>
+
+<div class="ai-modal-overlay" id="ai-modal-overlay" onclick="if(event.target===this)closeAIModal()">
+  <div class="ai-modal">
+    <div class="ai-modal-header">
+      <h3>Decision Analysis <span class="ai-badge">Affinity Engine</span></h3>
+      <button class="ai-modal-close" onclick="closeAIModal()">&times;</button>
+    </div>
+    <div class="ai-modal-body" id="ai-modal-body"></div>
+  </div>
+</div>
+
+<div class="slides-container" id="presentation">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide slide-title active" id="slide-1" data-slide="1">
+    <canvas id="particles-canvas"></canvas>
+    <div class="title-content">
+      <div class="logo-mark">
+        <svg viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="28" stroke="url(#lg)" stroke-width="2" stroke-dasharray="4 4" opacity="0.4"/>
+          <circle cx="32" cy="32" r="18" stroke="url(#lg)" stroke-width="2.5" opacity="0.8"/>
+          <circle cx="32" cy="32" r="6" fill="url(#lg)"/>
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c5cfc"/></linearGradient></defs>
+        </svg>
+      </div>
+      <h1 class="title-main">Intelligent Consulting</h1>
+      <div class="title-divider"></div>
+      <h2 class="title-sub">Strategic Offshoring Assessment & Cost Optimization</h2>
+      <div class="title-meta" id="title-meta">
+        <span class="meta-item" id="meta-ftes">500 FTEs</span>
+        <span class="meta-dot"></span>
+        <span class="meta-item">4 Channels</span>
+        <span class="meta-dot"></span>
+        <span class="meta-item" id="meta-regions">2 Regions</span>
+      </div>
+      <div class="title-cta">Press &rarr; or click to begin</div>
+    </div>
+  </section>
+
+  <!-- PRINT PAGE 1: EXECUTIVE BRIEF -->
+  <section class="print-page" id="print-exec-brief">
+    <div class="rpt-header">
+      <div class="rpt-logo">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="#0a1628" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/><circle cx="32" cy="32" r="18" stroke="#0a1628" stroke-width="2.5" opacity="0.6"/><circle cx="32" cy="32" r="6" fill="#0a1628"/></svg>
+      </div>
+      <div class="rpt-header-text">
+        <div class="rpt-title">Intelligent Consulting</div>
+        <div class="rpt-date" id="rpt-date"></div>
+      </div>
+      <div class="rpt-badge">Strategic Assessment</div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Engagement Overview</div>
+      <table class="rpt-table" id="rpt-overview-table"><tbody></tbody></table>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Key Findings</div>
+      <ul class="rpt-findings" id="rpt-findings"></ul>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Affinity Scorecard</div>
+      <table class="rpt-scorecard" id="rpt-scorecard"></table>
+    </div>
+    <div class="rpt-footer">
+      <span>Confidential — Prepared by Intelligent Consulting</span>
+      <span id="rpt-footer-date"></span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: CLIENT INPUT FORM -->
+  <section class="slide slide-input" id="slide-2" data-slide="2">
+    <h2 class="slide-heading">Client Configuration</h2>
+    <p class="slide-subtitle">Enter your workforce details — the engine will analyze and generate a transformation blueprint</p>
+    <div class="input-form-grid" id="input-form">
+      <!-- Dynamically populated by JS -->
+    </div>
+  </section>
+
+  <!-- SLIDE 3: CURRENT STATE MAP -->
+  <section class="slide slide-map" id="slide-3" data-slide="3">
+    <h2 class="slide-heading">Current State: Global Operations</h2>
+    <p class="slide-subtitle">Click a location to explore workforce details</p>
+    <div class="map-layout">
+      <div class="map-container">
+        <div id="current-state-map" style="width:100%;height:100%;min-height:400px;"></div>
+      </div>
+      <div class="detail-panel" id="detail-panel">
+        <div class="location-tabs" id="location-tabs"></div>
+        <div class="panel-header">
+          <h3 id="panel-location-name">United States</h3>
+          <div class="panel-headcount" id="panel-headcount">300 FTEs</div>
+        </div>
+        <div class="panel-section-label">CHANNEL DISTRIBUTION</div>
+        <div class="chart-wrapper"><canvas id="channel-donut"></canvas></div>
+        <div class="panel-section-label">TIER BREAKDOWN</div>
+        <div class="tier-bars" id="tier-bars"></div>
+        <div class="panel-section-label">DAILY VOLUMES</div>
+        <div class="volume-grid" id="volume-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: ANALYSIS MATRIX -->
+  <section class="slide slide-matrix" id="slide-4" data-slide="4">
+    <h2 class="slide-heading">Channel & Tier Analysis</h2>
+    <p class="slide-subtitle">Toggle work packages for offshore transition — numbers update in real-time</p>
+    <div class="fte-calculator" id="fte-calculator">
+      <div class="fte-stat"><span class="fte-label">Selected for Offshore</span><span class="fte-value" id="selected-fte-count">0</span><span class="fte-unit">FTEs</span></div>
+      <div class="fte-stat"><span class="fte-label">Est. Annual Savings</span><span class="fte-value" id="estimated-savings">$0</span></div>
+      <div class="fte-stat"><span class="fte-label">CSAT Impact</span><span class="fte-value" id="csat-impact" style="color:var(--accent-yellow)">0%</span></div>
+      <button class="ai-insights-btn" id="ai-insights-btn-s4" onclick="openAIModal()" style="margin-left:auto;display:none"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button>
+    </div>
+    <div class="matrix-container">
+      <table class="analysis-table">
+        <thead id="matrix-thead"><tr><th>Channel</th><th>Tier</th><th>Total FTEs</th><th>Offshore</th><th>Confidence</th><th>Destination</th><th>Rationale</th></tr></thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: TRANSFORMATION -->
+  <section class="slide slide-transform" id="slide-5" data-slide="5">
+    <h2 class="slide-heading">Proposed Transformation</h2>
+    <p class="slide-subtitle" style="display:flex;align-items:center;gap:12px">Optimized workforce redistribution based on affinity scoring <button class="ai-insights-btn" onclick="openAIModal()"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button></p>
+    <div class="transform-content">
+      <div class="transform-map-wrapper">
+        <div id="transform-leaflet-map" style="width:100%;height:100%;min-height:350px;"></div>
+      </div>
+      <div class="before-after-panel" id="before-after-panel"></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: FINANCIAL -->
+  <section class="slide slide-financial" id="slide-6" data-slide="6">
+    <h2 class="slide-heading">Financial Impact Analysis</h2>
+    <p class="slide-subtitle">Dynamic cost modeling based on selected offshore work packages</p>
+    <div class="dashboard-grid">
+      <div class="dashboard-card"><h4>Hourly Rate Comparison</h4><div class="chart-area"><canvas id="rate-chart"></canvas></div></div>
+      <div class="dashboard-card"><h4>Annual Cost: Current vs Proposed</h4><div class="chart-area"><canvas id="cost-chart"></canvas></div></div>
+      <div class="dashboard-card savings-card">
+        <div class="savings-hero">
+          <div class="savings-label">Estimated Annual Savings</div>
+          <div class="savings-amount" id="savings-amount">$0</div>
+          <div class="savings-percent" id="savings-percent">0% reduction</div>
+        </div>
+        <div class="savings-breakdown">
+          <div class="breakdown-row"><span>Current Annual Cost</span><span id="current-cost-display">$0</span></div>
+          <div class="breakdown-row"><span>Proposed Annual Cost</span><span id="proposed-cost-display">$0</span></div>
+          <div class="breakdown-row"><span>Transition Cost (one-time)</span><span id="transition-cost-display">$0</span></div>
+          <div class="breakdown-row"><span>Break-even Period</span><span id="breakeven-display">-- months</span></div>
+        </div>
+      </div>
+      <div class="dashboard-card"><h4>Cumulative Savings Over 24 Months</h4><div class="chart-area"><canvas id="roi-chart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: ROADMAP -->
+  <section class="slide slide-roadmap" id="slide-7" data-slide="7">
+    <h2 class="slide-heading">Implementation Roadmap</h2>
+    <p class="slide-subtitle">Phased approach to minimize risk and ensure quality</p>
+    <div class="timeline-container">
+      <div class="timeline-track-wrapper">
+        <div class="timeline-track"><div class="timeline-progress" id="timeline-progress"></div></div>
+        <div class="timeline-markers">
+          <div class="timeline-marker" id="marker-0"></div>
+          <div class="timeline-marker" id="marker-1"></div>
+          <div class="timeline-marker" id="marker-2"></div>
+          <div class="timeline-marker" id="marker-3"></div>
+        </div>
+      </div>
+      <div class="phase-cards" id="phase-cards">
+        <div class="phase-card" id="phase-1">
+          <div class="phase-header"><span class="phase-badge p1">Phase 1</span><span class="phase-duration">0 - 3 Months</span></div>
+          <h4>Foundation</h4>
+          <ul class="milestone-list"><li>Offshore site selection & setup</li><li>Recruit initial pilot FTEs</li><li>Knowledge transfer framework</li><li>Technology infrastructure deployment</li></ul>
+          <div class="risk-indicator risk-medium"><span class="risk-dot"></span> Medium Risk</div>
+          <div class="fte-target">Target: <strong id="phase1-target">40</strong> FTEs offshore</div>
+        </div>
+        <div class="phase-card" id="phase-2">
+          <div class="phase-header"><span class="phase-badge p2">Phase 2</span><span class="phase-duration">3 - 6 Months</span></div>
+          <h4>Migration</h4>
+          <ul class="milestone-list"><li>Email & Chat L1/L2 transition</li><li>Phone L1 pilot launch</li><li>Quality monitoring implementation</li><li>Performance baseline measurement</li></ul>
+          <div class="risk-indicator risk-high"><span class="risk-dot"></span> High Risk</div>
+          <div class="fte-target">Target: <strong id="phase2-target">120</strong> FTEs offshore</div>
+        </div>
+        <div class="phase-card" id="phase-3">
+          <div class="phase-header"><span class="phase-badge p3">Phase 3</span><span class="phase-duration">6 - 12 Months</span></div>
+          <h4>Optimization</h4>
+          <ul class="milestone-list"><li>Full Phone L1 ramp</li><li>Remaining tier transitions</li><li>AI augmentation deployment</li><li>Onshore team restructuring</li></ul>
+          <div class="risk-indicator risk-low"><span class="risk-dot"></span> Low Risk</div>
+          <div class="fte-target">Target: <strong id="phase3-target">190</strong> FTEs offshore</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRINT PAGE 2: DETAILED RECOMMENDATIONS -->
+  <section class="print-page" id="print-recommendations">
+    <div class="rpt-header">
+      <div class="rpt-logo">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="#0a1628" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/><circle cx="32" cy="32" r="18" stroke="#0a1628" stroke-width="2.5" opacity="0.6"/><circle cx="32" cy="32" r="6" fill="#0a1628"/></svg>
+      </div>
+      <div class="rpt-header-text">
+        <div class="rpt-title">Intelligent Consulting</div>
+        <div class="rpt-date" id="rpt-date-2"></div>
+      </div>
+      <div class="rpt-badge">Destination Analysis</div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Destination Analysis &amp; Recommendations</div>
+      <div id="rpt-pairings"></div>
+    </div>
+    <div class="rpt-section" id="rpt-risks-section" style="display:none">
+      <div class="rpt-section-title">Risk Considerations</div>
+      <div id="rpt-risks"></div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Methodology</div>
+      <div class="rpt-methodology" id="rpt-methodology"></div>
+    </div>
+    <div class="rpt-footer">
+      <span>Confidential — Prepared by Intelligent Consulting</span>
+      <span id="rpt-footer-date-2"></span>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: SUMMARY -->
+  <section class="slide slide-summary" id="slide-8" data-slide="8">
+    <h2 class="slide-heading">Executive Summary</h2>
+    <p class="slide-subtitle">Key outcomes from the transformation analysis</p>
+    <div class="summary-metrics">
+      <div class="metric-card" id="mc-savings">
+        <div class="metric-icon savings-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <div class="metric-value" id="summary-savings">$0</div>
+        <div class="metric-label">Annual Savings</div>
+      </div>
+      <div class="metric-card" id="mc-ftes">
+        <div class="metric-icon fte-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="metric-value" id="summary-ftes">0</div>
+        <div class="metric-label">FTEs Transitioned</div>
+      </div>
+      <div class="metric-card" id="mc-percent">
+        <div class="metric-icon percent-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c5cfc" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
+        <div class="metric-value" id="summary-percent">0%</div>
+        <div class="metric-label">Cost Reduction</div>
+      </div>
+      <div class="metric-card" id="mc-roi">
+        <div class="metric-icon roi-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="metric-value" id="summary-breakeven">--</div>
+        <div class="metric-label">Months to ROI</div>
+      </div>
+    </div>
+    <div class="next-steps">
+      <h3>Recommended Next Steps</h3>
+      <ol class="steps-list">
+        <li>Stakeholder alignment workshop (Week 1-2)</li>
+        <li>Detailed business case development (Week 2-4)</li>
+        <li>Vendor selection & offshore site visits (Month 2)</li>
+        <li>Pilot program launch with initial FTEs (Month 3)</li>
+      </ol>
+    </div>
+    <div class="cta-section">
+      <button class="cta-button primary" onclick="navigateToSlide(1,'backward')">Restart Presentation</button>
+      <button class="cta-button secondary" onclick="exportReport()">Export Report</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ===== COUNTRY DATABASE (with intelligence metadata) =====
+const COUNTRY_DB = {
+  // --- Source (high-cost) countries ---
+  US: {name:'United States',lat:39.8,lng:-98.5,defaultRate:35,flag:'\u{1F1FA}\u{1F1F8}',languages:['en'],timezone:-5,culturalCluster:'anglo'},
+  UK: {name:'United Kingdom',lat:54.5,lng:-2.5,defaultRate:30,flag:'\u{1F1EC}\u{1F1E7}',languages:['en'],timezone:0,culturalCluster:'anglo'},
+  DE: {name:'Germany',lat:51.1,lng:10.4,defaultRate:32,flag:'\u{1F1E9}\u{1F1EA}',languages:['de'],timezone:1,culturalCluster:'germanic'},
+  AU: {name:'Australia',lat:-25.2,lng:133.7,defaultRate:38,flag:'\u{1F1E6}\u{1F1FA}',languages:['en'],timezone:10,culturalCluster:'anglo'},
+  CA: {name:'Canada',lat:56.1,lng:-106.3,defaultRate:33,flag:'\u{1F1E8}\u{1F1E6}',languages:['en','fr'],timezone:-5,culturalCluster:'anglo'},
+  FR: {name:'France',lat:46.2,lng:2.2,defaultRate:31,flag:'\u{1F1EB}\u{1F1F7}',languages:['fr'],timezone:1,culturalCluster:'latin-european'},
+  JP: {name:'Japan',lat:36.2,lng:138.2,defaultRate:36,flag:'\u{1F1EF}\u{1F1F5}',languages:['ja'],timezone:9,culturalCluster:'confucian'},
+  SG: {name:'Singapore',lat:1.35,lng:103.8,defaultRate:34,flag:'\u{1F1F8}\u{1F1EC}',languages:['en','zh'],timezone:8,culturalCluster:'confucian'},
+  // --- Offshore (low-cost) countries ---
+  IN: {name:'India',lat:20.5,lng:78.9,defaultRate:12,flag:'\u{1F1EE}\u{1F1F3}',languages:['en','hi'],timezone:5.5,culturalCluster:'south-asian',
+    languageCapability:{en:95,de:15,fr:20,ja:5,zh:10}},
+  PH: {name:'Philippines',lat:12.8,lng:121.7,defaultRate:10,flag:'\u{1F1F5}\u{1F1ED}',languages:['en','tl'],timezone:8,culturalCluster:'south-asian',
+    languageCapability:{en:92,de:3,fr:3,ja:25,zh:8}},
+  PL: {name:'Poland',lat:51.9,lng:19.1,defaultRate:18,flag:'\u{1F1F5}\u{1F1F1}',languages:['pl','de','en'],timezone:1,culturalCluster:'eastern-european',
+    languageCapability:{en:75,de:60,fr:25,ja:2,zh:2}},
+  MX: {name:'Mexico',lat:23.6,lng:-102.5,defaultRate:14,flag:'\u{1F1F2}\u{1F1FD}',languages:['es','en'],timezone:-6,culturalCluster:'latin-american',
+    languageCapability:{en:55,de:5,fr:8,ja:2,zh:2}},
+  ZA: {name:'South Africa',lat:-30.5,lng:22.9,defaultRate:13,flag:'\u{1F1FF}\u{1F1E6}',languages:['en','af'],timezone:2,culturalCluster:'anglo',
+    languageCapability:{en:90,de:10,fr:15,ja:2,zh:2}},
+  CO: {name:'Colombia',lat:4.5,lng:-74.2,defaultRate:11,flag:'\u{1F1E8}\u{1F1F4}',languages:['es','en'],timezone:-5,culturalCluster:'latin-american',
+    languageCapability:{en:45,de:3,fr:5,ja:1,zh:1}},
+  EG: {name:'Egypt',lat:26.8,lng:30.8,defaultRate:9,flag:'\u{1F1EA}\u{1F1EC}',languages:['ar','en'],timezone:2,culturalCluster:'arab',
+    languageCapability:{en:50,de:15,fr:35,ja:1,zh:1}},
+  RO: {name:'Romania',lat:45.9,lng:24.9,defaultRate:16,flag:'\u{1F1F7}\u{1F1F4}',languages:['ro','en','de','fr'],timezone:2,culturalCluster:'eastern-european',
+    languageCapability:{en:70,de:40,fr:55,ja:2,zh:2}}
+};
+
+// Source-eligible countries (high-cost)
+const SOURCE_COUNTRIES = ['US','UK','DE','AU','CA','FR','JP','SG'];
+// Offshore-eligible countries (low-cost)
+const OFFSHORE_COUNTRIES = ['IN','PH','PL','MX','ZA','CO','EG','RO'];
+
+// ===== AFFINITY SCORING ENGINE =====
+const AFFINITY_WEIGHTS = {language:0.35,timezone:0.20,costArbitrage:0.25,culturalProx:0.10,channelFit:0.10};
+const LANG_NAMES = {en:'English',de:'German',fr:'French',ja:'Japanese',zh:'Mandarin',hi:'Hindi',es:'Spanish',ar:'Arabic',tl:'Filipino'};
+
+const CULTURAL_PROXIMITY = {
+  'anglo|anglo':1.0,'anglo|south-asian':0.6,'anglo|eastern-european':0.5,'anglo|latin-american':0.5,'anglo|arab':0.3,'anglo|latin-european':0.5,'anglo|confucian':0.4,
+  'germanic|eastern-european':0.7,'germanic|south-asian':0.4,'germanic|anglo':0.6,'germanic|latin-european':0.5,'germanic|arab':0.3,'germanic|confucian':0.3,'germanic|latin-american':0.3,
+  'latin-european|eastern-european':0.6,'latin-european|arab':0.5,'latin-european|latin-american':0.7,'latin-european|south-asian':0.3,'latin-european|confucian':0.3,
+  'confucian|south-asian':0.5,'confucian|eastern-european':0.3,'confucian|latin-american':0.2,'confucian|arab':0.2,
+  'south-asian|eastern-european':0.4,'south-asian|latin-american':0.3,'south-asian|arab':0.4,
+  'eastern-european|latin-american':0.3,'eastern-european|arab':0.3,
+  'latin-american|arab':0.2
+};
+
+function getCulturalProximity(c1,c2){
+  if(c1===c2) return 1.0;
+  return CULTURAL_PROXIMITY[c1+'|'+c2]||CULTURAL_PROXIMITY[c2+'|'+c1]||0.2;
+}
+
+function computeAffinityScore(sourceCode,offshoreCode,channelType){
+  const src=COUNTRY_DB[sourceCode], dst=COUNTRY_DB[offshoreCode];
+  if(!src||!dst) return {total:0,breakdown:{}};
+
+  // 1. Language (best match across source languages)
+  const langScores = (src.languages||[]).map(l=>(dst.languageCapability||{})[l]||0);
+  const languageScore = langScores.length>0?Math.max(...langScores):0;
+  const bestLang = (src.languages||[])[langScores.indexOf(languageScore)]||'en';
+
+  // 2. Timezone overlap
+  const tzDiff = Math.abs((src.timezone||0)-(dst.timezone||0));
+  const effectiveDiff = Math.min(tzDiff,24-tzDiff);
+  const timezoneScore = Math.max(0,100-(effectiveDiff/12)*100);
+  const overlapHours = Math.max(0,Math.round(8-effectiveDiff));
+
+  // 3. Cost arbitrage
+  const ratio = (src.defaultRate||30)/(dst.defaultRate||10);
+  const costScore = Math.min(100,Math.max(0,(ratio-1)/3*100));
+
+  // 4. Cultural proximity
+  const culturalScore = getCulturalProximity(src.culturalCluster||'',dst.culturalCluster||'')*100;
+
+  // 5. Channel fit (voice needs higher language fluency)
+  let channelFitScore;
+  if(channelType==='voice'){
+    channelFitScore = languageScore>=80?100:languageScore>=60?60:30;
+  } else {
+    channelFitScore = languageScore>=50?100:languageScore>=30?70:40;
+  }
+
+  const total = Math.round(
+    languageScore*AFFINITY_WEIGHTS.language +
+    timezoneScore*AFFINITY_WEIGHTS.timezone +
+    costScore*AFFINITY_WEIGHTS.costArbitrage +
+    culturalScore*AFFINITY_WEIGHTS.culturalProx +
+    channelFitScore*AFFINITY_WEIGHTS.channelFit
+  );
+
+  return {total,breakdown:{language:Math.round(languageScore),timezone:Math.round(timezoneScore),costArbitrage:Math.round(costScore),cultural:Math.round(culturalScore),channelFit:Math.round(channelFitScore)},bestLang,langCapability:Math.round(languageScore),overlapHours,costRatio:ratio.toFixed(1)};
+}
+
+function computeAllAffinities(){
+  const results={};
+  const srcCodes=Object.keys(CONFIG.locations), offCodes=Object.keys(CONFIG.offshoreLocations);
+  for(const src of srcCodes){
+    results[src]={};
+    for(const dst of offCodes){
+      results[src][dst]={
+        voice:computeAffinityScore(src,dst,'voice'),
+        written:computeAffinityScore(src,dst,'written')
+      };
+      results[src][dst].overall={
+        total:Math.round((results[src][dst].voice.total+results[src][dst].written.total)/2),
+        breakdown:results[src][dst].written.breakdown,
+        bestLang:results[src][dst].written.bestLang,
+        langCapability:results[src][dst].written.langCapability,
+        overlapHours:results[src][dst].written.overlapHours,
+        costRatio:results[src][dst].written.costRatio
+      };
+    }
+  }
+  return results;
+}
+
+// ===== NARRATIVE GENERATION ENGINE =====
+function scoreToLevel(score){
+  if(score>=80) return {label:'Very High',cls:'very-high',dots:4};
+  if(score>=60) return {label:'High',cls:'high',dots:3};
+  if(score>=30) return {label:'Medium',cls:'medium',dots:2};
+  return {label:'Low',cls:'low',dots:1};
+}
+
+function generateInsightNarrative(impact){
+  const affinities=impact.affinities;
+  const flowDetail=impact.flowDetail;
+  const narratives={pairings:[],factors:[],risks:[],summary:''};
+  const srcCodes=Object.keys(CONFIG.locations), offCodes=Object.keys(CONFIG.offshoreLocations);
+
+  // Accumulate factor scores across all pairings for portfolio-level badges
+  const factorTotals={language:[], timezone:[], costArbitrage:[], cultural:[], channelFit:[]};
+
+  for(const src of srcCodes){
+    const srcDb=COUNTRY_DB[src];
+    const ranked=offCodes.map(dst=>({
+      code:dst,name:COUNTRY_DB[dst].name,
+      affinity:affinities[src]?.[dst]?.overall?.total||0,
+      breakdown:affinities[src]?.[dst]?.overall?.breakdown||{},
+      voice:affinities[src]?.[dst]?.voice?.total||0,
+      written:affinities[src]?.[dst]?.written?.total||0,
+      ftes:flowDetail[src]?.[dst]?.ftes||0,
+      bestLang:affinities[src]?.[dst]?.overall?.bestLang||'en',
+      overlapHours:affinities[src]?.[dst]?.overall?.overlapHours||0,
+      costRatio:affinities[src]?.[dst]?.overall?.costRatio||'1.0'
+    })).sort((a,b)=>b.affinity-a.affinity);
+
+    for(const dest of ranked){
+      const reasons=[];
+      const langCap=(COUNTRY_DB[dest.code].languageCapability||{})[dest.bestLang]||0;
+      const langName=LANG_NAMES[dest.bestLang]||dest.bestLang;
+      if(langCap>=70) reasons.push(`${langName} proficiency at ${scoreToLevel(langCap).label.toLowerCase()} level — mature talent pool`);
+      else if(langCap>=40) reasons.push(`${langName} capability at moderate level — growing talent pool`);
+      else if(langCap>=15) reasons.push(`Emerging ${langName} capability — suitable for written channels`);
+
+      if(dest.overlapHours>=6) reasons.push(`${dest.overlapHours}h daily business overlap enables real-time collaboration`);
+      else if(dest.overlapHours>=3) reasons.push(`${dest.overlapHours}h timezone overlap — suitable for async workflows`);
+
+      if(parseFloat(dest.costRatio)>=2.5) reasons.push(`${dest.costRatio}x cost arbitrage — significant savings potential`);
+      else if(parseFloat(dest.costRatio)>=1.5) reasons.push(`${dest.costRatio}x cost arbitrage — moderate savings`);
+
+      const cultScore=getCulturalProximity(srcDb.culturalCluster||'',COUNTRY_DB[dest.code].culturalCluster||'');
+      if(cultScore>=0.8) reasons.push('Strong cultural alignment reduces transition risk');
+      else if(cultScore>=0.6) reasons.push('Good cultural proximity supports smooth transition');
+
+      // Generate key insight sentence
+      const bd = dest.breakdown;
+      let insight = '';
+      const langLevel = scoreToLevel(bd.language||0);
+      const costLevel = scoreToLevel(bd.costArbitrage||0);
+      if(langLevel.dots>=3 && costLevel.dots>=3){
+        insight = `${dest.name} combines ${langLevel.label.toLowerCase()} ${langName} proficiency with ${dest.costRatio}x cost arbitrage — optimal for ${srcDb.name} operations`;
+      } else if(langLevel.dots>=3){
+        insight = `${dest.name}'s ${langLevel.label.toLowerCase()} ${langName} proficiency makes it a strong match for ${srcDb.name} workload`;
+      } else if(costLevel.dots>=3){
+        insight = `${dest.costRatio}x cost arbitrage from ${dest.name} delivers significant savings for ${srcDb.name}`;
+      } else if(dest.overlapHours>=5){
+        insight = `${dest.overlapHours}h business overlap with ${srcDb.name} enables real-time collaboration from ${dest.name}`;
+      } else {
+        insight = `${dest.name} selected for ${srcDb.name} based on balanced affinity across language, cost, and timezone`;
+      }
+
+      // Build descriptive bar data
+      const barData = [
+        {key:'language',factor:'Language',desc:`${langName} — ${scoreToLevel(bd.language||0).label}`,score:bd.language||0,cls:'lang'},
+        {key:'timezone',factor:'Timezone',desc:`${dest.overlapHours}h overlap — ${scoreToLevel(bd.timezone||0).label}`,score:bd.timezone||0,cls:'tz'},
+        {key:'costArbitrage',factor:'Cost Arbitrage',desc:`${dest.costRatio}x — ${scoreToLevel(bd.costArbitrage||0).label}`,score:bd.costArbitrage||0,cls:'cost'},
+        {key:'cultural',factor:'Culture',desc:`${scoreToLevel(bd.cultural||0).label} alignment`,score:bd.cultural||0,cls:'cult'},
+        {key:'channelFit',factor:'Channel Fit',desc:`${scoreToLevel(bd.channelFit||0).label} suitability`,score:bd.channelFit||0,cls:'chan'}
+      ];
+
+      // Accumulate for portfolio badges
+      for(const b of barData) factorTotals[b.key].push(b.score);
+
+      narratives.pairings.push({
+        source:srcDb.name,sourceCode:src,destination:dest.name,destinationCode:dest.code,
+        ftes:dest.ftes,affinityScore:dest.affinity,reasons,insight,barData,
+        voiceScore:dest.voice,writtenScore:dest.written,
+        breakdown:dest.breakdown,bestLang:dest.bestLang,overlapHours:dest.overlapHours,costRatio:dest.costRatio
+      });
+    }
+  }
+
+  // Build portfolio-level factor badges (average across all pairings)
+  const factorMeta = [
+    {key:'language',icon:'\u{1F5E3}\u{FE0F}',name:'Language'},
+    {key:'timezone',icon:'\u{1F552}',name:'Timezone'},
+    {key:'costArbitrage',icon:'\u{1F4B0}',name:'Cost Arbitrage'},
+    {key:'cultural',icon:'\u{1F91D}',name:'Culture'},
+    {key:'channelFit',icon:'\u{1F4DE}',name:'Channel Fit'}
+  ];
+  narratives.factors = factorMeta.map(f=>{
+    const scores = factorTotals[f.key];
+    const avg = scores.length > 0 ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+    return {...f, avgScore: avg, level: scoreToLevel(avg)};
+  });
+
+  // Risks
+  for(const p of narratives.pairings){
+    if(p.affinityScore<40) narratives.risks.push(`Low affinity (${p.affinityScore}/100) for ${p.source} \u2192 ${p.destination}. Consider alternative destinations or enhanced training.`);
+    if(p.voiceScore<50 && flowDetail[p.sourceCode]?.[p.destinationCode]?.channels?.Phone>0){
+      const srcLang=LANG_NAMES[COUNTRY_DB[p.sourceCode].languages[0]]||'source language';
+      narratives.risks.push(`Voice channel risk: ${p.destination} has limited ${srcLang} spoken fluency for ${p.source} phone support.`);
+    }
+  }
+
+  const topDest=offCodes.sort((a,b)=>(impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0))[0];
+  narratives.summary=`Analysis recommends transitioning ${impact.totalMovedFTEs} FTEs across ${offCodes.length} destination${offCodes.length>1?'s':''}, with ${COUNTRY_DB[topDest]?.name||topDest} as the primary hub based on language compatibility, timezone alignment, and cost optimization.`;
+
+  return narratives;
+}
+
+const OFFSHORE_MATRIX = {
+  Phone: {
+    L1:{recommended:true,status:'green',rationale:'High-volume, script-based calls ideal for offshore delivery',confidence:92,destinationPref:0},
+    L2:{recommended:false,status:'yellow',rationale:'Moderate complexity; possible with significant training',confidence:65,destinationPref:0},
+    L3:{recommended:false,status:'red',rationale:'Complex escalations requiring cultural & regulatory knowledge',confidence:20,destinationPref:null}
+  },
+  Email: {
+    L1:{recommended:true,status:'green',rationale:'Template-driven responses with high automation potential',confidence:95,destinationPref:1},
+    L2:{recommended:true,status:'green',rationale:'Written channel allows quality review before sending',confidence:88,destinationPref:1},
+    L3:{recommended:true,status:'green',rationale:'Asynchronous nature allows escalation without time pressure',confidence:82,destinationPref:1}
+  },
+  Chat: {
+    L1:{recommended:true,status:'green',rationale:'Real-time text with AI-assist for suggested responses',confidence:94,destinationPref:1},
+    L2:{recommended:true,status:'green',rationale:'Chat allows parallel handling, boosting offshore productivity',confidence:87,destinationPref:1},
+    L3:{recommended:true,status:'green',rationale:'Written audit trail supports quality and compliance',confidence:80,destinationPref:0}
+  },
+  Social: {
+    L1:{recommended:true,status:'green',rationale:'Monitoring and standard responses can be centralized offshore',confidence:90,destinationPref:1},
+    L2:{recommended:false,status:'yellow',rationale:'Brand voice sensitivity requires careful training',confidence:55,destinationPref:1},
+    L3:{recommended:false,status:'red',rationale:'Crisis management requires senior onshore judgment',confidence:15,destinationPref:null}
+  }
+};
+
+const ICONS = {Phone:'\u{1F4DE}',Email:'\u{1F4E7}',Chat:'\u{1F4AC}',Social:'\u{1F310}'};
+
+// ===== CONFIG (rebuilt from form) =====
+let CONFIG = {
+  locations: {
+    US: {
+      name:'United States', headcount:300, hourlyRate:35,
+      channels: {
+        Phone:{total:120,L1:60,L2:36,L3:24,volumePerDay:2400,volumeUnit:'calls/day',icon:'\u{1F4DE}'},
+        Email:{total:80,L1:40,L2:24,L3:16,volumePerDay:3200,volumeUnit:'emails/day',icon:'\u{1F4E7}'},
+        Chat:{total:60,L1:30,L2:18,L3:12,volumePerDay:1800,volumeUnit:'chats/day',icon:'\u{1F4AC}'},
+        Social:{total:40,L1:20,L2:12,L3:8,volumePerDay:800,volumeUnit:'tickets/day',icon:'\u{1F310}'}
+      }
+    },
+    UK: {
+      name:'United Kingdom', headcount:200, hourlyRate:30,
+      channels: {
+        Phone:{total:80,L1:40,L2:24,L3:16,volumePerDay:1600,volumeUnit:'calls/day',icon:'\u{1F4DE}'},
+        Email:{total:50,L1:25,L2:15,L3:10,volumePerDay:2000,volumeUnit:'emails/day',icon:'\u{1F4E7}'},
+        Chat:{total:45,L1:23,L2:13,L3:9,volumePerDay:1350,volumeUnit:'chats/day',icon:'\u{1F4AC}'},
+        Social:{total:25,L1:13,L2:7,L3:5,volumePerDay:500,volumeUnit:'tickets/day',icon:'\u{1F310}'}
+      }
+    }
+  },
+  offshoreLocations: {
+    IN: {name:'India',hourlyRate:12},
+    PH: {name:'Philippines',hourlyRate:10}
+  },
+  workingHoursPerYear: 2080,
+  transitionCostPerFTE: 5000,
+  scenarios: {
+    Conservative: {offshorePercent:0.6,csatImpact:-2},
+    Moderate:     {offshorePercent:0.8,csatImpact:-5},
+    Aggressive:   {offshorePercent:1.0,csatImpact:-8}
+  }
+};
+
+// ===== STATE =====
+const TOTAL_SLIDES = 8;
+let currentSlide = 1;
+let currentScenario = 'Moderate';
+let offshoreSelections = {};
+let chartInstances = {};
+let slide5Animated = false;
+let particlesRunning = false;
+let particleRAF = null;
+let currentStateMap = null;
+let transformMap = null;
+let antPaths = [];
+
+// Form state
+let formLocations = [
+  {country:'US', headcount:300, channels:{Phone:120,Email:80,Chat:60,Social:40}},
+  {country:'UK', headcount:200, channels:{Phone:80,Email:50,Chat:45,Social:25}}
+];
+let formTiers = {L1:50,L2:30,L3:20};
+let formRates = {};
+let formOffshoreSelections = {IN:true,PH:true};
+
+// ===== INIT =====
+function init() {
+  initializeSelections();
+  buildNavDots();
+  bindEvents();
+  initParticles();
+  renderForm();
+  playTitleAnimation();
+}
+
+function initializeSelections() {
+  for (const [ch,tiers] of Object.entries(OFFSHORE_MATRIX)) {
+    offshoreSelections[ch] = {};
+    for (const [t,cfg] of Object.entries(tiers)) offshoreSelections[ch][t] = cfg.recommended;
+  }
+}
+
+// ===== GSAP TITLE ANIMATION (Slide 1) =====
+function playTitleAnimation() {
+  const tl = gsap.timeline({defaults:{ease:'power3.out'}});
+  tl.from('.logo-mark', {scale:0, rotation:180, duration:1, ease:'back.out(1.7)'})
+    .from('.title-main', {y:40, opacity:0, duration:0.8}, '-=0.3')
+    .to('.title-divider', {scaleX:1, duration:0.5, ease:'power2.inOut'}, '-=0.3')
+    .from('.title-sub', {y:30, opacity:0, duration:0.7}, '-=0.2')
+    .from('.meta-item', {y:20, opacity:0, duration:0.5, stagger:0.15}, '-=0.3')
+    .from('.meta-dot', {scale:0, duration:0.3, stagger:0.1}, '-=0.5')
+    .from('.title-cta', {opacity:0, duration:0.6}, '-=0.2')
+    .to('.title-cta', {opacity:0.5, duration:1, repeat:-1, yoyo:true, ease:'sine.inOut'});
+}
+
+// ===== NAVIGATION =====
+function buildNavDots() {
+  const container = document.getElementById('nav-dots');
+  for (let i=1;i<=TOTAL_SLIDES;i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot'+(i===1?' active':'');
+    dot.addEventListener('click',()=>navigateToSlide(i, i>currentSlide?'forward':'backward'));
+    container.appendChild(dot);
+  }
+}
+
+window.navigateToSlide = navigateToSlide;
+function navigateToSlide(target, direction) {
+  if (target<1||target>TOTAL_SLIDES||target===currentSlide) return;
+  direction = direction||(target>currentSlide?'forward':'backward');
+
+  const currentEl = document.getElementById('slide-'+currentSlide);
+  const targetEl = document.getElementById('slide-'+target);
+
+  // Exit hooks
+  if (currentSlide===1) stopParticles();
+
+  // GSAP slide out
+  gsap.to(currentEl, {
+    x: direction==='forward'?-80:80,
+    opacity:0,
+    duration:0.5,
+    ease:'power2.in',
+    onComplete:()=>{
+      currentEl.classList.remove('active');
+      gsap.set(currentEl, {x:0, opacity:0});
+    }
+  });
+
+  // GSAP slide in
+  targetEl.classList.add('active');
+  gsap.fromTo(targetEl,
+    {x: direction==='forward'?80:-80, opacity:0},
+    {x:0, opacity:1, duration:0.6, ease:'power2.out', delay:0.1}
+  );
+
+  // Update nav
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i+1===target));
+  document.getElementById('slide-counter').textContent = target+' / '+TOTAL_SLIDES;
+
+  // Scenario toggle visible on slides 4-6
+  const toggle = document.getElementById('scenario-toggle');
+  if (target>=4&&target<=6) toggle.classList.add('visible');
+  else toggle.classList.remove('visible');
+
+  currentSlide = target;
+
+  // Enter hooks
+  switch(target) {
+    case 1: initParticles(); playTitleAnimation(); break;
+    case 3: initCurrentStateMap(); break;
+    case 4: buildMatrix(); break;
+    case 5: triggerSlide5(); break;
+    case 6: buildFinancialDashboard(); break;
+    case 7: animateRoadmap(); break;
+    case 8: animateSummary(); break;
+  }
+}
+
+function bindEvents() {
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'){ closeAIModal(); return; }
+    if(document.getElementById('ai-modal-overlay').classList.contains('visible')) return;
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();navigateToSlide(currentSlide+1,'forward');}
+    else if(e.key==='ArrowLeft'){e.preventDefault();navigateToSlide(currentSlide-1,'backward');}
+  });
+  document.getElementById('prev-btn').addEventListener('click',()=>navigateToSlide(currentSlide-1,'backward'));
+  document.getElementById('next-btn').addEventListener('click',()=>navigateToSlide(currentSlide+1,'forward'));
+
+  document.querySelectorAll('.scenario-btn').forEach(btn=>{
+    btn.addEventListener('click',(e)=>{
+      document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+      e.target.classList.add('active');
+      currentScenario = e.target.dataset.scenario;
+      updateAllCalculations();
+    });
+  });
+}
+
+// ===== PARTICLES (Slide 1) =====
+function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const particles = [];
+  for(let i=0;i<50;i++) particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,r:Math.random()*2+1});
+  particlesRunning = true;
+  function draw(){
+    if(!particlesRunning) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>canvas.width)p.vx*=-1;
+      if(p.y<0||p.y>canvas.height)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,212,255,0.3)';ctx.fill();
+    });
+    for(let i=0;i<particles.length;i++) for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<150){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,212,255,${0.1*(1-dist/150)})`;ctx.lineWidth=0.5;ctx.stroke();}
+    }
+    particleRAF = requestAnimationFrame(draw);
+  }
+  draw();
+}
+function stopParticles(){particlesRunning=false;if(particleRAF)cancelAnimationFrame(particleRAF);}
+
+// ===== SLIDE 2: INPUT FORM =====
+function renderForm() {
+  // Initialize form rates from defaults
+  for (const code of Object.keys(COUNTRY_DB)) {
+    if(!formRates[code]) formRates[code] = COUNTRY_DB[code].defaultRate;
+  }
+
+  const form = document.getElementById('input-form');
+  form.innerHTML = `
+    <!-- Source Locations -->
+    <div class="form-card">
+      <h3><span class="card-icon">\u{1F4CD}</span> Source Locations</h3>
+      <div class="location-rows" id="source-locations"></div>
+      <button class="add-loc-btn" id="add-location-btn" onclick="addLocation()">+ Add Location</button>
+    </div>
+
+    <!-- Channel Mix -->
+    <div class="form-card">
+      <h3><span class="card-icon">\u{1F4CA}</span> Channel Mix (FTEs per location)</h3>
+      <div class="channel-mix-section" id="channel-mix-section"></div>
+    </div>
+
+    <!-- Tier Distribution -->
+    <div class="form-card">
+      <h3><span class="card-icon">\u{1F4CA}</span> Tier Distribution (%)</h3>
+      <div class="tier-inputs">
+        <div class="tier-input-group">
+          <label>L1 - Basic</label>
+          <input type="number" id="tier-l1" value="${formTiers.L1}" min="0" max="100" onchange="updateTiers()">
+          <div class="tier-desc">Script-based, repetitive</div>
+        </div>
+        <div class="tier-input-group">
+          <label>L2 - Intermediate</label>
+          <input type="number" id="tier-l2" value="${formTiers.L2}" min="0" max="100" onchange="updateTiers()">
+          <div class="tier-desc">Moderate complexity</div>
+        </div>
+        <div class="tier-input-group">
+          <label>L3 - Expert</label>
+          <input type="number" id="tier-l3" value="${formTiers.L3}" min="0" max="100" onchange="updateTiers()">
+          <div class="tier-desc">Complex, specialized</div>
+        </div>
+      </div>
+      <div class="tier-validation" id="tier-validation"></div>
+    </div>
+
+    <!-- Hourly Rates -->
+    <div class="form-card">
+      <h3><span class="card-icon">\u{1F4B2}</span> Hourly Rates ($/hr)</h3>
+      <div class="rate-cards" id="rate-cards"></div>
+    </div>
+
+    <!-- Offshore Targets -->
+    <div class="form-card full-width">
+      <h3><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
+      <div class="offshore-grid" id="offshore-grid"></div>
+    </div>
+
+    <!-- Analyze Button -->
+    <button class="analyze-btn" id="analyze-btn" onclick="handleAnalyze()">\u{1F680} Analyze & Generate Transformation Plan</button>
+  `;
+
+  renderSourceLocations();
+  renderChannelMix();
+  renderRateCards();
+  renderOffshoreGrid();
+  updateTierValidation();
+}
+
+function renderSourceLocations() {
+  const container = document.getElementById('source-locations');
+  if(!container) return;
+
+  const usedCountries = formLocations.map(l=>l.country);
+
+  container.innerHTML = formLocations.map((loc,i)=>{
+    const options = SOURCE_COUNTRIES.map(code=>{
+      const c = COUNTRY_DB[code];
+      const disabled = usedCountries.includes(code) && code !== loc.country;
+      return `<option value="${code}" ${code===loc.country?'selected':''} ${disabled?'disabled':''}>${c.flag} ${c.name}</option>`;
+    }).join('');
+
+    return `
+      <div class="location-row" data-index="${i}">
+        <select onchange="updateLocationCountry(${i}, this.value)">${options}</select>
+        <input type="number" value="${loc.headcount}" min="10" max="5000" placeholder="Headcount" onchange="updateLocationHeadcount(${i}, this.value)">
+        <span style="font-size:.8rem;color:var(--text-muted)">FTEs</span>
+        ${formLocations.length>1?`<button class="remove-loc" onclick="removeLocation(${i})">✕</button>`:''}
+      </div>
+    `;
+  }).join('');
+
+  const addBtn = document.getElementById('add-location-btn');
+  if(addBtn) addBtn.style.display = formLocations.length >= 5 ? 'none' : 'block';
+}
+
+function renderChannelMix() {
+  const container = document.getElementById('channel-mix-section');
+  if(!container) return;
+
+  container.innerHTML = formLocations.map((loc,i)=>{
+    const c = COUNTRY_DB[loc.country];
+    const sum = Object.values(loc.channels).reduce((a,b)=>a+b,0);
+    const isValid = sum === loc.headcount;
+
+    return `
+      <div class="channel-mix-group">
+        <div class="mix-header">
+          <span>${c.flag} ${c.name} (${loc.headcount} FTEs)</span>
+          <span class="validation-badge ${isValid?'valid':'invalid'}">${isValid?'\u2713 Valid':'\u2717 Sum: '+sum+'/'+loc.headcount}</span>
+        </div>
+        <div class="channel-inputs">
+          <div class="channel-input-group">
+            <label>\u{1F4DE} Phone</label>
+            <input type="number" value="${loc.channels.Phone}" min="0" onchange="updateChannelMix(${i},'Phone',this.value)">
+          </div>
+          <div class="channel-input-group">
+            <label>\u{1F4E7} Email</label>
+            <input type="number" value="${loc.channels.Email}" min="0" onchange="updateChannelMix(${i},'Email',this.value)">
+          </div>
+          <div class="channel-input-group">
+            <label>\u{1F4AC} Chat</label>
+            <input type="number" value="${loc.channels.Chat}" min="0" onchange="updateChannelMix(${i},'Chat',this.value)">
+          </div>
+          <div class="channel-input-group">
+            <label>\u{1F310} Social</label>
+            <input type="number" value="${loc.channels.Social}" min="0" onchange="updateChannelMix(${i},'Social',this.value)">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderRateCards() {
+  const container = document.getElementById('rate-cards');
+  if(!container) return;
+
+  // Show rates for all relevant countries (source + selected offshore)
+  const relevantCountries = [
+    ...formLocations.map(l=>l.country),
+    ...Object.keys(formOffshoreSelections).filter(k=>formOffshoreSelections[k])
+  ];
+  const unique = [...new Set(relevantCountries)];
+
+  container.innerHTML = unique.map(code=>{
+    const c = COUNTRY_DB[code];
+    return `
+      <div class="rate-card">
+        <span class="flag">${c.flag}</span>
+        <div class="rate-info">
+          <div class="country-name">${c.name}</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:.85rem">$</span>
+        <input type="number" value="${formRates[code]||c.defaultRate}" min="1" max="200" onchange="updateRate('${code}',this.value)">
+        <span style="color:var(--text-muted);font-size:.75rem">/hr</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderOffshoreGrid() {
+  const container = document.getElementById('offshore-grid');
+  if(!container) return;
+
+  container.innerHTML = OFFSHORE_COUNTRIES.map(code=>{
+    const c = COUNTRY_DB[code];
+    const selected = formOffshoreSelections[code] || false;
+    return `
+      <label class="offshore-option ${selected?'selected':''}" onclick="toggleOffshore('${code}',this)">
+        <input type="checkbox" ${selected?'checked':''} onchange="toggleOffshoreCheck('${code}',this.checked)">
+        <div class="off-info">
+          <span class="off-name">${c.flag} ${c.name}</span>
+          <span class="off-rate">$${c.defaultRate}/hr</span>
+        </div>
+      </label>
+    `;
+  }).join('');
+}
+
+// Form event handlers (exposed globally)
+window.addLocation = function() {
+  const used = formLocations.map(l=>l.country);
+  const available = SOURCE_COUNTRIES.find(c=>!used.includes(c));
+  if(!available) return;
+  const hc = 100;
+  formLocations.push({
+    country:available, headcount:hc,
+    channels:{Phone:Math.round(hc*.4),Email:Math.round(hc*.27),Chat:Math.round(hc*.2),Social:hc-Math.round(hc*.4)-Math.round(hc*.27)-Math.round(hc*.2)}
+  });
+  renderSourceLocations();
+  renderChannelMix();
+  renderRateCards();
+};
+
+window.removeLocation = function(i) {
+  if(formLocations.length<=1) return;
+  formLocations.splice(i,1);
+  renderSourceLocations();
+  renderChannelMix();
+  renderRateCards();
+};
+
+window.updateLocationCountry = function(i, code) {
+  formLocations[i].country = code;
+  formRates[code] = formRates[code] || COUNTRY_DB[code].defaultRate;
+  renderSourceLocations();
+  renderChannelMix();
+  renderRateCards();
+};
+
+window.updateLocationHeadcount = function(i, val) {
+  const hc = parseInt(val)||100;
+  formLocations[i].headcount = hc;
+  // Auto-distribute channels proportionally
+  formLocations[i].channels = {
+    Phone:Math.round(hc*0.4),
+    Email:Math.round(hc*0.27),
+    Chat:Math.round(hc*0.2),
+    Social:hc - Math.round(hc*0.4) - Math.round(hc*0.27) - Math.round(hc*0.2)
+  };
+  renderChannelMix();
+};
+
+window.updateChannelMix = function(i, channel, val) {
+  formLocations[i].channels[channel] = parseInt(val)||0;
+  renderChannelMix();
+};
+
+window.updateTiers = function() {
+  formTiers.L1 = parseInt(document.getElementById('tier-l1').value)||0;
+  formTiers.L2 = parseInt(document.getElementById('tier-l2').value)||0;
+  formTiers.L3 = parseInt(document.getElementById('tier-l3').value)||0;
+  updateTierValidation();
+};
+
+function updateTierValidation() {
+  const sum = formTiers.L1 + formTiers.L2 + formTiers.L3;
+  const el = document.getElementById('tier-validation');
+  if(el) {
+    if(sum===100) el.innerHTML = '<span style="color:var(--accent-green)">\u2713 Total: 100%</span>';
+    else el.innerHTML = `<span style="color:var(--accent-red)">\u2717 Total: ${sum}% (must be 100%)</span>`;
+  }
+}
+
+window.updateRate = function(code, val) {
+  formRates[code] = parseInt(val)||1;
+};
+
+window.toggleOffshore = function(code, el) {
+  // Let the checkbox handle it
+};
+window.toggleOffshoreCheck = function(code, checked) {
+  formOffshoreSelections[code] = checked;
+  renderOffshoreGrid();
+  renderRateCards();
+};
+
+// ===== ANALYZE HANDLER =====
+window.handleAnalyze = async function() {
+  // Validate
+  const tierSum = formTiers.L1 + formTiers.L2 + formTiers.L3;
+  if(tierSum !== 100) { alert('Tier percentages must sum to 100%'); return; }
+
+  for(let i=0;i<formLocations.length;i++){
+    const loc = formLocations[i];
+    const chSum = Object.values(loc.channels).reduce((a,b)=>a+b,0);
+    if(chSum !== loc.headcount){
+      alert(`Channel FTEs for ${COUNTRY_DB[loc.country].name} must sum to ${loc.headcount} (currently ${chSum})`);
+      return;
+    }
+  }
+
+  const selectedOffshore = Object.keys(formOffshoreSelections).filter(k=>formOffshoreSelections[k]);
+  if(selectedOffshore.length===0){ alert('Please select at least one offshore location'); return; }
+
+  // Rebuild CONFIG
+  rebuildConfig();
+
+  // Reset animation state
+  slide5Animated = false;
+  matrixBuilt = false;
+  if(currentStateMap){ currentStateMap.remove(); currentStateMap=null; }
+  if(transformMap){ transformMap.remove(); transformMap=null; }
+
+  // Update title meta
+  const totalFTEs = formLocations.reduce((s,l)=>s+l.headcount,0);
+  document.getElementById('meta-ftes').textContent = totalFTEs+' FTEs';
+  document.getElementById('meta-regions').textContent = formLocations.length+' Region'+(formLocations.length>1?'s':'');
+
+  // Compute dynamic messages
+  const locationNames = formLocations.map(l=>COUNTRY_DB[l.country].name);
+  const offshoreNames = selectedOffshore.map(c=>COUNTRY_DB[c].name);
+
+  // AI Thinking overlay — reference affinity model
+  const srcLangs = [...new Set(formLocations.flatMap(l=>(COUNTRY_DB[l.country]?.languages||['en']).map(lg=>LANG_NAMES[lg]||lg)))];
+  const messages = [
+    `Analyzing ${totalFTEs} FTEs across ${formLocations.length} location${formLocations.length>1?'s':''} (${srcLangs.join(', ')} markets)...`,
+    `Scoring language affinity and timezone overlap for ${offshoreNames.join(', ')}...`,
+    `Computing 5-factor affinity model: language, timezone, cost, culture, channel fit...`,
+    `Generating optimized transformation blueprint...`
+  ];
+
+  await showAIThinking(messages, 3500);
+
+  // Navigate to slide 3
+  navigateToSlide(3, 'forward');
+};
+
+function rebuildConfig() {
+  // Build locations
+  const locations = {};
+  for(const loc of formLocations){
+    const code = loc.country;
+    const c = COUNTRY_DB[code];
+    const hc = loc.headcount;
+    const channels = {};
+    for(const [ch, total] of Object.entries(loc.channels)){
+      const l1 = Math.round(total * formTiers.L1/100);
+      const l2 = Math.round(total * formTiers.L2/100);
+      const l3 = total - l1 - l2; // remainder to avoid rounding issues
+      const volumeMultipliers = {Phone:20, Email:40, Chat:30, Social:20};
+      channels[ch] = {
+        total, L1:l1, L2:l2, L3:l3,
+        volumePerDay: total * volumeMultipliers[ch],
+        volumeUnit: ch==='Phone'?'calls/day':ch==='Email'?'emails/day':ch==='Chat'?'chats/day':'tickets/day',
+        icon: ICONS[ch]
+      };
+    }
+    locations[code] = { name:c.name, headcount:hc, hourlyRate:formRates[code]||c.defaultRate, channels };
+  }
+
+  // Build offshore locations
+  const offshoreLocations = {};
+  for(const [code, selected] of Object.entries(formOffshoreSelections)){
+    if(selected){
+      offshoreLocations[code] = { name:COUNTRY_DB[code].name, hourlyRate:formRates[code]||COUNTRY_DB[code].defaultRate };
+    }
+  }
+
+  CONFIG = {
+    locations,
+    offshoreLocations,
+    workingHoursPerYear: 2080,
+    transitionCostPerFTE: 5000,
+    scenarios: {
+      Conservative: {offshorePercent:0.6,csatImpact:-2},
+      Moderate:     {offshorePercent:0.8,csatImpact:-5},
+      Aggressive:   {offshorePercent:1.0,csatImpact:-8}
+    }
+  };
+
+  // Re-init selections
+  initializeSelections();
+}
+
+// ===== SLIDE 3: CURRENT STATE MAP (Leaflet) =====
+function initCurrentStateMap() {
+  const container = document.getElementById('current-state-map');
+
+  if(currentStateMap) {
+    currentStateMap.invalidateSize();
+    return;
+  }
+
+  currentStateMap = L.map(container, {
+    scrollWheelZoom:false, dragging:true, zoomControl:false,
+    attributionControl:false, doubleClickZoom:false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom:19, subdomains:'abcd'
+  }).addTo(currentStateMap);
+
+  // Add markers for source locations
+  const bounds = [];
+  const locationCodes = Object.keys(CONFIG.locations);
+  const firstLoc = locationCodes[0];
+
+  for(const [code, loc] of Object.entries(CONFIG.locations)){
+    const c = COUNTRY_DB[code];
+    if(!c) continue;
+    const latlng = [c.lat, c.lng];
+    bounds.push(latlng);
+
+    L.marker(latlng, {
+      icon: L.divIcon({
+        className:'map-bubble',
+        html:`<div class="bubble-marker" onclick="showLocationDetail('${code}')">
+                <div class="bubble-dot">
+                  <span class="fte-num">${loc.headcount}</span>
+                  <span class="fte-code">${code}</span>
+                </div>
+                <span class="bubble-name">${c.flag} ${c.name}</span>
+              </div>`,
+        iconSize:[80,72],
+        iconAnchor:[40,36]
+      })
+    }).addTo(currentStateMap);
+  }
+
+  // Add inactive markers for offshore locations
+  for(const [code, off] of Object.entries(CONFIG.offshoreLocations)){
+    const c = COUNTRY_DB[code];
+    if(!c) continue;
+    const latlng = [c.lat, c.lng];
+    bounds.push(latlng);
+
+    L.marker(latlng, {
+      icon: L.divIcon({
+        className:'map-bubble',
+        html:`<div class="bubble-marker inactive">
+                <div class="bubble-dot">
+                  <span class="fte-num">\u2014</span>
+                  <span class="fte-code">${code}</span>
+                </div>
+                <span class="bubble-name">${c.flag} ${c.name}</span>
+              </div>`,
+        iconSize:[80,72],
+        iconAnchor:[40,36]
+      })
+    }).addTo(currentStateMap);
+  }
+
+  if(bounds.length>0) {
+    currentStateMap.fitBounds(bounds, {padding:[60,60], maxZoom:3});
+  }
+
+  // Build location tabs in detail panel
+  buildLocationTabs(locationCodes);
+
+  // Show first location detail
+  if(firstLoc) showLocationDetail(firstLoc);
+
+  // Animate markers in
+  gsap.from('.bubble-marker', {scale:0, duration:0.6, stagger:0.15, ease:'back.out(1.7)', delay:0.3});
+}
+
+function buildLocationTabs(locationCodes) {
+  const tabContainer = document.getElementById('location-tabs');
+  if(!tabContainer) return;
+  tabContainer.innerHTML = locationCodes.map((code,i)=>{
+    const c = COUNTRY_DB[code];
+    const loc = CONFIG.locations[code];
+    return `<button class="location-tab ${i===0?'active':''}" data-code="${code}" onclick="showLocationDetail('${code}')">
+      <span class="tab-flag">${c?.flag||''}</span> ${c?.name||code} (${loc.headcount})
+    </button>`;
+  }).join('');
+}
+
+window.showLocationDetail = function(code) {
+  const loc = CONFIG.locations[code];
+  if(!loc) return;
+  const c = COUNTRY_DB[code];
+
+  // Update active tab
+  document.querySelectorAll('.location-tab').forEach(tab=>{
+    tab.classList.toggle('active', tab.dataset.code===code);
+  });
+
+  document.getElementById('panel-location-name').textContent = (c?.flag||'') + ' ' + loc.name;
+  document.getElementById('panel-headcount').textContent = loc.headcount+' FTEs';
+
+  gsap.from('#detail-panel',{x:20,opacity:0,duration:0.4,ease:'power2.out'});
+
+  if(chartInstances.donut) chartInstances.donut.destroy();
+  const ctx = document.getElementById('channel-donut').getContext('2d');
+  const channels = Object.keys(loc.channels);
+  const totals = channels.map(c=>loc.channels[c].total);
+  chartInstances.donut = new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:channels,datasets:[{data:totals,backgroundColor:['#3b82f6','#10b981','#f59e0b','#8b5cf6'],borderWidth:0,borderRadius:3}]},
+    options:{cutout:'62%',responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11,family:'Inter'},padding:12,usePointStyle:true,pointStyleWidth:8}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} FTEs (${Math.round(c.raw/loc.headcount*100)}%)`}}},animation:{animateRotate:true,duration:800}}
+  });
+
+  // Tier bars
+  const tierBars = document.getElementById('tier-bars');
+  let l1=0,l2=0,l3=0;
+  for(const ch of Object.values(loc.channels)){l1+=ch.L1;l2+=ch.L2;l3+=ch.L3;}
+  tierBars.innerHTML = [{label:'L1',count:l1,cls:'tier-bar-l1'},{label:'L2',count:l2,cls:'tier-bar-l2'},{label:'L3',count:l3,cls:'tier-bar-l3'}].map(t=>{
+    const pct = Math.round(t.count/loc.headcount*100);
+    return `<div class="tier-row"><span class="tier-label">${t.label}</span><div class="tier-bar-bg"><div class="tier-bar-fill ${t.cls}" style="width:0%">${t.count} (${pct}%)</div></div></div>`;
+  }).join('');
+
+  setTimeout(()=>{
+    const fills = tierBars.querySelectorAll('.tier-bar-fill');
+    fills.forEach((fill,i)=>{
+      const counts = [l1,l2,l3];
+      const pct = Math.round(counts[i]/loc.headcount*100);
+      gsap.to(fill,{width:pct+'%',duration:0.8,delay:i*0.15,ease:'power2.out'});
+    });
+  },50);
+
+  // Volume cards
+  document.getElementById('volume-grid').innerHTML = Object.entries(loc.channels).map(([name,ch])=>
+    `<div class="volume-card"><div class="volume-icon">${ch.icon}</div><div class="volume-value">${ch.volumePerDay.toLocaleString()}</div><div class="volume-label">${ch.volumeUnit}</div></div>`
+  ).join('');
+
+  gsap.from('#volume-grid .volume-card',{y:15,opacity:0,duration:0.4,stagger:0.08,ease:'power2.out',delay:0.3});
+};
+
+// ===== SLIDE 4: MATRIX =====
+let matrixBuilt = false;
+function buildMatrix() {
+  if(matrixBuilt){updateMatrixCalculations();return;}
+  matrixBuilt=true;
+
+  // Build dynamic headers
+  const thead = document.getElementById('matrix-thead');
+  const locationCodes = Object.keys(CONFIG.locations);
+  let headerHTML = '<tr><th>Channel</th><th>Tier</th>';
+  for(const code of locationCodes){
+    headerHTML += `<th>${COUNTRY_DB[code]?.flag||''} ${code} FTEs</th>`;
+  }
+  headerHTML += '<th>Offshore</th><th>Confidence</th><th>Destination</th><th>Rationale</th></tr>';
+  thead.innerHTML = headerHTML;
+
+  const tbody = document.getElementById('matrix-body');
+  tbody.innerHTML='';
+
+  // Get offshore destination names
+  const offshoreCodes = Object.keys(CONFIG.offshoreLocations);
+
+  for(const [channel,tiers] of Object.entries(OFFSHORE_MATRIX)){
+    for(const [tier,cfg] of Object.entries(tiers)){
+      const isChecked = offshoreSelections[channel][tier];
+      const confClass = cfg.confidence>=80?'high':cfg.confidence>=50?'medium':'low';
+
+      // Show all offshore destinations for offshored items, or Onshore for non-offshored
+      let destNames = null;
+      if(cfg.destinationPref !== null && offshoreCodes.length > 0) {
+        destNames = offshoreCodes.map(c=> COUNTRY_DB[c]?.name || c);
+      }
+
+      let fteColumns = '';
+      for(const code of locationCodes){
+        const loc = CONFIG.locations[code];
+        const fte = loc.channels[channel]?.[tier] || 0;
+        fteColumns += `<td>${fte}</td>`;
+      }
+
+      const tr = document.createElement('tr');
+      tr.className = 'row-'+cfg.status;
+      tr.innerHTML=`
+        <td><span class="channel-badge"><span class="channel-icon">${ICONS[channel]}</span> ${channel}</span></td>
+        <td><span class="tier-badge">${tier}</span></td>
+        ${fteColumns}
+        <td><label class="toggle-switch"><input type="checkbox" data-channel="${channel}" data-tier="${tier}" ${isChecked?'checked':''}><span class="toggle-slider"></span></label></td>
+        <td><div class="confidence-bar"><div class="confidence-track"><div class="confidence-fill ${confClass}" style="width:${cfg.confidence}%"></div></div><span class="confidence-value">${cfg.confidence}%</span></div></td>
+        <td>${destNames?destNames.map(n=>`<span class="destination-badge">${n}</span>`).join(' '):'<span class="destination-badge none">Onshore</span>'}</td>
+        <td><span class="rationale">${cfg.rationale}</span></td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  tbody.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      offshoreSelections[e.target.dataset.channel][e.target.dataset.tier] = e.target.checked;
+      updateMatrixCalculations();
+    });
+  });
+
+  gsap.from('#matrix-body tr',{y:20,opacity:0,duration:0.4,stagger:0.04,ease:'power2.out'});
+  updateMatrixCalculations();
+}
+
+function updateMatrixCalculations() {
+  const impact = calculateOffshoreImpact();
+  const fin = calculateFinancials(impact);
+
+  const fteEl = document.getElementById('selected-fte-count');
+  const savEl = document.getElementById('estimated-savings');
+  gsap.to({val:parseInt(fteEl.textContent)||0},{val:impact.totalMovedFTEs,duration:0.6,ease:'power2.out',
+    onUpdate:function(){fteEl.textContent=Math.round(this.targets()[0].val);}
+  });
+  savEl.textContent = formatCurrency(fin.annualSavings);
+
+  const csatEl = document.getElementById('csat-impact');
+  csatEl.textContent = CONFIG.scenarios[currentScenario].csatImpact+'%';
+  const absC = Math.abs(CONFIG.scenarios[currentScenario].csatImpact);
+  csatEl.style.color = absC<=3?'var(--accent-green)':absC<=6?'var(--accent-yellow)':'var(--accent-red)';
+
+  // Cache narrative for AI modal
+  cacheNarrativeForModal(impact);
+}
+
+// Cache latest narrative for modal
+let _cachedNarrative = null;
+
+function cacheNarrativeForModal(impact) {
+  if(!impact || impact.totalMovedFTEs === 0){ _cachedNarrative = null; return; }
+  try {
+    if(!impact.affinities || !impact.flowDetail){ _cachedNarrative = null; return; }
+    _cachedNarrative = generateInsightNarrative(impact);
+    // Show Reasoning button on Slide 4
+    const btn = document.getElementById('ai-insights-btn-s4');
+    if(btn) btn.style.display = 'inline-flex';
+  } catch(e) {
+    console.error('Narrative generation error:', e);
+    _cachedNarrative = null;
+  }
+}
+
+function openAIModal() {
+  // Try cache first, otherwise compute fresh
+  let narrative = _cachedNarrative;
+  if(!narrative) {
+    try {
+      const impact = calculateOffshoreImpact();
+      if(!impact || impact.totalMovedFTEs === 0 || !impact.affinities) return;
+      narrative = generateInsightNarrative(impact);
+    } catch(e) { console.error('Modal narrative error:', e); return; }
+  }
+  if(!narrative || !narrative.pairings || narrative.pairings.length === 0) return;
+  const body = document.getElementById('ai-modal-body');
+
+  // Factor badges section
+  const badgesHTML = narrative.factors.map(f => {
+    const lv = f.level;
+    const dotClass = lv.dots <= 1 ? 'low' : lv.dots <= 2 ? 'medium' : '';
+    const dots = Array.from({length:4},(_,i) =>
+      `<span class="fb-dot${i < lv.dots ? ` filled ${dotClass}` : ''}"></span>`
+    ).join('');
+    return `<div class="factor-badge">
+      <span class="fb-icon">${f.icon}</span>
+      <span class="fb-name">${f.name}</span>
+      <span class="fb-dots">${dots}</span>
+      <span class="fb-level ${lv.cls}">${lv.label}</span>
+    </div>`;
+  }).join('');
+
+  // Pairing cards
+  const pairingsHTML = narrative.pairings.map(p => {
+    const scoreClass = p.affinityScore >= 60 ? 'high' : p.affinityScore >= 40 ? 'medium' : 'low';
+    const matchLabel = scoreClass === 'high' ? 'Strong Match' : scoreClass === 'medium' ? 'Moderate Match' : 'Weak Match';
+    const fteLabel = p.ftes > 0 ? `${p.ftes} FTEs` : 'Scored';
+    return `<div class="pairing-card">
+      <div class="pairing-top">
+        <div class="pairing-route">
+          ${COUNTRY_DB[p.sourceCode]?.flag||''} ${p.source}
+          <span class="route-arrow">\u2192</span>
+          ${COUNTRY_DB[p.destinationCode]?.flag||''} ${p.destination}
+          <span class="route-ftes">(${fteLabel})</span>
+        </div>
+        <span class="affinity-badge ${scoreClass}">${matchLabel}</span>
+      </div>
+      <div class="pairing-insight">${p.insight}</div>
+      <div class="pairing-bars">
+        ${p.barData.map(b => `<div class="pairing-bar">
+          <span class="bar-desc"><span class="bar-factor">${b.factor}:</span> ${b.desc}</span>
+          <div class="bar-track"><div class="bar-fill ${b.cls}" style="width:${Math.max(b.score,5)}%"></div></div>
+        </div>`).join('')}
+      </div>
+      <div class="pairing-reasons">${p.reasons.map(r=>`<span class="reason">${r}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  // Risks
+  const risksHTML = narrative.risks.length > 0 ? `
+    <div class="ai-modal-section">
+      <div class="ai-modal-section-title">Risk Considerations</div>
+      <div class="risk-callouts" style="display:flex;flex-direction:column;gap:8px">
+        ${narrative.risks.map(r=>`<div class="risk-callout"><span class="risk-icon">\u26A0\uFE0F</span>${r}</div>`).join('')}
+      </div>
+    </div>` : '';
+
+  body.innerHTML = `
+    <div class="ai-modal-section">
+      <div class="ai-modal-section-title">Scoring Factors</div>
+      <div class="factor-badges">${badgesHTML}</div>
+    </div>
+    <div class="ai-modal-section">
+      <div class="ai-modal-section-title">Destination Pairings</div>
+      <div class="pairing-cards">${pairingsHTML}</div>
+    </div>
+    ${risksHTML}
+    <div class="insights-summary">${narrative.summary}</div>`;
+
+  document.getElementById('ai-modal-overlay').classList.add('visible');
+}
+
+function closeAIModal() {
+  document.getElementById('ai-modal-overlay').classList.remove('visible');
+}
+window.openAIModal = openAIModal;
+window.closeAIModal = closeAIModal;
+
+// ===== PDF EXPORT (Print-only pages) =====
+function exportReport() {
+  try {
+    const impact = calculateOffshoreImpact();
+    const fin = calculateFinancials(impact);
+    let narrative;
+    try { narrative = generateInsightNarrative(impact); }
+    catch(ne) { console.warn('Narrative gen failed:', ne); narrative = {pairings:[],factors:[],risks:[],summary:''}; }
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+    // Set dates
+    document.getElementById('rpt-date').textContent = dateStr;
+    document.getElementById('rpt-date-2').textContent = dateStr;
+    document.getElementById('rpt-footer-date').textContent = dateStr;
+    document.getElementById('rpt-footer-date-2').textContent = dateStr;
+
+    // === PAGE 1: Executive Brief ===
+    // Engagement Overview table
+    const srcLocations = Object.entries(CONFIG.locations).map(([code,loc]) =>
+      `${COUNTRY_DB[code]?.flag||''} ${COUNTRY_DB[code]?.name||code} (${loc.headcount} FTEs)`
+    ).join(', ');
+    const dstLocations = Object.keys(CONFIG.offshoreLocations).map(code =>
+      `${COUNTRY_DB[code]?.flag||''} ${COUNTRY_DB[code]?.name||code}`
+    ).join(', ');
+    const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
+    document.getElementById('rpt-overview-table').querySelector('tbody').innerHTML = `
+      <tr><td class="rpt-label">Source Locations</td><td class="rpt-value">${srcLocations}</td></tr>
+      <tr><td class="rpt-label">Offshore Destinations</td><td class="rpt-value">${dstLocations}</td></tr>
+      <tr><td class="rpt-label">Total FTEs Assessed</td><td class="rpt-value">${totalHC.toLocaleString()}</td></tr>
+      <tr><td class="rpt-label">FTEs for Transition</td><td class="rpt-value rpt-highlight">${impact.totalMovedFTEs.toLocaleString()}</td></tr>
+      <tr><td class="rpt-label">Scenario</td><td class="rpt-value">${currentScenario}</td></tr>
+      <tr><td class="rpt-label">Projected Annual Savings</td><td class="rpt-value rpt-highlight">${formatCurrency(fin.annualSavings)}</td></tr>
+      <tr><td class="rpt-label">Cost Reduction</td><td class="rpt-value rpt-highlight">${fin.savingsPercent}%</td></tr>`;
+
+    // Key Findings
+    const findings = [];
+    findings.push(`Transitioning ${impact.totalMovedFTEs.toLocaleString()} FTEs across ${Object.keys(CONFIG.offshoreLocations).length} destination${Object.keys(CONFIG.offshoreLocations).length>1?'s':''} yields <strong>${formatCurrency(fin.annualSavings)}</strong> in projected annual savings — a <strong>${fin.savingsPercent}%</strong> cost reduction.`);
+
+    // Top destination
+    const topDstCode = Object.keys(CONFIG.offshoreLocations).sort((a,b) => (impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0))[0];
+    const topDstName = COUNTRY_DB[topDstCode]?.name || topDstCode;
+    const topDstFTEs = impact.movedByDestination[topDstCode] || 0;
+    if(narrative.pairings.length > 0) {
+      const topPairing = narrative.pairings.find(p => p.destinationCode === topDstCode) || narrative.pairings[0];
+      findings.push(`Primary destination: <strong>${topDstName}</strong> (${topDstFTEs} FTEs) — ${topPairing.reasons[0] || 'selected based on affinity scoring'}.`);
+    }
+
+    // Strongest factor
+    if(narrative.factors.length > 0) {
+      const strongestFactor = [...narrative.factors].sort((a,b) => b.avgScore - a.avgScore)[0];
+      findings.push(`Strongest affinity factor across the portfolio: <strong>${strongestFactor.name}</strong> at ${strongestFactor.level.label} level, supporting confidence in delivery outcomes.`);
+    }
+
+    // Risk finding
+    if(narrative.risks.length > 0) {
+      findings.push(`${narrative.risks.length} risk consideration${narrative.risks.length>1?'s':''} identified — mitigation strategies recommended during pilot phase.`);
+    } else {
+      findings.push('No significant risks identified across selected destination pairings — strong foundation for transition.');
+    }
+
+    document.getElementById('rpt-findings').innerHTML = findings.map(f => `<li>${f}</li>`).join('');
+
+    // Affinity Scorecard
+    const srcCodes = Object.keys(CONFIG.locations);
+    const offCodes = Object.keys(CONFIG.offshoreLocations);
+    let scorecardHTML = `<thead><tr><th>Route</th><th>Language</th><th>Timezone</th><th>Cost Arbitrage</th><th>Culture</th><th>Channel Fit</th><th>Overall</th></tr></thead><tbody>`;
+
+    for(const src of srcCodes) {
+      for(const dst of offCodes) {
+        const aff = impact.affinities[src]?.[dst]?.overall;
+        if(!aff) continue;
+        const bd = aff.breakdown || {};
+        const lvlClass = (score) => {
+          const l = scoreToLevel(score);
+          return l.cls === 'very-high' ? 'rpt-level-vh' : l.cls === 'high' ? 'rpt-level-h' : l.cls === 'medium' ? 'rpt-level-m' : 'rpt-level-l';
+        };
+        const lvlText = (score) => scoreToLevel(score).label;
+        const srcFlag = COUNTRY_DB[src]?.flag || '';
+        const dstFlag = COUNTRY_DB[dst]?.flag || '';
+        const ftes = impact.flowDetail[src]?.[dst]?.ftes || 0;
+        scorecardHTML += `<tr>
+          <td>${srcFlag} ${COUNTRY_DB[src]?.name||src} → ${dstFlag} ${COUNTRY_DB[dst]?.name||dst}${ftes > 0 ? ' ('+ftes+')' : ''}</td>
+          <td class="${lvlClass(bd.language||0)}">${lvlText(bd.language||0)}</td>
+          <td class="${lvlClass(bd.timezone||0)}">${lvlText(bd.timezone||0)}</td>
+          <td class="${lvlClass(bd.costArbitrage||0)}">${lvlText(bd.costArbitrage||0)}</td>
+          <td class="${lvlClass(bd.cultural||0)}">${lvlText(bd.cultural||0)}</td>
+          <td class="${lvlClass(bd.channelFit||0)}">${lvlText(bd.channelFit||0)}</td>
+          <td class="${lvlClass(aff.total||0)}"><strong>${lvlText(aff.total||0)}</strong></td>
+        </tr>`;
+      }
+    }
+    scorecardHTML += '</tbody>';
+    document.getElementById('rpt-scorecard').innerHTML = scorecardHTML;
+
+    // === PAGE 2: Detailed Recommendations ===
+    // Pairing blocks
+    let pairingsHTML = '';
+    for(const p of narrative.pairings) {
+      const fteLabel = p.ftes > 0 ? `${p.ftes} FTEs` : 'Scored';
+      const factorsRow = p.barData.map(b => {
+        const lvl = scoreToLevel(b.score);
+        const cls = lvl.cls === 'very-high' ? 'rpt-level-vh' : lvl.cls === 'high' ? 'rpt-level-h' : lvl.cls === 'medium' ? 'rpt-level-m' : 'rpt-level-l';
+        return `<span class="rpt-factor-tag"><span class="rpt-fn">${b.factor}:</span> <span class="${cls}">${lvl.label}</span></span>`;
+      }).join('');
+
+      pairingsHTML += `<div class="rpt-pairing">
+        <div class="rpt-pairing-route">
+          ${COUNTRY_DB[p.sourceCode]?.flag||''} ${p.source} → ${COUNTRY_DB[p.destinationCode]?.flag||''} ${p.destination}
+          <span class="rpt-ftes">(${fteLabel})</span>
+        </div>
+        <div class="rpt-pairing-insight">${p.insight}</div>
+        <div class="rpt-factors-row">${factorsRow}</div>
+        ${p.reasons.length > 0 ? `<ul class="rpt-pairing-reasons">${p.reasons.map(r => `<li>${r}</li>`).join('')}</ul>` : ''}
+      </div>`;
+    }
+    document.getElementById('rpt-pairings').innerHTML = pairingsHTML;
+
+    // Risks
+    if(narrative.risks.length > 0) {
+      document.getElementById('rpt-risks-section').style.display = 'block';
+      document.getElementById('rpt-risks').innerHTML = narrative.risks.map(r =>
+        `<div class="rpt-risk"><span class="rpt-risk-icon">\u26A0\uFE0F</span>${r}</div>`
+      ).join('');
+    } else {
+      document.getElementById('rpt-risks-section').style.display = 'none';
+    }
+
+    // Methodology
+    document.getElementById('rpt-methodology').innerHTML = `
+      Destination scoring uses a <strong>5-factor affinity model</strong> that evaluates each source-to-destination pairing across:
+      <strong>Language Compatibility</strong> (35% weight) — talent pool proficiency in source language;
+      <strong>Timezone Overlap</strong> (20%) — daily business hours alignment;
+      <strong>Cost Arbitrage</strong> (25%) — hourly rate differential and savings potential;
+      <strong>Cultural Proximity</strong> (10%) — alignment of work culture and communication norms;
+      <strong>Channel Fit</strong> (10%) — suitability for voice vs. written channel delivery.
+      Each factor is scored 0-100 and presented as Low / Medium / High / Very High. The composite score determines FTE allocation priority across destinations.`;
+
+  } catch(e) {
+    console.error('Export report error:', e);
+  }
+
+  setTimeout(() => window.print(), 100);
+}
+window.exportReport = exportReport;
+
+// ===== DYNAMIC CALCULATIONS (Affinity-Weighted) =====
+function calculateOffshoreImpact() {
+  const scenario = CONFIG.scenarios[currentScenario];
+  const offshoreCodes = Object.keys(CONFIG.offshoreLocations);
+  const locationCodes = Object.keys(CONFIG.locations);
+
+  let totalMovedFTEs = 0;
+  const movedByDestination = {};
+  for(const code of offshoreCodes) movedByDestination[code] = 0;
+
+  const movedFromSource = {};
+  const retainedBySource = {};
+  for(const code of locationCodes) { movedFromSource[code]=0; }
+
+  // Precompute affinities for all source→destination pairs
+  const affinities = computeAllAffinities();
+
+  // Track detailed flow: flowDetail[srcCode][destCode] = {ftes, channels:{}}
+  const flowDetail = {};
+  for(const src of locationCodes){
+    flowDetail[src] = {};
+    for(const dst of offshoreCodes){
+      flowDetail[src][dst] = {ftes:0, channels:{}};
+    }
+  }
+
+  for(const [ch,tiers] of Object.entries(offshoreSelections)){
+    const isVoice = (ch === 'Phone');
+    const channelType = isVoice ? 'voice' : 'written';
+
+    for(const [tier,sel] of Object.entries(tiers)){
+      if(!sel) continue;
+      const matrixEntry = OFFSHORE_MATRIX[ch][tier];
+      if(matrixEntry.destinationPref === null) continue;
+
+      for(const locCode of locationCodes){
+        const loc = CONFIG.locations[locCode];
+        const ftes = loc.channels[ch]?.[tier] || 0;
+        const moved = Math.round(ftes * scenario.offshorePercent);
+        if(moved === 0) continue;
+
+        totalMovedFTEs += moved;
+        movedFromSource[locCode] += moved;
+
+        // Get affinity scores for this source → each destination
+        const scores = offshoreCodes.map(dst => {
+          const aff = affinities[locCode]?.[dst]?.[channelType];
+          return { code: dst, score: aff ? Math.max(aff.total, 1) : 1 };
+        });
+        const totalScore = scores.reduce((s,d) => s + d.score, 0);
+
+        // Distribute by affinity weight
+        let remaining = moved;
+        for(let d = 0; d < scores.length; d++){
+          const destCode = scores[d].code;
+          const share = (d === scores.length - 1) ? Math.max(0, remaining) : Math.round(moved * scores[d].score / totalScore);
+          const actualShare = Math.min(share, remaining);
+          movedByDestination[destCode] += actualShare;
+          flowDetail[locCode][destCode].ftes += actualShare;
+          flowDetail[locCode][destCode].channels[ch] = (flowDetail[locCode][destCode].channels[ch]||0) + actualShare;
+          remaining -= actualShare;
+        }
+      }
+    }
+  }
+
+  for(const code of locationCodes){
+    retainedBySource[code] = CONFIG.locations[code].headcount - movedFromSource[code];
+  }
+
+  return { totalMovedFTEs, movedByDestination, movedFromSource, retainedBySource, affinities, flowDetail };
+}
+
+function calculateFinancials(impact) {
+  if(!impact) impact = calculateOffshoreImpact();
+
+  // Current cost: sum of all source locations
+  let totalCurrentCost = 0;
+  const currentCostBySource = {};
+  for(const [code, loc] of Object.entries(CONFIG.locations)){
+    const cost = loc.headcount * loc.hourlyRate * CONFIG.workingHoursPerYear;
+    currentCostBySource[code] = cost;
+    totalCurrentCost += cost;
+  }
+
+  // Proposed cost: retained source + offshore
+  let totalProposedCost = 0;
+  const retainedCostBySource = {};
+  for(const [code, loc] of Object.entries(CONFIG.locations)){
+    const cost = impact.retainedBySource[code] * loc.hourlyRate * CONFIG.workingHoursPerYear;
+    retainedCostBySource[code] = cost;
+    totalProposedCost += cost;
+  }
+
+  const offshoreCostByDest = {};
+  for(const [code, off] of Object.entries(CONFIG.offshoreLocations)){
+    const cost = (impact.movedByDestination[code]||0) * off.hourlyRate * CONFIG.workingHoursPerYear;
+    offshoreCostByDest[code] = cost;
+    totalProposedCost += cost;
+  }
+
+  const annualSavings = totalCurrentCost - totalProposedCost;
+  const transitionCost = impact.totalMovedFTEs * CONFIG.transitionCostPerFTE;
+  const breakEvenMonths = annualSavings > 0 ? Math.ceil(transitionCost / (annualSavings/12)) : 0;
+
+  return {
+    currentCostBySource, totalCurrentCost,
+    retainedCostBySource, offshoreCostByDest,
+    totalProposedCost, annualSavings, transitionCost,
+    breakEvenMonths, savingsPercent: totalCurrentCost>0 ? Math.round(annualSavings/totalCurrentCost*100) : 0
+  };
+}
+
+function updateAllCalculations(){
+  if(matrixBuilt) updateMatrixCalculations();
+  if(currentSlide===5) updateTransformView();
+  if(currentSlide===6) buildFinancialDashboard();
+  if(currentSlide===8) updateSummaryMetrics();
+}
+
+// ===== SLIDE 5: TRANSFORMATION =====
+async function triggerSlide5() {
+  const impact = calculateOffshoreImpact();
+  updateBeforeAfterPanel(impact);
+  renderTransformInsights(impact);
+
+  if(!slide5Animated){
+    slide5Animated=true;
+    const totalFTEs = Object.values(CONFIG.locations).reduce((s,l)=>s+l.headcount,0);
+    const srcLangs = [...new Set(Object.keys(CONFIG.locations).flatMap(c=>(COUNTRY_DB[c]?.languages||['en']).map(l=>LANG_NAMES[l]||l)))];
+    const destNames = Object.keys(CONFIG.offshoreLocations).map(c=>COUNTRY_DB[c]?.name||c);
+    await showAIThinking([
+      `Scoring language affinity: ${srcLangs.join(', ')} proficiency across ${destNames.length} destinations...`,
+      `Computing timezone overlap and cultural proximity for ${Object.keys(CONFIG.locations).length} source markets...`,
+      `Applying 5-factor affinity model to rank destination pairings...`,
+      `Generating affinity-weighted transformation blueprint for ${totalFTEs} FTEs...`
+    ],3500);
+  }
+  initTransformMap(impact);
+}
+
+function renderTransformInsights(impact) {
+  // Cache narrative for modal popup (sidebar removed)
+  cacheNarrativeForModal(impact);
+}
+
+function updateTransformView(){
+  const impact=calculateOffshoreImpact();
+  updateBeforeAfterPanel(impact);
+  renderTransformInsights(impact);
+  // Update map markers if they exist
+  if(transformMap) {
+    initTransformMap(impact);
+  }
+}
+
+function initTransformMap(impact) {
+  if(!impact) impact = calculateOffshoreImpact();
+  const container = document.getElementById('transform-leaflet-map');
+
+  if(transformMap) {
+    transformMap.remove();
+    transformMap = null;
+  }
+  antPaths = [];
+
+  transformMap = L.map(container, {
+    scrollWheelZoom:false, dragging:true, zoomControl:false,
+    attributionControl:false, doubleClickZoom:false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom:19, subdomains:'abcd'
+  }).addTo(transformMap);
+
+  const bounds = [];
+  const sourceCoords = {};
+  const destCoords = {};
+
+  // Source location markers (retained FTEs)
+  for(const [code, loc] of Object.entries(CONFIG.locations)){
+    const c = COUNTRY_DB[code];
+    if(!c) continue;
+    const latlng = [c.lat, c.lng];
+    bounds.push(latlng);
+    sourceCoords[code] = latlng;
+
+    const retained = impact.retainedBySource[code];
+    L.marker(latlng, {
+      icon: L.divIcon({
+        className:'map-bubble',
+        html:`<div class="bubble-marker">
+                <div class="bubble-dot">
+                  <span class="fte-num">${retained}</span>
+                  <span class="fte-code">${code}</span>
+                </div>
+                <span class="bubble-name">${c.flag} ${c.name}</span>
+              </div>`,
+        iconSize:[80,72],
+        iconAnchor:[40,36]
+      })
+    }).addTo(transformMap);
+  }
+
+  // Offshore destination markers (moved FTEs)
+  for(const [code, off] of Object.entries(CONFIG.offshoreLocations)){
+    const c = COUNTRY_DB[code];
+    if(!c) continue;
+    const latlng = [c.lat, c.lng];
+    bounds.push(latlng);
+    destCoords[code] = latlng;
+
+    const ftes = impact.movedByDestination[code] || 0;
+    L.marker(latlng, {
+      icon: L.divIcon({
+        className:'map-bubble',
+        html:`<div class="bubble-marker green">
+                <div class="bubble-dot">
+                  <span class="fte-num">${ftes}</span>
+                  <span class="fte-code">${code}</span>
+                </div>
+                <span class="bubble-name">${c.flag} ${c.name}</span>
+              </div>`,
+        iconSize:[80,72],
+        iconAnchor:[40,36]
+      })
+    }).addTo(transformMap);
+  }
+
+  // Fit bounds
+  if(bounds.length>0) {
+    transformMap.fitBounds(bounds, {padding:[60,60], maxZoom:3});
+  }
+
+  // Clean dotted flow lines with animated dash motion
+  const flowColors = ['#00d4ff','#7c5cfc','#3b82f6','#8b5cf6','#10b981','#f59e0b'];
+  let flowIdx = 0;
+  for(const srcCode of Object.keys(CONFIG.locations)){
+    for(const destCode of Object.keys(CONFIG.offshoreLocations)){
+      const srcLL = sourceCoords[srcCode];
+      const destLL = destCoords[destCode];
+      if(!srcLL || !destLL) continue;
+
+      const ftesMoved = calculateFlowBetween(srcCode, destCode, impact);
+      if(ftesMoved <= 0) continue;
+
+      const color = flowColors[flowIdx % flowColors.length];
+      const lineWeight = Math.max(2, Math.min(4, ftesMoved/40));
+
+      // Create dotted polyline with animated dash offset
+      const flowLine = L.polyline([srcLL, destLL], {
+        color: color,
+        weight: lineWeight,
+        opacity: 0.6,
+        dashArray: '8 12',
+        lineCap: 'round',
+        className: 'animated-flow-line'
+      }).addTo(transformMap);
+      antPaths.push(flowLine);
+
+      // Add FTE count label at midpoint of line
+      const midLat = (srcLL[0] + destLL[0]) / 2;
+      const midLng = (srcLL[1] + destLL[1]) / 2;
+      // Offset slightly so labels don't overlap
+      const offsetLat = (flowIdx % 2 === 0 ? 2 : -2);
+
+      L.marker([midLat + offsetLat, midLng], {
+        icon: L.divIcon({
+          className: 'map-bubble',
+          html: `<span class="flow-line-label">${ftesMoved} FTEs</span>`,
+          iconSize: [60, 20],
+          iconAnchor: [30, 10]
+        })
+      }).addTo(transformMap);
+
+      flowIdx++;
+    }
+  }
+
+  // CSS animation for dash motion — inject once
+  if(!document.getElementById('flow-line-anim-style')) {
+    const animStyle = document.createElement('style');
+    animStyle.id = 'flow-line-anim-style';
+    animStyle.textContent = `
+      .animated-flow-line {
+        animation: dash-flow 1.5s linear infinite;
+      }
+      @keyframes dash-flow {
+        to { stroke-dashoffset: -40; }
+      }
+    `;
+    document.head.appendChild(animStyle);
+  }
+
+  // Animate markers in
+  setTimeout(()=>{
+    gsap.from('#transform-leaflet-map .bubble-marker', {scale:0, duration:0.6, stagger:0.15, ease:'back.out(1.7)'});
+  },100);
+}
+
+function calculateFlowBetween(srcCode, destCode, impact) {
+  // Use flowDetail for exact affinity-weighted per-source per-dest flow
+  if(impact.flowDetail && impact.flowDetail[srcCode] && impact.flowDetail[srcCode][destCode]){
+    return impact.flowDetail[srcCode][destCode].ftes;
+  }
+  // Fallback: proportional approximation
+  const totalMoved = impact.totalMovedFTEs;
+  if(totalMoved === 0) return 0;
+  const fromSrc = impact.movedFromSource[srcCode] || 0;
+  const toDest = impact.movedByDestination[destCode] || 0;
+  if(fromSrc === 0 || toDest === 0) return 0;
+  return Math.round(fromSrc * toDest / totalMoved);
+}
+
+function updateBeforeAfterPanel(impact) {
+  const locationCodes = Object.keys(CONFIG.locations);
+
+  let beforeCards = locationCodes.map(code=>{
+    const loc = CONFIG.locations[code];
+    return `<div class="ba-card"><div class="ba-location">${COUNTRY_DB[code]?.flag||''} ${code}</div><div class="ba-count">${loc.headcount}</div></div>`;
+  }).join('');
+
+  let afterCards = locationCodes.map(code=>{
+    return `<div class="ba-card"><div class="ba-location">${COUNTRY_DB[code]?.flag||''} ${code}</div><div class="ba-count">${impact.retainedBySource[code]}</div></div>`;
+  }).join('');
+
+  afterCards += Object.entries(CONFIG.offshoreLocations).map(([code,off])=>{
+    const ftes = impact.movedByDestination[code]||0;
+    return `<div class="ba-card highlight"><div class="ba-location">${COUNTRY_DB[code]?.flag||''} ${code}</div><div class="ba-count">${ftes}</div></div>`;
+  }).join('');
+
+  document.getElementById('before-after-panel').innerHTML = `
+    <div class="ba-column before"><h4>Current State</h4><div class="ba-cards">${beforeCards}</div></div>
+    <div class="ba-arrow">\u2192</div>
+    <div class="ba-column after"><h4>Proposed State</h4><div class="ba-cards">${afterCards}</div></div>`;
+}
+
+// ===== AI THINKING OVERLAY =====
+async function showAIThinking(messages, duration) {
+  const overlay = document.getElementById('ai-overlay');
+  const textEl = document.getElementById('ai-typing-text');
+  const progressFill = document.getElementById('ai-progress-fill');
+
+  overlay.classList.add('visible');
+  gsap.fromTo(overlay, {opacity:0}, {opacity:1, duration:0.4});
+
+  gsap.to('.ai-brain-circle', {rotation:360, duration:1, ease:'none', repeat:-1, transformOrigin:'center'});
+  gsap.to('.ai-brain-inner', {rotation:-360, duration:0.7, ease:'none', repeat:-1, transformOrigin:'center'});
+
+  gsap.fromTo(progressFill, {width:'0%'}, {width:'100%', duration:duration/1000, ease:'none'});
+
+  for(let i=0;i<messages.length;i++){
+    textEl.textContent='';
+    for(let j=0;j<messages[i].length;j++){
+      textEl.textContent+=messages[i][j];
+      await sleep(18);
+    }
+    if(i<messages.length-1) await sleep(350);
+  }
+  await sleep(400);
+
+  await new Promise(resolve=>{
+    gsap.to(overlay,{opacity:0,duration:0.4,onComplete:()=>{
+      overlay.classList.remove('visible');
+      gsap.set(progressFill,{width:'0%'});
+      gsap.killTweensOf('.ai-brain-circle');
+      gsap.killTweensOf('.ai-brain-inner');
+      resolve();
+    }});
+  });
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ===== SLIDE 6: FINANCIAL =====
+function buildFinancialDashboard() {
+  const impact = calculateOffshoreImpact();
+  const fin = calculateFinancials(impact);
+
+  gsap.from('.dashboard-card',{y:30,opacity:0,duration:0.5,stagger:0.12,ease:'power2.out'});
+
+  // Rate chart — dynamic labels and data
+  const allLocCodes = [...Object.keys(CONFIG.locations), ...Object.keys(CONFIG.offshoreLocations)];
+  const rateLabels = allLocCodes.map(c=> COUNTRY_DB[c]?.name || c);
+  const rateData = allLocCodes.map(c=> CONFIG.locations[c]?.hourlyRate || CONFIG.offshoreLocations[c]?.hourlyRate || 0);
+  const rateColors = allLocCodes.map((_,i)=>['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899','#6366f1','#14b8a6','#f97316'][i%8]);
+
+  if(chartInstances.rate) chartInstances.rate.destroy();
+  chartInstances.rate = new Chart(document.getElementById('rate-chart').getContext('2d'),{
+    type:'bar',
+    data:{labels:rateLabels,datasets:[{label:'Hourly Rate ($)',data:rateData,backgroundColor:rateColors,borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.raw+'/hr'}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>'$'+v}},x:{grid:{display:false},ticks:{color:'#64748b',font:{size:9},maxRotation:45}}},animation:{duration:800}}
+  });
+
+  // Cost chart — dynamic stacked bars
+  const srcCodes = Object.keys(CONFIG.locations);
+  const offCodes = Object.keys(CONFIG.offshoreLocations);
+  const costDatasets = [];
+  const barColors = ['#3b82f6','#8b5cf6','#ec4899','#f97316','#6366f1'];
+
+  srcCodes.forEach((code,i)=>{
+    costDatasets.push({
+      label: COUNTRY_DB[code]?.name||code,
+      data:[fin.currentCostBySource[code], fin.retainedCostBySource[code]],
+      backgroundColor: barColors[i%barColors.length],
+      borderRadius:4
+    });
+  });
+  const offColors = ['#10b981','#f59e0b','#14b8a6','#84cc16'];
+  offCodes.forEach((code,i)=>{
+    costDatasets.push({
+      label: COUNTRY_DB[code]?.name||code,
+      data:[0, fin.offshoreCostByDest[code]||0],
+      backgroundColor: offColors[i%offColors.length],
+      borderRadius:4
+    });
+  });
+
+  if(chartInstances.cost) chartInstances.cost.destroy();
+  chartInstances.cost = new Chart(document.getElementById('cost-chart').getContext('2d'),{
+    type:'bar',
+    data:{labels:['Current','Proposed'],datasets:costDatasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:10},usePointStyle:true,pointStyleWidth:8,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${formatCurrency(c.raw)}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#64748b'}},y:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>formatShort(v)}}},animation:{duration:800}}
+  });
+
+  // Savings card
+  const savObj = {val:0};
+  gsap.to(savObj,{val:fin.annualSavings,duration:1.5,ease:'power2.out',
+    onUpdate:()=>{document.getElementById('savings-amount').textContent=formatCurrency(Math.round(savObj.val));}
+  });
+  document.getElementById('savings-percent').textContent = fin.savingsPercent+'% reduction';
+  document.getElementById('current-cost-display').textContent = formatCurrency(fin.totalCurrentCost);
+  document.getElementById('proposed-cost-display').textContent = formatCurrency(fin.totalProposedCost);
+  document.getElementById('transition-cost-display').textContent = formatCurrency(fin.transitionCost);
+  document.getElementById('breakeven-display').textContent = fin.breakEvenMonths+' months';
+
+  // ROI chart
+  if(chartInstances.roi) chartInstances.roi.destroy();
+  const monthly = fin.annualSavings/12;
+  const roiData=[];
+  for(let m=0;m<=24;m++) roiData.push(Math.round(-fin.transitionCost+monthly*m));
+  chartInstances.roi = new Chart(document.getElementById('roi-chart').getContext('2d'),{
+    type:'line',
+    data:{labels:Array.from({length:25},(_,i)=>'M'+i),datasets:[{label:'Cumulative Net Savings',data:roiData,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.1)',fill:true,tension:.3,pointRadius:0,pointHitRadius:10,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>formatCurrency(c.raw)}}},scales:{y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>formatShort(v)}},x:{grid:{display:false},ticks:{color:'#64748b',font:{size:9},maxTicksLimit:13}}},animation:{duration:1000}}
+  });
+}
+
+// ===== SLIDE 7: ROADMAP =====
+function animateRoadmap() {
+  // Update phase targets dynamically
+  const impact = calculateOffshoreImpact();
+  const total = impact.totalMovedFTEs;
+  document.getElementById('phase1-target').textContent = Math.round(total * 0.2);
+  document.getElementById('phase2-target').textContent = Math.round(total * 0.6);
+  document.getElementById('phase3-target').textContent = total;
+
+  // Dynamic milestone text based on actual destinations & selections
+  const offCodes = Object.keys(CONFIG.offshoreLocations);
+  const topDest = offCodes.sort((a,b)=>(impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0));
+  const topName = COUNTRY_DB[topDest[0]]?.name || topDest[0] || 'primary destination';
+  const secondName = topDest[1] ? (COUNTRY_DB[topDest[1]]?.name || topDest[1]) : null;
+  const pilotFTEs = Math.round(total * 0.2);
+
+  // Phase 1 milestones
+  const p1List = document.querySelector('#phase-1 .milestone-list');
+  if(p1List) p1List.innerHTML = `
+    <li>${topName} site selection & infrastructure setup</li>
+    <li>Recruit initial ${pilotFTEs} pilot FTEs</li>
+    <li>Knowledge transfer framework design</li>
+    <li>Language & cultural training programs</li>`;
+
+  // Phase 2 milestones - reference channels
+  const channels = Object.keys(offshoreSelections).filter(ch=>Object.values(offshoreSelections[ch]).some(v=>v));
+  const writtenChannels = channels.filter(c=>c!=='Phone').join(' & ');
+  const hasPhone = channels.includes('Phone');
+  const p2List = document.querySelector('#phase-2 .milestone-list');
+  if(p2List) p2List.innerHTML = `
+    <li>${writtenChannels||'Email & Chat'} L1/L2 transition to ${topName}</li>
+    ${hasPhone?`<li>Phone L1 pilot launch with language screening</li>`:`<li>Written channel scale-up</li>`}
+    <li>Quality monitoring & CSAT tracking</li>
+    <li>Performance baseline measurement</li>`;
+
+  // Phase 3 milestones
+  const p3List = document.querySelector('#phase-3 .milestone-list');
+  if(p3List) p3List.innerHTML = `
+    <li>Full ramp across ${offCodes.length} offshore site${offCodes.length>1?'s':''}</li>
+    ${secondName?`<li>${secondName} expansion for overflow capacity</li>`:`<li>Remaining tier transitions</li>`}
+    <li>AI augmentation & automation deployment</li>
+    <li>Onshore team restructuring & upskilling</li>`;
+
+  const tl = gsap.timeline();
+  gsap.set('.timeline-marker',{scale:0});
+  gsap.set('#timeline-progress',{width:'0%'});
+  gsap.set('.phase-card',{opacity:0,y:40});
+
+  tl.to('#timeline-progress',{width:'100%',duration:2,ease:'power2.inOut'});
+  ['marker-0','marker-1','marker-2','marker-3'].forEach((id,i)=>{
+    tl.to('#'+id,{scale:1,duration:0.4,ease:'back.out(2)',onComplete:()=>document.getElementById(id).classList.add('reached')}, 0.5+i*0.5);
+  });
+  tl.to('.phase-card',{opacity:1,y:0,duration:0.6,stagger:0.25,ease:'power3.out'},0.8);
+  tl.from('.milestone-list li',{x:-20,opacity:0,duration:0.3,stagger:0.06,ease:'power2.out'},1.5);
+}
+
+// ===== SLIDE 8: SUMMARY =====
+function animateSummary() {
+  updateSummaryMetrics();
+  updateSummaryNextSteps();
+  const tl = gsap.timeline();
+  tl.to('.metric-card',{opacity:1,y:0,scale:1,duration:0.5,stagger:0.15,ease:'back.out(1.5)'})
+    .from('.next-steps',{y:30,opacity:0,duration:0.5,ease:'power2.out'},'-=0.3')
+    .from('.steps-list li',{x:-20,opacity:0,duration:0.3,stagger:0.1,ease:'power2.out'},'-=0.2')
+    .from('.cta-section',{y:20,opacity:0,duration:0.4,ease:'power2.out'},'-=0.2');
+}
+
+function updateSummaryNextSteps(){
+  const impact = calculateOffshoreImpact();
+  const offCodes = Object.keys(CONFIG.offshoreLocations);
+  const topDest = offCodes.sort((a,b)=>(impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0));
+  const topName = COUNTRY_DB[topDest[0]]?.name || 'primary destination';
+  const pilotFTEs = Math.round(impact.totalMovedFTEs * 0.2);
+  const destList = topDest.slice(0,3).map(c=>COUNTRY_DB[c]?.name||c).join(', ');
+
+  const stepsList = document.querySelector('.steps-list');
+  if(stepsList) stepsList.innerHTML = `
+    <li>Stakeholder alignment on ${destList} strategy (Week 1-2)</li>
+    <li>Detailed business case with affinity scoring validation (Week 2-4)</li>
+    <li>Vendor selection & ${topName} site visit (Month 2)</li>
+    <li>Pilot program: ${pilotFTEs} FTEs to ${topName} (Month 3)</li>`;
+}
+
+function updateSummaryMetrics(){
+  const impact=calculateOffshoreImpact();
+  const fin=calculateFinancials(impact);
+  document.getElementById('summary-savings').textContent=formatCurrency(fin.annualSavings);
+  document.getElementById('summary-ftes').textContent=impact.totalMovedFTEs;
+  document.getElementById('summary-percent').textContent=fin.savingsPercent+'%';
+  document.getElementById('summary-breakeven').textContent=fin.breakEvenMonths;
+}
+
+// ===== UTILS =====
+function formatCurrency(v){return Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v).toLocaleString();}
+function formatShort(v){return Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v;}
+
+// ===== START =====
+document.addEventListener('DOMContentLoaded',init);
+})();
+</script>
+</body>
+</html>

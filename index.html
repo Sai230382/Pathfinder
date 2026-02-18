@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Intelligent Consulting</title>
+<title>Intelligent Consulting — Pathfinder</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="painPointLibrary.js"></script>
+<script src="recommendation-engine.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -41,8 +43,23 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .scenario-btn.active{background:var(--accent-cyan);color:#0a1628;font-weight:600}
 
 /* === EXPORT === */
-#export-btn{position:fixed;top:20px;left:24px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s}
+#export-btn{position:fixed;top:20px;left:24px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s;opacity:0;pointer-events:none}
+#export-btn.visible{opacity:1;pointer-events:all}
 #export-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+#settings-btn{position:fixed;top:20px;left:120px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-family:var(--font-body);transition:all .2s;opacity:0;pointer-events:none}
+#settings-btn.visible{opacity:1;pointer-events:all}
+#settings-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:none;align-items:center;justify-content:center}
+.settings-overlay.visible{display:flex}
+.settings-modal{background:#0c1829;border:1px solid var(--border-subtle);border-radius:16px;width:420px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+.settings-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08)}
+.settings-header h3{font-family:var(--font-heading);font-size:1.1rem;color:var(--text-primary)}
+.settings-close{background:none;border:1px solid rgba(255,255,255,.1);color:var(--text-muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.settings-close:hover{border-color:var(--accent-red);color:var(--accent-red)}
+.settings-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+.settings-group{display:flex;flex-direction:column;gap:6px}
+.settings-label{font-size:.82rem;font-weight:600;color:var(--text-secondary)}
+.settings-hint{font-size:.72rem;color:var(--text-muted);line-height:1.4}
 
 /* === SLIDES === */
 .slides-container{position:relative;width:100%;height:100vh;overflow:hidden}
@@ -50,8 +67,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slide::-webkit-scrollbar{width:6px}
 .slide::-webkit-scrollbar-thumb{background:var(--border-subtle);border-radius:3px}
 .slide.active{opacity:1;visibility:visible}
-.slide-heading{font-family:var(--font-heading);font-size:2rem;margin-bottom:8px;background:linear-gradient(135deg,var(--text-primary),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.slide-subtitle{color:var(--text-secondary);font-size:.95rem;margin-bottom:24px}
+.slide-heading{font-family:var(--font-heading);font-size:2rem;margin-bottom:8px;background:linear-gradient(135deg,var(--text-primary),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:2}
+.slide-subtitle{color:var(--text-secondary);font-size:.95rem;margin-bottom:24px;position:relative;z-index:2}
 
 /* === SLIDE 1: TITLE === */
 .slide-title{align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#0a1628,#1a2332,#0f172a);position:relative}
@@ -59,7 +76,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 #particles-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
 .logo-mark{width:64px;height:64px;margin:0 auto 24px}
 .logo-mark svg{width:100%;height:100%}
-.title-main{font-family:var(--font-heading);font-size:3.2rem;line-height:1.2;margin-bottom:16px}
+.title-eyebrow{font-family:var(--font-body);font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:3px;color:var(--accent-cyan);margin-bottom:12px;opacity:.85}
+.title-main{font-family:var(--font-heading);font-size:3.8rem;line-height:1.1;margin-bottom:16px}
 .title-divider{width:80px;height:3px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));margin:0 auto 20px;border-radius:2px;transform:scaleX(0)}
 .title-sub{font-family:var(--font-body);font-weight:300;font-size:1.25rem;color:var(--text-secondary);margin-bottom:32px}
 .title-meta{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:48px}
@@ -114,6 +132,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .offshore-option .off-info{display:flex;flex-direction:column}
 .offshore-option .off-name{font-size:.85rem;font-weight:500}
 .offshore-option .off-rate{font-size:.7rem;color:var(--text-muted)}
+.offshore-option .off-lang{font-size:.65rem;color:var(--accent-cyan);opacity:.7}
 .analyze-btn{grid-column:1/-1;padding:16px 32px;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font-body);background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628;transition:all .3s;letter-spacing:.5px}
 .analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.3)}
 .analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
@@ -131,7 +150,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .bubble-marker:hover .bubble-dot{transform:scale(1.08);box-shadow:0 0 28px rgba(0,212,255,.45)}
 .bubble-marker .bubble-dot .fte-num{font-size:1.05rem;font-weight:700;color:var(--text-primary);line-height:1}
 .bubble-marker .bubble-dot .fte-code{font-size:.5rem;color:var(--accent-cyan);font-weight:600;text-transform:uppercase;letter-spacing:.5px;line-height:1}
-.bubble-marker .bubble-name{font-size:.65rem;color:var(--text-secondary);font-weight:600;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:1px}
+.bubble-marker .bubble-name{font-size:.78rem;color:var(--text-secondary);font-weight:600;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:1px}
 .bubble-marker.green .bubble-dot{border-color:var(--accent-green);box-shadow:0 0 16px rgba(16,185,129,.25)}
 .bubble-marker.green:hover .bubble-dot{box-shadow:0 0 28px rgba(16,185,129,.45)}
 .bubble-marker.green .bubble-dot .fte-code{color:var(--accent-green)}
@@ -140,6 +159,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .bubble-marker.inactive .bubble-dot .fte-num{font-size:.65rem;color:var(--text-muted)}
 .bubble-marker.inactive .bubble-dot .fte-code{color:var(--text-muted)}
 .bubble-marker.inactive .bubble-name{color:var(--text-muted);font-size:.6rem}
+.bubble-marker .bubble-lang{font-size:.65rem;color:var(--accent-cyan);opacity:.7;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.bubble-marker.inactive .bubble-lang{color:var(--text-muted);opacity:.5}
 /* Location selector tabs on slide 3 */
 .location-tabs{display:flex;gap:6px;margin-bottom:12px}
 .location-tab{padding:6px 14px;border:1px solid var(--border-subtle);border-radius:8px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;font-weight:500;font-family:var(--font-body);transition:all .2s;display:flex;align-items:center;gap:6px}
@@ -167,6 +188,20 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .volume-value{font-size:1rem;font-weight:700;color:var(--text-primary)}
 .volume-label{font-size:.65rem;color:var(--text-muted);margin-top:2px}
 .panel-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600}
+/* Pain Point Overlay on Map (Slide 5) */
+.map-pain-overlay{position:absolute;bottom:12px;left:12px;right:12px;z-index:500;background:rgba(10,22,40,.92);backdrop-filter:blur(8px);border:1px solid var(--border-subtle);border-radius:10px;padding:12px 16px;display:flex;gap:16px;max-height:130px;overflow-y:auto}
+.map-pain-overlay:empty{display:none}
+.map-pain-col{flex:1;min-width:0}
+.map-pain-col-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.map-pain-col-label .mpc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.map-pain-col-label .mpc-dot.people{background:var(--accent-blue)}
+.map-pain-col-label .mpc-dot.process{background:var(--accent-purple)}
+.map-pain-col-label .mpc-dot.technology{background:var(--accent-orange)}
+.map-pain-pill{font-size:.7rem;color:var(--text-secondary);padding:3px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:6px;line-height:1.3;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-pain-empty{font-size:.7rem;color:var(--text-muted);font-style:italic}
+.map-pain-notes{grid-column:1/-1;padding:6px 10px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.12);border-radius:8px;margin-top:2px}
+.map-pain-notes-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:rgba(0,212,255,.6);font-weight:600;margin-bottom:2px}
+.map-pain-notes-text{font-size:.68rem;color:var(--text-secondary);line-height:1.4;white-space:pre-wrap;max-height:40px;overflow-y:auto}
 
 /* === SLIDE 4: MATRIX === */
 .slide-matrix{padding-top:32px}
@@ -253,21 +288,32 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === SLIDE 5: TRANSFORM === */
 .slide-transform{padding-top:32px}
-.transform-content{display:flex;flex-direction:column;flex:1;min-height:0}
+.transform-content{display:flex;flex-direction:row;flex:1;min-height:0;gap:14px}
+.transform-solution-col{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-right:4px}
+.transform-solution-col::-webkit-scrollbar{width:3px}
+.transform-solution-col::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .transform-map-wrapper{flex:1;display:flex;align-items:stretch;justify-content:center;position:relative;min-height:350px}
-.before-after-panel{display:flex;align-items:center;justify-content:center;gap:32px;padding:20px 0;flex-wrap:wrap}
+.before-after-panel{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:10px 0 0;margin-top:auto}
+/* Solution column items */
+.ts-group-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-weight:600;display:flex;align-items:center;gap:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.06)}
+.ts-group-label .ts-icon{font-size:.85rem}
+.ts-bullet{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;padding:10px 12px;transition:border-color .2s}
+.ts-bullet:hover{border-color:rgba(0,212,255,.25)}
+.ts-bullet-title{font-size:.78rem;font-weight:600;color:var(--text-primary);margin-bottom:3px}
+.ts-bullet-body{font-size:.72rem;color:var(--text-secondary);line-height:1.45}
+.ts-empty{font-size:.72rem;color:var(--text-muted);font-style:italic;padding:8px 0}
 .ba-column{text-align:center}
-.ba-column h4{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px}
-.ba-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.ba-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;padding:12px 20px;text-align:center;min-width:100px}
-.ba-card .ba-location{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
-.ba-card .ba-count{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
+.ba-column h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px}
+.ba-cards{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.ba-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:6px;padding:6px 10px;text-align:center;min-width:60px}
+.ba-card .ba-location{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.ba-card .ba-count{font-size:1.1rem;font-weight:700;color:var(--text-primary)}
 .ba-card.highlight{border-color:var(--accent-cyan);background:rgba(0,212,255,.05)}
-.ba-arrow{font-size:2rem;color:var(--accent-cyan)}
+.ba-arrow{font-size:1.4rem;color:var(--accent-cyan);text-align:center}
 
 /* === SLIDE 6: FINANCIAL === */
-.slide-financial{padding-top:32px}
-.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.slide-financial{padding-top:24px}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
 .dashboard-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:20px;display:flex;flex-direction:column}
 .dashboard-card h4{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600}
 .dashboard-card .chart-area{flex:1;position:relative;min-height:0}
@@ -281,6 +327,44 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .breakdown-row{display:flex;justify-content:space-between;font-size:.85rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .breakdown-row span:first-child{color:var(--text-secondary)}
 .breakdown-row span:last-child{font-weight:600;color:var(--text-primary)}
+
+/* === SCENARIO SLIDER === */
+.scenario-slider-bar{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:14px 24px 28px;margin-bottom:12px;position:relative;z-index:1}
+.slider-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.slider-title{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.slider-value{font-size:1.3rem;font-weight:700;color:var(--accent-cyan)}
+.slider-wrapper{position:relative;padding-bottom:28px}
+.styled-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent-green),var(--accent-cyan),var(--accent-purple));outline:none;cursor:pointer}
+.styled-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent-cyan);border:3px solid #0a1628;cursor:pointer;box-shadow:0 0 12px rgba(0,212,255,.5);transition:box-shadow .2s}
+.styled-slider::-webkit-slider-thumb:hover{box-shadow:0 0 20px rgba(0,212,255,.8)}
+.styled-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent-cyan);border:3px solid #0a1628;cursor:pointer;box-shadow:0 0 12px rgba(0,212,255,.5)}
+.slider-marks{position:absolute;top:18px;left:0;right:0;pointer-events:none}
+.slider-mark{position:absolute;transform:translateX(-50%);font-size:.65rem;color:rgba(255,255,255,.85);text-align:center;line-height:1.3;font-weight:500}
+.slider-mark small{color:rgba(255,255,255,.5);font-weight:400}
+
+/* === ASSUMPTIONS MODAL === */
+.assumptions-panel{margin-top:8px;position:relative;z-index:1}
+.assumptions-toggle{background:none;border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:var(--font-body);transition:all .2s;width:100%;text-align:left}
+.assumptions-toggle:hover{border-color:var(--accent-cyan);color:var(--text-secondary)}
+.assumptions-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.assumptions-overlay.visible{display:flex}
+.assumptions-modal{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;width:90%;max-width:640px;max-height:80vh;overflow-y:auto;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative}
+.assumptions-modal-title{font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.assumptions-modal-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;padding:4px;border-radius:4px;transition:all .15s}
+.assumptions-modal-close:hover{color:var(--text-primary);background:rgba(255,255,255,.05)}
+.asn-rates-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.asn-rate-chip{font-size:.72rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:var(--text-secondary)}
+.asn-rate-chip .asn-rate-val{color:var(--accent-cyan);font-weight:600;margin-left:4px}
+.asn-rate-chip.offshore{border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.04)}
+.asn-rate-chip.offshore .asn-rate-val{color:var(--accent-green)}
+.asn-calc-step{margin-bottom:8px;padding:8px 12px;border-left:2px solid rgba(0,212,255,.2);background:rgba(255,255,255,.01);border-radius:0 4px 4px 0;font-size:.78rem;color:var(--text-secondary);line-height:1.7}
+.asn-calc-result{font-weight:600;color:var(--accent-cyan)}
+.assumptions-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.78rem}
+.assumptions-table th{text-align:left;color:var(--text-muted);font-weight:600;padding:8px 12px;border-bottom:1px solid var(--border-subtle);font-size:.7rem;text-transform:uppercase;letter-spacing:.3px}
+.assumptions-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-secondary)}
+.assumptions-table td:nth-child(2){color:var(--accent-cyan);font-weight:600}
+.assumptions-footnote{margin-top:14px;font-size:.7rem;color:var(--text-muted);padding:10px 12px;background:rgba(255,255,255,.02);border-radius:6px;line-height:1.5}
+.asn-section-label{margin-top:16px;font-size:.7rem;color:var(--accent-cyan);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 
 /* === SLIDE 7: ROADMAP === */
 .slide-roadmap{padding-top:32px}
@@ -313,21 +397,36 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === SLIDE 8: SUMMARY === */
 .slide-summary{padding-top:32px;justify-content:center}
-.summary-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}
-.metric-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:28px 20px;text-align:center;opacity:0;transform:translateY(30px) scale(.9)}
-.metric-icon{width:48px;height:48px;margin:0 auto 16px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
-.metric-icon.savings-icon{background:rgba(16,185,129,.15)}
-.metric-icon.fte-icon{background:rgba(59,130,246,.15)}
-.metric-icon.percent-icon{background:rgba(124,92,252,.15)}
-.metric-icon.roi-icon{background:rgba(249,115,22,.15)}
-.metric-value{font-size:2.2rem;font-weight:700;color:var(--text-primary);line-height:1;margin-bottom:8px}
-.metric-label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
-.next-steps{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:28px;margin-bottom:24px}
-.next-steps h3{font-family:var(--font-heading);font-size:1.3rem;margin-bottom:16px}
-.steps-list{list-style:none;counter-reset:steps;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.steps-list li{counter-increment:steps;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--text-secondary);padding:12px;border-radius:8px;background:rgba(255,255,255,.02)}
-.steps-list li::before{content:counter(steps);width:28px;height:28px;border-radius:50%;background:rgba(0,212,255,.15);color:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
-.cta-section{display:flex;justify-content:center;gap:12px}
+/* Executive Before/After Layout */
+.exec-ba-container{display:flex;gap:0;flex:1;min-height:0;position:relative;z-index:1;margin-bottom:14px}
+.exec-ba-col{flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:28px 32px;display:flex;flex-direction:column;gap:14px}
+.exec-ba-col.current{border-radius:var(--card-radius) 0 0 var(--card-radius)}
+.exec-ba-col.future{border-radius:0 var(--card-radius) var(--card-radius) 0;border-left:none}
+.exec-ba-divider{display:flex;align-items:center;justify-content:center;width:56px;flex-shrink:0;background:var(--bg-card);border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)}
+.exec-ba-arrow{font-size:2.2rem;color:var(--accent-cyan);animation:pulseArrow 2s ease-in-out infinite}
+@keyframes pulseArrow{0%,100%{opacity:.5;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
+.exec-ba-col-header{margin-bottom:6px}
+.exec-ba-badge{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:6px 14px;border-radius:5px}
+.exec-ba-badge.current{background:rgba(249,115,22,.12);color:#f97316}
+.exec-ba-badge.future{background:rgba(16,185,129,.12);color:#10b981}
+.exec-ba-body{display:flex;flex-direction:column;gap:12px;flex:1;overflow-y:auto}
+.exec-ba-section-label{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-top:6px}
+.exec-ba-item{font-size:.95rem;color:var(--text-secondary);line-height:1.55;padding:8px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:8px}
+.exec-ba-item.highlight{border-color:rgba(0,212,255,.2);background:rgba(0,212,255,.04)}
+.exec-ba-loc-row{display:flex;align-items:center;gap:10px;font-size:1rem;color:var(--text-primary);padding:6px 0}
+.exec-ba-loc-row .loc-flag{font-size:1.15rem}
+.exec-ba-loc-row .loc-ftes{font-weight:700;margin-left:auto;font-size:1.05rem}
+.exec-ba-cost{font-size:1.6rem;font-weight:700;color:var(--text-primary)}
+/* KPI Strip */
+.exec-kpi-strip{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;position:relative;z-index:1}
+.exec-kpi{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:10px;padding:16px 32px;text-align:center;min-width:140px}
+.exec-kpi-value{font-size:1.9rem;font-weight:700;line-height:1}
+.exec-kpi-value.green{color:#10b981}
+.exec-kpi-value.blue{color:#3b82f6}
+.exec-kpi-value.purple{color:#7c5cfc}
+.exec-kpi-value.orange{color:#f97316}
+.exec-kpi-label{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+.cta-section{display:flex;justify-content:center;gap:12px;position:relative;z-index:1}
 .cta-button{padding:12px 28px;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .2s}
 .cta-button.primary{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628}
 .cta-button.primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,212,255,.3)}
@@ -366,6 +465,83 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .ai-insights-btn .btn-pulse{width:8px;height:8px;border-radius:50%;background:var(--accent-cyan);animation:pulse-glow 2s infinite}
 @keyframes pulse-glow{0%,100%{opacity:1;box-shadow:0 0 4px rgba(0,212,255,.4)}50%{opacity:.6;box-shadow:0 0 12px rgba(0,212,255,.6)}}
 
+/* === SLIDE 2: CONTEXT === */
+.slide-context{padding-top:32px}
+.globe-bg{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.2;overflow:hidden}
+.globe-bg canvas{display:block}
+.context-form{display:grid;grid-template-columns:1fr 1fr;gap:20px;position:relative;z-index:1;padding-bottom:80px}
+.ctx-select{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.9rem;cursor:pointer}
+.ctx-input{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.9rem}
+.size-badges,.region-badges{display:flex;gap:8px;flex-wrap:wrap}
+.size-badge,.region-badge{padding:10px 18px;border:1px solid var(--border-subtle);border-radius:8px;background:rgba(255,255,255,.02);color:var(--text-secondary);cursor:pointer;font-family:var(--font-body);font-size:.85rem;font-weight:500;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.size-badge:hover,.region-badge:hover{border-color:var(--accent-cyan);color:var(--text-primary)}
+.size-badge.active,.region-badge.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.1);color:var(--accent-cyan);font-weight:600}
+.size-desc{font-size:.7rem;color:var(--text-muted);font-weight:400}
+
+/* === SLIDE 3: PAIN BOARD === */
+.slide-painboard{padding-top:32px}
+.digital-rain-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.25}
+.pain-board{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;flex:1;min-height:300px;overflow-y:auto;padding-bottom:16px;position:relative;z-index:1}
+.pain-column{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:16px;display:flex;flex-direction:column;gap:12px}
+.pain-col-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.95rem;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.pain-col-icon{font-size:1.2rem}
+.pain-counter{margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:500;background:rgba(255,255,255,.05);padding:2px 8px;border-radius:10px}
+.pain-input-wrapper{position:relative}
+.pain-input{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.85rem;transition:border-color .2s}
+.pain-input:focus{outline:none;border-color:var(--accent-cyan)}
+.suggest-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;max-height:200px;overflow-y:auto;z-index:10;display:none;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.suggest-dropdown.visible{display:block}
+.suggest-item{padding:8px 14px;font-size:.82rem;color:var(--text-secondary);cursor:pointer;transition:all .15s;border-bottom:1px solid rgba(255,255,255,.03)}
+.suggest-item:hover,.suggest-item.highlighted{background:rgba(0,212,255,.08);color:var(--accent-cyan)}
+.suggest-item:last-child{border-bottom:none}
+.pain-cards{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
+.pain-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.15);border-radius:8px;font-size:.82rem;color:var(--text-primary);animation:fadeInUp .3s ease}
+.pain-card .pain-text{flex:1;line-height:1.4}
+.pain-card .pain-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:2px 4px;border-radius:4px;transition:all .15s}
+.pain-card .pain-remove:hover{color:var(--accent-red);background:rgba(239,68,68,.1)}
+.pain-card .pain-category-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pain-card .pain-category-dot.people{background:var(--accent-blue)}
+.pain-card .pain-category-dot.process{background:var(--accent-purple)}
+.pain-card .pain-category-dot.technology{background:var(--accent-orange)}
+.pain-board-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1}
+.pain-total{font-size:.85rem;color:var(--text-muted);font-weight:500}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* Client Notes Section */
+.client-notes-section{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:14px 18px;position:relative;z-index:1}
+.client-notes-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.client-notes-icon{font-size:1rem}
+.client-notes-title{font-size:.85rem;font-weight:600;color:var(--text-primary)}
+.client-notes-hint{margin-left:auto;font-size:.72rem;color:var(--text-muted);font-style:italic}
+.client-notes-input{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.82rem;line-height:1.55;resize:vertical;min-height:60px;max-height:140px;transition:border-color .2s}
+.client-notes-input:focus{outline:none;border-color:var(--accent-cyan)}
+.client-notes-input::placeholder{color:var(--text-muted);opacity:.6;font-size:.78rem}
+
+/* === SLIDE 9: SOLUTION FRAMEWORK === */
+.slide-solution{padding-top:32px}
+.solution-grid{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow-y:auto;position:relative;z-index:1}
+.sol-category-section{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:16px 20px;transition:all .3s}
+.sol-category-section.empty{opacity:.45;border-style:dashed}
+.sol-category-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sol-category-icon{font-size:1.15rem}
+.sol-category-title{font-size:1.05rem;font-weight:600;color:var(--text-primary);font-family:'Inter',sans-serif}
+.sol-category-count{margin-left:auto;font-size:.8rem;color:var(--text-muted);font-weight:400}
+.sol-matched-pains{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.sol-pain-tag{font-size:.78rem;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--text-muted);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sol-cards{display:flex;flex-direction:column;gap:8px}
+.sol-empty-msg{font-size:.88rem;color:var(--text-muted);font-style:italic;padding:8px 0}
+.sol-loading{display:flex;align-items:center;gap:12px;padding:14px 0;color:var(--text-muted);font-size:.85rem}
+.sol-loading-spinner{width:20px;height:20px;border:2px solid rgba(0,212,255,.15);border-top-color:var(--accent-cyan);border-radius:50%;animation:solSpin .8s linear infinite;flex-shrink:0}
+@keyframes solSpin{to{transform:rotate(360deg)}}
+.sol-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px 16px;transition:all .2s;cursor:default}
+.sol-card:hover{border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.03)}
+.sol-card-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sol-card-title{font-size:.95rem;font-weight:600;color:var(--text-primary)}
+.sol-card-insight{font-size:.88rem;color:var(--text-secondary);line-height:1.6}
+.sol-card-source{font-size:.75rem;color:var(--text-muted);margin-top:6px;font-style:italic;opacity:.7}
+.expert-analysis-bar{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:16px 22px;margin-top:12px;position:relative;z-index:1;flex-shrink:0}
+.expert-analysis-label{font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(0,212,255,.5);font-weight:600;margin-bottom:8px}
+.expert-analysis-text{font-size:.92rem;color:var(--text-secondary);line-height:1.65}
+
 /* === PRINT-ONLY PAGES (hidden on screen) === */
 .print-page{display:none}
 
@@ -375,12 +551,13 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif}
   .slides-container{position:static!important;width:100%!important;height:auto!important;overflow:visible!important}
   .slide{display:block!important;position:relative!important;opacity:1!important;visibility:visible!important;transform:none!important;page-break-after:always;padding:40px;min-height:100vh;background:white!important;overflow:visible!important;height:auto!important}
-  #slide-2,.cta-section{display:none!important}
-  #slide-nav,#scenario-toggle,#export-btn,.ai-overlay,.ai-modal-overlay,.title-cta,#particles-canvas,.ai-insights-btn{display:none!important}
+  #slide-2,#slide-3,#slide-4,.cta-section{display:none!important}
+  #slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg{display:none!important}
   .slide-heading{-webkit-text-fill-color:#1a1a1a;background:none;color:#1a1a1a}
-  .dashboard-card,.phase-card,.metric-card,.detail-panel,.ba-card,.next-steps{border:1px solid #ddd;background:#fafafa}
+  .dashboard-card,.phase-card,.detail-panel,.ba-card,.exec-ba-col,.exec-kpi{border:1px solid #ddd;background:#fafafa}
   .savings-amount{-webkit-text-fill-color:#10b981;background:none}
   .leaflet-container{border:1px solid #ddd}
+  .title-eyebrow{color:#666!important}
   .title-main{-webkit-text-fill-color:#1a1a1a!important;background:none!important;color:#1a1a1a!important}
   .title-sub{color:#555!important}
   .slide-subtitle{color:#555!important}
@@ -449,23 +626,39 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   /* Methodology */
   .rpt-methodology{font-size:.78rem;color:#555!important;line-height:1.6;padding:12px 14px;background:#f5f7fa;border-radius:6px;border:1px solid #e5e5e5}
   .rpt-methodology strong{color:#333!important}
+
+  /* Diagnostic print styles */
+  .rpt-pain-category{margin-bottom:16px}
+  .rpt-pain-category-title{font-size:.82rem;font-weight:700;color:#0a1628!important;margin-bottom:8px;padding:6px 10px;background:#f0f4f8;border-radius:4px;display:flex;align-items:center;gap:8px}
+  .rpt-pain-list{list-style:none;padding:0;margin:0}
+  .rpt-pain-list li{padding:5px 0 5px 16px;position:relative;font-size:.78rem;color:#333!important;line-height:1.5;border-bottom:1px solid #f5f5f5}
+  .rpt-pain-list li::before{content:'\2022';position:absolute;left:4px;color:#0a7e8c;font-weight:700}
+  .rpt-rec-section{margin-bottom:14px}
+  .rpt-rec-section-title{font-size:.72rem;font-weight:600;color:#888!important;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid #e5e5e5;margin-bottom:8px}
+  .rpt-rec-card{padding:10px 12px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;background:#fafbfc;page-break-inside:avoid}
+  .rpt-rec-title{font-size:.82rem;font-weight:700;color:#0a1628!important;margin-bottom:4px}
+  .rpt-rec-insight{font-size:.75rem;color:#555!important;line-height:1.5}
+  .rpt-rec-badge{display:inline-block;font-size:.6rem;padding:2px 6px;border-radius:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-left:8px}
 }
 @media(max-width:1024px){
   :root{--slide-padding:24px}
   .map-layout{flex-direction:column}.detail-panel{width:100%}
   .dashboard-grid{grid-template-columns:1fr}.phase-cards{grid-template-columns:1fr}
-  .summary-metrics{grid-template-columns:repeat(2,1fr)}.steps-list{grid-template-columns:1fr}
+  .exec-ba-container{flex-direction:column}.exec-ba-col.current,.exec-ba-col.future{border-radius:var(--card-radius)}.exec-ba-col.future{border-left:1px solid var(--border-subtle)}.exec-ba-divider{width:100%;height:32px;border:none;border-left:1px solid var(--border-subtle);border-right:1px solid var(--border-subtle);background:var(--bg-card)}
   .input-form-grid{grid-template-columns:1fr}
   .ai-modal{width:100%;max-width:100vw}
+  .transform-content{flex-direction:column}
+  .transform-solution-col{width:100%;flex-direction:row;flex-wrap:wrap;overflow-y:visible}
+  .transform-solution-col .ts-bullet{flex:1;min-width:200px}
 }
-@media(max-width:768px){.title-main{font-size:2rem}.title-meta{flex-direction:column;gap:8px}.fte-calculator{flex-direction:column;gap:12px}.channel-inputs{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.title-main{font-size:2.4rem}.title-eyebrow{font-size:.7rem}.title-meta{flex-direction:column;gap:8px}.fte-calculator{flex-direction:column;gap:12px}.channel-inputs{grid-template-columns:repeat(2,1fr)}.client-notes-hint{display:none}}
 </style>
 </head>
 <body>
 
 <nav id="slide-nav">
   <div class="nav-dots" id="nav-dots"></div>
-  <div class="slide-counter" id="slide-counter">1 / 8</div>
+  <div class="slide-counter" id="slide-counter">1 / 10</div>
   <div class="nav-arrows">
     <button id="prev-btn" aria-label="Previous slide">&#8592;</button>
     <button id="next-btn" aria-label="Next slide">&#8594;</button>
@@ -479,6 +672,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 </div>
 
 <button id="export-btn" onclick="exportReport()">Export PDF</button>
+<button id="settings-btn" onclick="toggleSettingsModal()">&#9881;</button>
 
 <div class="ai-overlay" id="ai-overlay">
   <div class="ai-brain">
@@ -513,9 +707,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
           <defs><linearGradient id="lg" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c5cfc"/></linearGradient></defs>
         </svg>
       </div>
-      <h1 class="title-main">Intelligent Consulting</h1>
+      <div class="title-eyebrow">Intelligent Consulting</div>
+      <h1 class="title-main">Pathfinder</h1>
       <div class="title-divider"></div>
-      <h2 class="title-sub">Strategic Offshoring Assessment & Cost Optimization</h2>
+      <h2 class="title-sub">Strategic Transformation Assessment</h2>
       <div class="title-meta" id="title-meta">
         <span class="meta-item" id="meta-ftes">500 FTEs</span>
         <span class="meta-dot"></span>
@@ -524,6 +719,107 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <span class="meta-item" id="meta-regions">2 Regions</span>
       </div>
       <div class="title-cta">Press &rarr; or click to begin</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: INDUSTRY CONTEXT (PATHFINDER) -->
+  <section class="slide slide-context" id="slide-2" data-slide="2">
+    <div class="globe-bg"></div>
+    <h2 class="slide-heading">Client Profile</h2>
+    <p class="slide-subtitle">Set the context — this shapes the analysis and recommendations</p>
+    <div class="context-form">
+      <div class="form-card">
+        <h3><span class="card-icon">🏢</span> Industry</h3>
+        <select id="ctx-industry" class="ctx-select" onchange="updateDiagnosticContext()">
+          <option value="">Select industry...</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="financial_services">Financial Services</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="retail">Retail / E-commerce</option>
+          <option value="technology">Technology</option>
+          <option value="telecom">Telecommunications</option>
+          <option value="insurance">Insurance</option>
+          <option value="logistics">Logistics & Supply Chain</option>
+          <option value="energy">Energy & Utilities</option>
+          <option value="government">Government / Public Sector</option>
+          <option value="professional_services">Professional Services</option>
+          <option value="cx_operations">CX / Contact Center Operations</option>
+          <option value="media">Media & Entertainment</option>
+          <option value="hospitality">Hospitality & Travel</option>
+          <option value="pharma">Pharmaceutical</option>
+          <option value="education">Education</option>
+          <option value="other">Other</option>
+        </select>
+        <input type="text" id="ctx-industry-other" class="ctx-input" placeholder="Specify industry..." style="display:none;margin-top:8px" onchange="updateDiagnosticContext()">
+      </div>
+      <div class="form-card">
+        <h3><span class="card-icon">📏</span> Company Size</h3>
+        <div class="size-badges">
+          <button class="size-badge" data-size="smb" onclick="selectSize(this)">SMB<span class="size-desc">&lt; 500 employees</span></button>
+          <button class="size-badge active" data-size="mid" onclick="selectSize(this)">Mid-Market<span class="size-desc">500 - 5,000</span></button>
+          <button class="size-badge" data-size="enterprise" onclick="selectSize(this)">Enterprise<span class="size-desc">5,000+</span></button>
+        </div>
+      </div>
+      <div class="form-card">
+        <h3><span class="card-icon">🌍</span> Region</h3>
+        <div class="region-badges">
+          <button class="region-badge active" data-region="americas" onclick="selectRegion(this)">Americas</button>
+          <button class="region-badge" data-region="emea" onclick="selectRegion(this)">EMEA</button>
+          <button class="region-badge" data-region="apac" onclick="selectRegion(this)">APAC</button>
+          <button class="region-badge" data-region="global" onclick="selectRegion(this)">Global</button>
+        </div>
+      </div>
+      <div class="form-card">
+        <h3><span class="card-icon">👤</span> Client Details <span style="font-size:.7rem;color:var(--text-muted);font-weight:400">(optional)</span></h3>
+        <input type="text" id="ctx-client-name" class="ctx-input" placeholder="Client / Organization name" onchange="updateDiagnosticContext()">
+      </div>
+      <button class="analyze-btn" style="grid-column:1/-1" onclick="navigateToSlide(3,'forward')">Begin Diagnostic →</button>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: PAIN POINT BOARD (PATHFINDER) -->
+  <section class="slide slide-painboard" id="slide-3" data-slide="3">
+    <canvas class="digital-rain-canvas" id="rain-canvas-board"></canvas>
+    <h2 class="slide-heading">Operational Diagnostic</h2>
+    <p class="slide-subtitle">Capture pain points as your client describes them — the engine will analyze patterns</p>
+    <div class="pain-board" id="pain-board">
+      <div class="pain-column" data-category="people">
+        <div class="pain-col-header"><span class="pain-col-icon">👥</span> People <span class="pain-counter" id="people-counter">0/10</span></div>
+        <div class="pain-input-wrapper">
+          <input type="text" class="pain-input" id="pain-input-people" placeholder="Add pain point..." autocomplete="off" data-category="people">
+          <div class="suggest-dropdown" id="suggest-people"></div>
+        </div>
+        <div class="pain-cards" id="pain-cards-people"></div>
+      </div>
+      <div class="pain-column" data-category="process">
+        <div class="pain-col-header"><span class="pain-col-icon">⚙️</span> Process <span class="pain-counter" id="process-counter">0/10</span></div>
+        <div class="pain-input-wrapper">
+          <input type="text" class="pain-input" id="pain-input-process" placeholder="Add pain point..." autocomplete="off" data-category="process">
+          <div class="suggest-dropdown" id="suggest-process"></div>
+        </div>
+        <div class="pain-cards" id="pain-cards-process"></div>
+      </div>
+      <div class="pain-column" data-category="technology">
+        <div class="pain-col-header"><span class="pain-col-icon">💻</span> Technology <span class="pain-counter" id="technology-counter">0/10</span></div>
+        <div class="pain-input-wrapper">
+          <input type="text" class="pain-input" id="pain-input-technology" placeholder="Add pain point..." autocomplete="off" data-category="technology">
+          <div class="suggest-dropdown" id="suggest-technology"></div>
+        </div>
+        <div class="pain-cards" id="pain-cards-technology"></div>
+      </div>
+    </div>
+    <!-- Client Notes / Free Text -->
+    <div class="client-notes-section" id="client-notes-section">
+      <div class="client-notes-header">
+        <span class="client-notes-icon">📝</span>
+        <span class="client-notes-title">Client Notes & Context</span>
+        <span class="client-notes-hint">Capture specific issues, nuances, or additional context from the conversation</span>
+      </div>
+      <textarea class="client-notes-input" id="client-notes-input" placeholder="e.g. Client mentioned a major system migration planned for Q3... High sensitivity around redundancy language... CEO wants to see 30% cost reduction target..." rows="3" oninput="saveClientNotes()"></textarea>
+    </div>
+    <div class="pain-board-footer">
+      <span class="pain-total" id="pain-total">0 pain points captured</span>
+      <button class="analyze-btn pain-analyze-btn" id="pain-analyze-btn" onclick="navigateToSlide(4,'forward')" style="width:auto;padding:12px 32px;font-size:.95rem">Continue to Workforce Config →</button>
     </div>
   </section>
 
@@ -557,8 +853,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 2: CLIENT INPUT FORM -->
-  <section class="slide slide-input" id="slide-2" data-slide="2">
+  <!-- SLIDE 4: CLIENT INPUT FORM -->
+  <section class="slide slide-input" id="slide-4" data-slide="4">
     <h2 class="slide-heading">Client Configuration</h2>
     <p class="slide-subtitle">Enter your workforce details — the engine will analyze and generate a transformation blueprint</p>
     <div class="input-form-grid" id="input-form">
@@ -566,13 +862,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 3: CURRENT STATE MAP -->
-  <section class="slide slide-map" id="slide-3" data-slide="3">
+  <!-- SLIDE 5: CURRENT STATE MAP -->
+  <section class="slide slide-map" id="slide-5" data-slide="5">
     <h2 class="slide-heading">Current State: Global Operations</h2>
     <p class="slide-subtitle">Click a location to explore workforce details</p>
     <div class="map-layout">
       <div class="map-container">
         <div id="current-state-map" style="width:100%;height:100%;min-height:400px;"></div>
+        <div class="map-pain-overlay" id="map-pain-overlay"></div>
       </div>
       <div class="detail-panel" id="detail-panel">
         <div class="location-tabs" id="location-tabs"></div>
@@ -590,8 +887,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 4: ANALYSIS MATRIX -->
-  <section class="slide slide-matrix" id="slide-4" data-slide="4">
+  <!-- SLIDE 6: ANALYSIS MATRIX -->
+  <section class="slide slide-matrix" id="slide-6" data-slide="6">
     <h2 class="slide-heading">Channel & Tier Analysis</h2>
     <p class="slide-subtitle">Toggle work packages for offshore transition — numbers update in real-time</p>
     <div class="fte-calculator" id="fte-calculator">
@@ -608,22 +905,45 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 5: TRANSFORMATION -->
-  <section class="slide slide-transform" id="slide-5" data-slide="5">
+  <!-- SLIDE 7: TRANSFORMATION -->
+  <section class="slide slide-transform" id="slide-7" data-slide="7">
     <h2 class="slide-heading">Proposed Transformation</h2>
     <p class="slide-subtitle" style="display:flex;align-items:center;gap:12px">Optimized workforce redistribution based on affinity scoring <button class="ai-insights-btn" onclick="openAIModal()"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button></p>
     <div class="transform-content">
+      <div class="transform-solution-col left" id="transform-solutions-left">
+        <!-- Process & Automation bullets rendered by JS -->
+      </div>
       <div class="transform-map-wrapper">
         <div id="transform-leaflet-map" style="width:100%;height:100%;min-height:350px;"></div>
       </div>
-      <div class="before-after-panel" id="before-after-panel"></div>
+      <div class="transform-solution-col right" id="transform-solutions-right">
+        <!-- Tech bullets + Before/After FTE cards rendered by JS -->
+        <div class="before-after-panel" id="before-after-panel"></div>
+      </div>
     </div>
   </section>
 
-  <!-- SLIDE 6: FINANCIAL -->
-  <section class="slide slide-financial" id="slide-6" data-slide="6">
+  <!-- SLIDE 8: FINANCIAL -->
+  <section class="slide slide-financial" id="slide-8" data-slide="8">
     <h2 class="slide-heading">Financial Impact Analysis</h2>
     <p class="slide-subtitle">Dynamic cost modeling based on selected offshore work packages</p>
+
+    <!-- Scenario Slider -->
+    <div class="scenario-slider-bar">
+      <div class="slider-label-row">
+        <span class="slider-title">Offshore Percentage</span>
+        <span class="slider-value" id="slider-value-label">60%</span>
+      </div>
+      <div class="slider-wrapper">
+        <input type="range" id="offshore-slider" min="20" max="90" value="60" step="5" class="styled-slider">
+        <div class="slider-marks">
+          <span class="slider-mark" style="left:22.2%">40%<br><small>Conservative</small></span>
+          <span class="slider-mark" style="left:57.1%">60%<br><small>Moderate</small></span>
+          <span class="slider-mark" style="left:85.7%">80%<br><small>Aggressive</small></span>
+        </div>
+      </div>
+    </div>
+
     <div class="dashboard-grid">
       <div class="dashboard-card"><h4>Hourly Rate Comparison</h4><div class="chart-area"><canvas id="rate-chart"></canvas></div></div>
       <div class="dashboard-card"><h4>Annual Cost: Current vs Proposed</h4><div class="chart-area"><canvas id="cost-chart"></canvas></div></div>
@@ -642,10 +962,39 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       </div>
       <div class="dashboard-card"><h4>Cumulative Savings Over 24 Months</h4><div class="chart-area"><canvas id="roi-chart"></canvas></div></div>
     </div>
+
+    <!-- Assumptions Toggle Button -->
+    <div class="assumptions-panel" id="assumptions-panel">
+      <button class="assumptions-toggle" onclick="toggleAssumptions()">Show Assumptions &amp; Calculations &#9662;</button>
+    </div>
+
+    <!-- Assumptions Modal Overlay (outside chart flow) -->
+    <div class="assumptions-overlay" id="assumptions-overlay">
+      <div class="assumptions-modal">
+        <div class="assumptions-modal-title">📊 Assumptions &amp; Calculation Breakdown</div>
+        <button class="assumptions-modal-close" onclick="toggleAssumptions()">&times;</button>
+        <table class="assumptions-table">
+          <thead><tr><th>Parameter</th><th>Value</th><th>Basis</th></tr></thead>
+          <tbody>
+            <tr><td>Working Hours / Year</td><td id="asn-hours">2,080</td><td>Standard 40hr/week × 52 weeks</td></tr>
+            <tr><td>Transition Cost / FTE</td><td id="asn-transition">$5,000</td><td>Recruitment, training, knowledge transfer</td></tr>
+            <tr><td>Offshore Percentage</td><td id="asn-offshore">60%</td><td>Of eligible FTEs moved per selected work packages</td></tr>
+          </tbody>
+        </table>
+        <div class="asn-section-label">Hourly Rates Used</div>
+        <div class="asn-rates-grid" id="asn-rates-grid"></div>
+        <div class="asn-section-label">Calculation Breakdown</div>
+        <div class="asn-calc-breakdown" id="asn-calc-breakdown"></div>
+        <div class="assumptions-footnote">
+          <strong>Included:</strong> Labor cost arbitrage, transition costs, break-even timeline<br>
+          <strong>Excluded:</strong> Real estate savings, technology licensing, management overhead, currency fluctuation, ramp-up productivity loss
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- SLIDE 7: ROADMAP -->
-  <section class="slide slide-roadmap" id="slide-7" data-slide="7">
+  <!-- SLIDE 9: ROADMAP -->
+  <section class="slide slide-roadmap" id="slide-9" data-slide="9">
     <h2 class="slide-heading">Implementation Roadmap</h2>
     <p class="slide-subtitle">Phased approach to minimize risk and ensure quality</p>
     <div class="timeline-container">
@@ -714,46 +1063,105 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 8: SUMMARY -->
-  <section class="slide slide-summary" id="slide-8" data-slide="8">
+  <!-- PRINT PAGE 3: DIAGNOSTIC & SOLUTION FRAMEWORK -->
+  <section class="print-page" id="print-diagnostic">
+    <div class="rpt-header">
+      <div class="rpt-logo">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="#0a1628" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/><circle cx="32" cy="32" r="18" stroke="#0a1628" stroke-width="2.5" opacity="0.6"/><circle cx="32" cy="32" r="6" fill="#0a1628"/></svg>
+      </div>
+      <div class="rpt-header-text">
+        <div class="rpt-title">Intelligent Consulting</div>
+        <div class="rpt-date" id="rpt-date-3"></div>
+      </div>
+      <div class="rpt-badge">Pathfinder Diagnostic</div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Operational Pain Points</div>
+      <div id="rpt-pain-points"></div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Solution Framework Recommendations</div>
+      <div id="rpt-solutions"></div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Pathfinder Synthesis</div>
+      <div class="rpt-methodology" id="rpt-synthesis"></div>
+    </div>
+    <div class="rpt-footer">
+      <span>Confidential — Prepared by Intelligent Consulting</span>
+      <span id="rpt-footer-date-3"></span>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: EXECUTIVE SUMMARY (Before/After) -->
+  <section class="slide slide-summary" id="slide-10" data-slide="10">
+    <canvas class="digital-rain-canvas" id="rain-canvas-summary"></canvas>
     <h2 class="slide-heading">Executive Summary</h2>
-    <p class="slide-subtitle">Key outcomes from the transformation analysis</p>
-    <div class="summary-metrics">
-      <div class="metric-card" id="mc-savings">
-        <div class="metric-icon savings-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-        <div class="metric-value" id="summary-savings">$0</div>
-        <div class="metric-label">Annual Savings</div>
+    <p class="slide-subtitle">Current state vs. proposed future operating model</p>
+    <div class="exec-ba-container" id="exec-ba-container">
+      <div class="exec-ba-col current" id="exec-current">
+        <div class="exec-ba-col-header">
+          <span class="exec-ba-badge current">CURRENT STATE</span>
+        </div>
+        <div class="exec-ba-body" id="exec-current-body"></div>
       </div>
-      <div class="metric-card" id="mc-ftes">
-        <div class="metric-icon fte-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
-        <div class="metric-value" id="summary-ftes">0</div>
-        <div class="metric-label">FTEs Transitioned</div>
+      <div class="exec-ba-divider">
+        <div class="exec-ba-arrow">&#x2192;</div>
       </div>
-      <div class="metric-card" id="mc-percent">
-        <div class="metric-icon percent-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c5cfc" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
-        <div class="metric-value" id="summary-percent">0%</div>
-        <div class="metric-label">Cost Reduction</div>
-      </div>
-      <div class="metric-card" id="mc-roi">
-        <div class="metric-icon roi-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="metric-value" id="summary-breakeven">--</div>
-        <div class="metric-label">Months to ROI</div>
+      <div class="exec-ba-col future" id="exec-future">
+        <div class="exec-ba-col-header">
+          <span class="exec-ba-badge future">FUTURE STATE</span>
+        </div>
+        <div class="exec-ba-body" id="exec-future-body"></div>
       </div>
     </div>
-    <div class="next-steps">
-      <h3>Recommended Next Steps</h3>
-      <ol class="steps-list">
-        <li>Stakeholder alignment workshop (Week 1-2)</li>
-        <li>Detailed business case development (Week 2-4)</li>
-        <li>Vendor selection & offshore site visits (Month 2)</li>
-        <li>Pilot program launch with initial FTEs (Month 3)</li>
-      </ol>
-    </div>
+    <div class="exec-kpi-strip" id="exec-kpi-strip"></div>
     <div class="cta-section">
-      <button class="cta-button primary" onclick="navigateToSlide(1,'backward')">Restart Presentation</button>
+      <button class="cta-button primary" onclick="navigateToSlide(1,'backward')">Restart Pathfinder</button>
       <button class="cta-button secondary" onclick="exportReport()">Export Report</button>
     </div>
   </section>
+</div>
+
+<!-- LLM Settings Modal -->
+<div class="settings-overlay" id="settings-overlay" onclick="if(event.target===this)toggleSettingsModal()">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <h3>&#9881; Pathfinder Settings</h3>
+      <button class="settings-close" onclick="toggleSettingsModal()">&times;</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-group">
+        <label class="settings-label">AI Provider</label>
+        <select id="llm-provider" class="ctx-select" onchange="updateLLMConfig()">
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="google">Google Gemini</option>
+          <option value="custom">Custom Endpoint</option>
+        </select>
+      </div>
+      <div class="settings-group">
+        <label class="settings-label">Model</label>
+        <select id="llm-model" class="ctx-select" onchange="updateLLMConfig()">
+        </select>
+      </div>
+      <div class="settings-group">
+        <label class="settings-label">API Key</label>
+        <input type="password" id="llm-api-key" class="ctx-input" placeholder="sk-... or your API key" onchange="updateLLMConfig()">
+      </div>
+      <div class="settings-group" id="llm-endpoint-group" style="display:none">
+        <label class="settings-label">Custom Endpoint URL</label>
+        <input type="text" id="llm-endpoint" class="ctx-input" placeholder="https://api.example.com/v1/chat/completions" onchange="updateLLMConfig()">
+      </div>
+      <div class="settings-group">
+        <label class="settings-label">
+          <input type="checkbox" id="llm-enabled" onchange="updateLLMConfig()" style="accent-color:var(--accent-cyan);width:16px;height:16px;vertical-align:middle;margin-right:8px">
+          Enable AI-powered recommendations
+        </label>
+        <div class="settings-hint">When enabled, the Solution Framework uses AI to generate intelligent, context-aware recommendations. Requires a valid API key. Falls back to rule-based engine if disabled or on error.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -797,7 +1205,7 @@ const OFFSHORE_COUNTRIES = ['IN','PH','PL','MX','ZA','CO','EG','RO'];
 
 // ===== AFFINITY SCORING ENGINE =====
 const AFFINITY_WEIGHTS = {language:0.35,timezone:0.20,costArbitrage:0.25,culturalProx:0.10,channelFit:0.10};
-const LANG_NAMES = {en:'English',de:'German',fr:'French',ja:'Japanese',zh:'Mandarin',hi:'Hindi',es:'Spanish',ar:'Arabic',tl:'Filipino'};
+const LANG_NAMES = {en:'English',de:'German',fr:'French',ja:'Japanese',zh:'Mandarin',hi:'Hindi',es:'Spanish',ar:'Arabic',tl:'Filipino',pl:'Polish',af:'Afrikaans',ro:'Romanian'};
 
 const CULTURAL_PROXIMITY = {
   'anglo|anglo':1.0,'anglo|south-asian':0.6,'anglo|eastern-european':0.5,'anglo|latin-american':0.5,'anglo|arab':0.3,'anglo|latin-european':0.5,'anglo|confucian':0.4,
@@ -1055,7 +1463,7 @@ let CONFIG = {
 };
 
 // ===== STATE =====
-const TOTAL_SLIDES = 8;
+const TOTAL_SLIDES = 10;
 let currentSlide = 1;
 let currentScenario = 'Moderate';
 let offshoreSelections = {};
@@ -1075,6 +1483,11 @@ let formLocations = [
 let formTiers = {L1:50,L2:30,L3:20};
 let formRates = {};
 let formOffshoreSelections = {IN:true,PH:true};
+
+// Diagnostic context state (Pathfinder)
+let diagnosticContext = { industry: '', companySize: 'mid', region: 'americas', clientName: '' };
+let selectedPainPoints = { people: [], process: [], technology: [] };
+let clientNotes = '';
 
 // ===== INIT =====
 function init() {
@@ -1097,7 +1510,8 @@ function initializeSelections() {
 function playTitleAnimation() {
   const tl = gsap.timeline({defaults:{ease:'power3.out'}});
   tl.from('.logo-mark', {scale:0, rotation:180, duration:1, ease:'back.out(1.7)'})
-    .from('.title-main', {y:40, opacity:0, duration:0.8}, '-=0.3')
+    .from('.title-eyebrow', {y:20, opacity:0, duration:0.5}, '-=0.3')
+    .from('.title-main', {y:40, opacity:0, duration:0.8}, '-=0.2')
     .to('.title-divider', {scaleX:1, duration:0.5, ease:'power2.inOut'}, '-=0.3')
     .from('.title-sub', {y:30, opacity:0, duration:0.7}, '-=0.2')
     .from('.meta-item', {y:20, opacity:0, duration:0.5, stagger:0.15}, '-=0.3')
@@ -1127,6 +1541,9 @@ function navigateToSlide(target, direction) {
 
   // Exit hooks
   if (currentSlide===1) stopParticles();
+  if (currentSlide===2) stopGlobe();
+  if (currentSlide===3) stopDigitalRain('rain-canvas-board');
+  if (currentSlide===10) stopDigitalRain('rain-canvas-summary');
 
   // GSAP slide out
   gsap.to(currentEl, {
@@ -1151,40 +1568,85 @@ function navigateToSlide(target, direction) {
   document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i+1===target));
   document.getElementById('slide-counter').textContent = target+' / '+TOTAL_SLIDES;
 
-  // Scenario toggle visible on slides 4-6
+  // Scenario toggle visible on slides 6-8 (matrix, transform, financial)
   const toggle = document.getElementById('scenario-toggle');
-  if (target>=4&&target<=6) toggle.classList.add('visible');
+  if (target>=6&&target<=8) toggle.classList.add('visible');
   else toggle.classList.remove('visible');
+
+  // Export + Settings buttons visible only on slide 10
+  const exportBtn = document.getElementById('export-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  if (target===10) { exportBtn.classList.add('visible'); settingsBtn.classList.add('visible'); }
+  else { exportBtn.classList.remove('visible'); settingsBtn.classList.remove('visible'); }
 
   currentSlide = target;
 
   // Enter hooks
+  try {
   switch(target) {
     case 1: initParticles(); playTitleAnimation(); break;
-    case 3: initCurrentStateMap(); break;
-    case 4: buildMatrix(); break;
-    case 5: triggerSlide5(); break;
-    case 6: buildFinancialDashboard(); break;
-    case 7: animateRoadmap(); break;
-    case 8: animateSummary(); break;
+    case 2: initGlobe(); break;
+    case 3: initPainBoard(); break;
+    case 5: initCurrentStateMap(); buildPainSummaryPanel(); break;
+    case 6: buildMatrix(); break;
+    case 7: triggerSlide5(); break;
+    case 8: buildFinancialDashboard(); break;
+    case 9: animateRoadmap(); break;
+    case 10: buildExecutiveSummary(); break;
   }
+  } catch(err) { console.error('[PATHFINDER] Error in slide', target, 'init:', err); }
 }
 
 function bindEvents() {
   document.addEventListener('keydown',(e)=>{
     if(e.key==='Escape'){ closeAIModal(); return; }
     if(document.getElementById('ai-modal-overlay').classList.contains('visible')) return;
+    // Pain board keyboard shortcuts (Ctrl+1/2/3 to jump columns)
+    if(currentSlide===3 && e.ctrlKey && ['1','2','3'].includes(e.key)){
+      e.preventDefault();
+      const targets=['people','process','technology'];
+      const inp=document.getElementById('pain-input-'+targets[parseInt(e.key)-1]);
+      if(inp) inp.focus();
+      return;
+    }
+    // Don't hijack arrow keys / space when typing in inputs
+    if(document.activeElement && (document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='SELECT'||document.activeElement.tagName==='TEXTAREA')) return;
     if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();navigateToSlide(currentSlide+1,'forward');}
     else if(e.key==='ArrowLeft'){e.preventDefault();navigateToSlide(currentSlide-1,'backward');}
   });
   document.getElementById('prev-btn').addEventListener('click',()=>navigateToSlide(currentSlide-1,'backward'));
   document.getElementById('next-btn').addEventListener('click',()=>navigateToSlide(currentSlide+1,'forward'));
 
+  // Scenario slider — debounced live updates
+  const offshoreSlider = document.getElementById('offshore-slider');
+  if (offshoreSlider) {
+    let sliderDebounce = null;
+    offshoreSlider.addEventListener('input', () => {
+      const val = parseInt(offshoreSlider.value);
+      const label = document.getElementById('slider-value-label');
+      if (label) label.textContent = val + '%';
+      // Update assumptions panel display
+      const asnOff = document.getElementById('asn-offshore');
+      if (asnOff) asnOff.textContent = val + '%';
+      clearTimeout(sliderDebounce);
+      sliderDebounce = setTimeout(() => updateAllCalculations(), 50);
+    });
+  }
+
+  // Legacy scenario buttons still work if present
   document.querySelectorAll('.scenario-btn').forEach(btn=>{
     btn.addEventListener('click',(e)=>{
       document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
       e.target.classList.add('active');
       currentScenario = e.target.dataset.scenario;
+      // Sync slider to preset
+      const presets = { Conservative: 40, Moderate: 60, Aggressive: 80 };
+      const slider = document.getElementById('offshore-slider');
+      if (slider && presets[currentScenario]) {
+        slider.value = presets[currentScenario];
+        const label = document.getElementById('slider-value-label');
+        if (label) label.textContent = presets[currentScenario] + '%';
+      }
       updateAllCalculations();
     });
   });
@@ -1297,7 +1759,8 @@ function renderSourceLocations() {
     const options = SOURCE_COUNTRIES.map(code=>{
       const c = COUNTRY_DB[code];
       const disabled = usedCountries.includes(code) && code !== loc.country;
-      return `<option value="${code}" ${code===loc.country?'selected':''} ${disabled?'disabled':''}>${c.flag} ${c.name}</option>`;
+      const lang = (c.languages||[]).map(l=>LANG_NAMES[l]||l)[0]||'';
+      return `<option value="${code}" ${code===loc.country?'selected':''} ${disabled?'disabled':''}>${c.flag} ${c.name} (${lang})</option>`;
     }).join('');
 
     return `
@@ -1386,12 +1849,14 @@ function renderOffshoreGrid() {
   container.innerHTML = OFFSHORE_COUNTRIES.map(code=>{
     const c = COUNTRY_DB[code];
     const selected = formOffshoreSelections[code] || false;
+    const langList = (c.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ');
     return `
       <label class="offshore-option ${selected?'selected':''}" onclick="toggleOffshore('${code}',this)">
         <input type="checkbox" ${selected?'checked':''} onchange="toggleOffshoreCheck('${code}',this.checked)">
         <div class="off-info">
           <span class="off-name">${c.flag} ${c.name}</span>
           <span class="off-rate">$${c.defaultRate}/hr</span>
+          <span class="off-lang">${langList}</span>
         </div>
       </label>
     `;
@@ -1499,6 +1964,7 @@ window.handleAnalyze = async function() {
 
   // Reset animation state
   slide5Animated = false;
+  financialDashboardAnimated = false;
   matrixBuilt = false;
   if(currentStateMap){ currentStateMap.remove(); currentStateMap=null; }
   if(transformMap){ transformMap.remove(); transformMap=null; }
@@ -1523,8 +1989,8 @@ window.handleAnalyze = async function() {
 
   await showAIThinking(messages, 3500);
 
-  // Navigate to slide 3
-  navigateToSlide(3, 'forward');
+  // Navigate to slide 5 (current state map)
+  navigateToSlide(5, 'forward');
 };
 
 function rebuildConfig() {
@@ -1612,9 +2078,10 @@ function initCurrentStateMap() {
                   <span class="fte-code">${code}</span>
                 </div>
                 <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-lang">${(c.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ')}</span>
               </div>`,
-        iconSize:[80,72],
-        iconAnchor:[40,36]
+        iconSize:[80,80],
+        iconAnchor:[40,40]
       })
     }).addTo(currentStateMap);
   }
@@ -1635,9 +2102,10 @@ function initCurrentStateMap() {
                   <span class="fte-code">${code}</span>
                 </div>
                 <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-lang">${(c.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ')}</span>
               </div>`,
-        iconSize:[80,72],
-        iconAnchor:[40,36]
+        iconSize:[80,80],
+        iconAnchor:[40,40]
       })
     }).addTo(currentStateMap);
   }
@@ -1654,6 +2122,52 @@ function initCurrentStateMap() {
 
   // Animate markers in
   gsap.from('.bubble-marker', {scale:0, duration:0.6, stagger:0.15, ease:'back.out(1.7)', delay:0.3});
+}
+
+function buildPainSummaryPanel() {
+  const container = document.getElementById('map-pain-overlay');
+  if (!container) return;
+
+  const categories = [
+    { key: 'people', label: 'People', dot: 'people' },
+    { key: 'process', label: 'Process', dot: 'process' },
+    { key: 'technology', label: 'Technology', dot: 'technology' }
+  ];
+
+  const totalPains = Object.values(selectedPainPoints).reduce((s, arr) => s + arr.length, 0);
+
+  if (totalPains === 0 && !(clientNotes && clientNotes.trim())) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  for (const cat of categories) {
+    const pains = selectedPainPoints[cat.key] || [];
+    html += '<div class="map-pain-col">';
+    html += '<div class="map-pain-col-label"><span class="mpc-dot ' + cat.dot + '"></span>' + cat.label + ' (' + pains.length + ')</div>';
+    if (pains.length === 0) {
+      html += '<div class="map-pain-empty">None captured</div>';
+    } else {
+      for (const pain of pains) {
+        html += '<div class="map-pain-pill" title="' + pain.replace(/"/g, '&quot;') + '">' + pain + '</div>';
+      }
+    }
+    html += '</div>';
+  }
+
+  // Client notes strip spanning full width
+  if (clientNotes && clientNotes.trim()) {
+    html += '<div class="map-pain-notes">';
+    html += '<div class="map-pain-notes-label">Consultant Notes</div>';
+    html += '<div class="map-pain-notes-text">' + clientNotes.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+
+  // Animate overlay in
+  gsap.from(container, { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', delay: 0.3 });
 }
 
 function buildLocationTabs(locationCodes) {
@@ -1796,8 +2310,10 @@ function updateMatrixCalculations() {
   savEl.textContent = formatCurrency(fin.annualSavings);
 
   const csatEl = document.getElementById('csat-impact');
-  csatEl.textContent = CONFIG.scenarios[currentScenario].csatImpact+'%';
-  const absC = Math.abs(CONFIG.scenarios[currentScenario].csatImpact);
+  const sliderEl = document.getElementById('offshore-slider');
+  const csatImpact = sliderEl ? -(Math.round(parseInt(sliderEl.value) / 10)) : (CONFIG.scenarios[currentScenario]?.csatImpact || -5);
+  csatEl.textContent = csatImpact+'%';
+  const absC = Math.abs(csatImpact);
   csatEl.style.color = absC<=3?'var(--accent-green)':absC<=6?'var(--accent-yellow)':'var(--accent-red)';
 
   // Cache narrative for AI modal
@@ -2043,6 +2559,61 @@ function exportReport() {
       <strong>Channel Fit</strong> (10%) — suitability for voice vs. written channel delivery.
       Each factor is scored 0-100 and presented as Low / Medium / High / Very High. The composite score determines FTE allocation priority across destinations.`;
 
+    // === PAGE 3: Diagnostic & Solution Framework ===
+    document.getElementById('rpt-date-3').textContent = dateStr;
+    document.getElementById('rpt-footer-date-3').textContent = dateStr;
+
+    // Pain points by category
+    const allPainPoints = { ...selectedPainPoints };
+    const catLabels = { people: '👥 People', process: '⚙️ Process', technology: '💻 Technology' };
+    let painHTML = '';
+    for (const [cat, items] of Object.entries(allPainPoints)) {
+      if (items.length === 0) continue;
+      painHTML += '<div class="rpt-pain-category">' +
+        '<div class="rpt-pain-category-title">' + (catLabels[cat] || cat) + ' (' + items.length + ')</div>' +
+        '<ul class="rpt-pain-list">' + items.map(p => '<li>' + p + '</li>').join('') + '</ul></div>';
+    }
+    const totalPain = Object.values(allPainPoints).reduce((s, a) => s + a.length, 0);
+    if (totalPain === 0) {
+      painHTML = '<div class="rpt-methodology">No pain points were captured during this session.</div>';
+    }
+    document.getElementById('rpt-pain-points').innerHTML = painHTML;
+
+    // Solution recommendations — data-driven
+    let solHTML = '';
+    const industry = diagnosticContext.industry || 'technology';
+    if (totalPain > 0 && typeof buildDataDrivenRecommendations === 'function') {
+      try {
+        const allPains = [...selectedPainPoints.people, ...selectedPainPoints.process, ...selectedPainPoints.technology];
+        const classified = classifyPainPointsForSolutions(allPains);
+        const dataCtx = collectDataContext();
+        const recs = buildDataDrivenRecommendations(classified, dataCtx);
+        const groupLabels = {
+          process: 'Process Improvement & Optimization',
+          automation: 'Automation & Agentic AI',
+          tech: 'Tools & Tech Modernization'
+        };
+        for (const [group, label] of Object.entries(groupLabels)) {
+          const items = recs[group] || [];
+          if (items.length === 0) continue;
+          solHTML += '<div class="rpt-rec-section"><div class="rpt-rec-section-title">' + label + '</div>';
+          solHTML += items.map(r =>
+            '<div class="rpt-rec-card"><div class="rpt-rec-title">' + r.title + '</div>' +
+            '<div class="rpt-rec-insight">' + r.insight + '</div>' +
+            '<div style="font-size:0.75rem;color:#666;margin-top:4px;">Triggered by: ' +
+            r.matchedPainTexts.slice(0, 3).join(' \u2022 ') + '</div></div>'
+          ).join('');
+          solHTML += '</div>';
+        }
+      } catch (e) { console.warn('Rec export error:', e); }
+    }
+    if (!solHTML) solHTML = '<div class="rpt-methodology">Complete the diagnostic to generate solution recommendations.</div>';
+    document.getElementById('rpt-solutions').innerHTML = solHTML;
+
+    // Synthesis text
+    const synthText = document.getElementById('synthesis-text')?.textContent || '';
+    document.getElementById('rpt-synthesis').textContent = synthText || 'Complete the Pathfinder diagnostic workflow to generate synthesis.';
+
   } catch(e) {
     console.error('Export report error:', e);
   }
@@ -2053,7 +2624,10 @@ window.exportReport = exportReport;
 
 // ===== DYNAMIC CALCULATIONS (Affinity-Weighted) =====
 function calculateOffshoreImpact() {
-  const scenario = CONFIG.scenarios[currentScenario];
+  // Use slider value if available, fallback to scenario preset
+  const sliderEl = document.getElementById('offshore-slider');
+  const sliderPercent = sliderEl ? parseInt(sliderEl.value) / 100 : CONFIG.scenarios[currentScenario].offshorePercent;
+  const scenario = { offshorePercent: sliderPercent, csatImpact: -(Math.round(sliderPercent * 10)) };
   const offshoreCodes = Object.keys(CONFIG.offshoreLocations);
   const locationCodes = Object.keys(CONFIG.locations);
 
@@ -2166,9 +2740,9 @@ function calculateFinancials(impact) {
 
 function updateAllCalculations(){
   if(matrixBuilt) updateMatrixCalculations();
-  if(currentSlide===5) updateTransformView();
-  if(currentSlide===6) buildFinancialDashboard();
-  if(currentSlide===8) updateSummaryMetrics();
+  if(currentSlide===7) updateTransformView();
+  if(currentSlide===8) buildFinancialDashboard();
+  if(currentSlide===10) buildExecutiveSummary();
 }
 
 // ===== SLIDE 5: TRANSFORMATION =====
@@ -2176,6 +2750,7 @@ async function triggerSlide5() {
   const impact = calculateOffshoreImpact();
   updateBeforeAfterPanel(impact);
   renderTransformInsights(impact);
+  renderTransformSolutions();
 
   if(!slide5Animated){
     slide5Animated=true;
@@ -2190,6 +2765,8 @@ async function triggerSlide5() {
     ],3500);
   }
   initTransformMap(impact);
+  // Re-invalidate map size after solution columns render
+  setTimeout(function(){ if(transformMap) transformMap.invalidateSize(); }, 150);
 }
 
 function renderTransformInsights(impact) {
@@ -2201,6 +2778,7 @@ function updateTransformView(){
   const impact=calculateOffshoreImpact();
   updateBeforeAfterPanel(impact);
   renderTransformInsights(impact);
+  renderTransformSolutions();
   // Update map markers if they exist
   if(transformMap) {
     initTransformMap(impact);
@@ -2248,9 +2826,10 @@ function initTransformMap(impact) {
                   <span class="fte-code">${code}</span>
                 </div>
                 <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-lang">${(c.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ')}</span>
               </div>`,
-        iconSize:[80,72],
-        iconAnchor:[40,36]
+        iconSize:[80,80],
+        iconAnchor:[40,40]
       })
     }).addTo(transformMap);
   }
@@ -2273,9 +2852,10 @@ function initTransformMap(impact) {
                   <span class="fte-code">${code}</span>
                 </div>
                 <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-lang">${(c.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ')}</span>
               </div>`,
-        iconSize:[80,72],
-        iconAnchor:[40,36]
+        iconSize:[80,80],
+        iconAnchor:[40,40]
       })
     }).addTo(transformMap);
   }
@@ -2285,8 +2865,16 @@ function initTransformMap(impact) {
     transformMap.fitBounds(bounds, {padding:[60,60], maxZoom:3});
   }
 
-  // Clean dotted flow lines with animated dash motion
-  const flowColors = ['#00d4ff','#7c5cfc','#3b82f6','#8b5cf6','#10b981','#f59e0b'];
+  // Simple straight dotted flow lines — colored by source region
+  // Each source country gets a distinct color for clear visual grouping
+  const regionColors = {};
+  const regionPalette = ['#00d4ff', '#7c5cfc', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+  let colorIdx = 0;
+  for (const srcCode of Object.keys(CONFIG.locations)) {
+    regionColors[srcCode] = regionPalette[colorIdx % regionPalette.length];
+    colorIdx++;
+  }
+
   let flowIdx = 0;
   for(const srcCode of Object.keys(CONFIG.locations)){
     for(const destCode of Object.keys(CONFIG.offshoreLocations)){
@@ -2297,30 +2885,28 @@ function initTransformMap(impact) {
       const ftesMoved = calculateFlowBetween(srcCode, destCode, impact);
       if(ftesMoved <= 0) continue;
 
-      const color = flowColors[flowIdx % flowColors.length];
-      const lineWeight = Math.max(2, Math.min(4, ftesMoved/40));
+      const color = regionColors[srcCode] || '#00d4ff';
+      const lineWeight = Math.max(1.5, Math.min(2.5, ftesMoved/60));
 
-      // Create dotted polyline with animated dash offset
+      // Simple straight dotted line
       const flowLine = L.polyline([srcLL, destLL], {
         color: color,
         weight: lineWeight,
-        opacity: 0.6,
-        dashArray: '8 12',
+        opacity: 0.7,
+        dashArray: '8 6',
         lineCap: 'round',
         className: 'animated-flow-line'
       }).addTo(transformMap);
       antPaths.push(flowLine);
 
-      // Add FTE count label at midpoint of line
+      // FTE count label at midpoint
       const midLat = (srcLL[0] + destLL[0]) / 2;
       const midLng = (srcLL[1] + destLL[1]) / 2;
-      // Offset slightly so labels don't overlap
-      const offsetLat = (flowIdx % 2 === 0 ? 2 : -2);
-
-      L.marker([midLat + offsetLat, midLng], {
+      const labelOffset = flowIdx % 2 === 0 ? 1.5 : -1.5;
+      L.marker([midLat + labelOffset, midLng], {
         icon: L.divIcon({
           className: 'map-bubble',
-          html: `<span class="flow-line-label">${ftesMoved} FTEs</span>`,
+          html: `<span class="flow-line-label" style="border-color:${color};color:${color}">${ftesMoved} FTEs</span>`,
           iconSize: [60, 20],
           iconAnchor: [30, 10]
         })
@@ -2336,10 +2922,11 @@ function initTransformMap(impact) {
     animStyle.id = 'flow-line-anim-style';
     animStyle.textContent = `
       .animated-flow-line {
-        animation: dash-flow 1.5s linear infinite;
+        animation: dash-flow 2.5s linear infinite;
+        filter: drop-shadow(0 0 2px currentColor);
       }
       @keyframes dash-flow {
-        to { stroke-dashoffset: -40; }
+        to { stroke-dashoffset: -28; }
       }
     `;
     document.head.appendChild(animStyle);
@@ -2388,6 +2975,67 @@ function updateBeforeAfterPanel(impact) {
     <div class="ba-column after"><h4>Proposed State</h4><div class="ba-cards">${afterCards}</div></div>`;
 }
 
+// ===== SOLUTION COLUMNS ON SLIDE 7 =====
+function renderTransformSolutions() {
+  const leftCol = document.getElementById('transform-solutions-left');
+  const rightCol = document.getElementById('transform-solutions-right');
+  if (!leftCol || !rightCol) return;
+
+  const allPainPoints = [
+    ...selectedPainPoints.people,
+    ...selectedPainPoints.process,
+    ...selectedPainPoints.technology
+  ];
+
+  if (allPainPoints.length === 0) {
+    leftCol.innerHTML = '<div class="ts-empty">Add pain points on the Diagnostic board to see solution recommendations here.</div>';
+    // Keep the before-after panel in right col
+    const baPanel = rightCol.querySelector('.before-after-panel');
+    rightCol.innerHTML = '';
+    if (baPanel) rightCol.appendChild(baPanel);
+    return;
+  }
+
+  // Classify & generate recommendations
+  const classified = (typeof classifyPainPointsForSolutions === 'function')
+    ? classifyPainPointsForSolutions(allPainPoints)
+    : { process: [], automation: [], tech: [] };
+
+  const dataCtx = collectDataContext();
+
+  let recs = { process: [], automation: [], tech: [] };
+  if (typeof buildDataDrivenRecommendations === 'function') {
+    try { recs = buildDataDrivenRecommendations(classified, dataCtx); }
+    catch (e) { console.warn('Rec builder error:', e); }
+  }
+
+  // Build HTML — Process + Automation in left col, Tech in right col
+  function buildGroupHTML(label, icon, items) {
+    let html = '<div class="ts-group-label"><span class="ts-icon">' + icon + '</span>' + label + '</div>';
+    if (items.length === 0) {
+      html += '<div class="ts-empty">No matching recommendations</div>';
+    } else {
+      for (const r of items) {
+        html += '<div class="ts-bullet"><div class="ts-bullet-title">' + r.title + '</div><div class="ts-bullet-body">' + r.insight + '</div></div>';
+      }
+    }
+    return html;
+  }
+
+  leftCol.innerHTML = buildGroupHTML('Process', '\uD83D\uDCCB', recs.process)
+                    + buildGroupHTML('Automation', '\uD83E\uDD16', recs.automation);
+
+  // Preserve the before-after panel reference
+  const baPanel = rightCol.querySelector('.before-after-panel');
+  rightCol.innerHTML = buildGroupHTML('Technology', '\uD83D\uDD27', recs.tech);
+  if (baPanel) rightCol.appendChild(baPanel);
+
+  // Animate bullets in
+  gsap.from('.transform-solution-col .ts-bullet', {
+    y: 12, opacity: 0, duration: 0.3, stagger: 0.08, ease: 'power2.out', delay: 0.5
+  });
+}
+
 // ===== AI THINKING OVERLAY =====
 async function showAIThinking(messages, duration) {
   const overlay = document.getElementById('ai-overlay');
@@ -2426,11 +3074,16 @@ async function showAIThinking(messages, duration) {
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 // ===== SLIDE 6: FINANCIAL =====
+let financialDashboardAnimated = false;
 function buildFinancialDashboard() {
   const impact = calculateOffshoreImpact();
   const fin = calculateFinancials(impact);
 
-  gsap.from('.dashboard-card',{y:30,opacity:0,duration:0.5,stagger:0.12,ease:'power2.out'});
+  // Only animate cards on first build — subsequent calls (slider updates) skip animation
+  if (!financialDashboardAnimated) {
+    financialDashboardAnimated = true;
+    gsap.from('.dashboard-card',{y:30,opacity:0,duration:0.5,stagger:0.12,ease:'power2.out'});
+  }
 
   // Rate chart — dynamic labels and data
   const allLocCodes = [...Object.keys(CONFIG.locations), ...Object.keys(CONFIG.offshoreLocations)];
@@ -2476,11 +3129,16 @@ function buildFinancialDashboard() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:10},usePointStyle:true,pointStyleWidth:8,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${formatCurrency(c.raw)}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#64748b'}},y:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>formatShort(v)}}},animation:{duration:800}}
   });
 
-  // Savings card
-  const savObj = {val:0};
-  gsap.to(savObj,{val:fin.annualSavings,duration:1.5,ease:'power2.out',
-    onUpdate:()=>{document.getElementById('savings-amount').textContent=formatCurrency(Math.round(savObj.val));}
-  });
+  // Savings card — animate only on first load, direct-set on slider updates
+  if (!financialDashboardAnimated || financialDashboardAnimated) {
+    // Kill any in-flight savings tween before starting a new one
+    gsap.killTweensOf('.savings-counter-proxy');
+    const currentDisplayed = parseInt((document.getElementById('savings-amount').textContent || '0').replace(/[^0-9-]/g,'')) || 0;
+    const savObj = {val: currentDisplayed};
+    gsap.to(savObj,{val:fin.annualSavings,duration:0.4,ease:'power2.out',
+      onUpdate:()=>{document.getElementById('savings-amount').textContent=formatCurrency(Math.round(savObj.val));}
+    });
+  }
   document.getElementById('savings-percent').textContent = fin.savingsPercent+'% reduction';
   document.getElementById('current-cost-display').textContent = formatCurrency(fin.totalCurrentCost);
   document.getElementById('proposed-cost-display').textContent = formatCurrency(fin.totalProposedCost);
@@ -2555,40 +3213,1055 @@ function animateRoadmap() {
   tl.from('.milestone-list li',{x:-20,opacity:0,duration:0.3,stagger:0.06,ease:'power2.out'},1.5);
 }
 
-// ===== SLIDE 8: SUMMARY =====
-function animateSummary() {
-  updateSummaryMetrics();
-  updateSummaryNextSteps();
-  const tl = gsap.timeline();
-  tl.to('.metric-card',{opacity:1,y:0,scale:1,duration:0.5,stagger:0.15,ease:'back.out(1.5)'})
-    .from('.next-steps',{y:30,opacity:0,duration:0.5,ease:'power2.out'},'-=0.3')
-    .from('.steps-list li',{x:-20,opacity:0,duration:0.3,stagger:0.1,ease:'power2.out'},'-=0.2')
-    .from('.cta-section',{y:20,opacity:0,duration:0.4,ease:'power2.out'},'-=0.2');
-}
-
-function updateSummaryNextSteps(){
+// ===== SLIDE 10: EXECUTIVE SUMMARY (Before/After) =====
+function buildExecutiveSummary() {
   const impact = calculateOffshoreImpact();
-  const offCodes = Object.keys(CONFIG.offshoreLocations);
-  const topDest = offCodes.sort((a,b)=>(impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0));
-  const topName = COUNTRY_DB[topDest[0]]?.name || 'primary destination';
-  const pilotFTEs = Math.round(impact.totalMovedFTEs * 0.2);
-  const destList = topDest.slice(0,3).map(c=>COUNTRY_DB[c]?.name||c).join(', ');
+  const fin = calculateFinancials(impact);
+  const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
+  const totalCurrentCost = fin.totalCurrentCost || 0;
 
-  const stepsList = document.querySelector('.steps-list');
-  if(stepsList) stepsList.innerHTML = `
-    <li>Stakeholder alignment on ${destList} strategy (Week 1-2)</li>
-    <li>Detailed business case with affinity scoring validation (Week 2-4)</li>
-    <li>Vendor selection & ${topName} site visit (Month 2)</li>
-    <li>Pilot program: ${pilotFTEs} FTEs to ${topName} (Month 3)</li>`;
+  // === CURRENT STATE (left column) ===
+  const currentBody = document.getElementById('exec-current-body');
+  if (currentBody) {
+    let html = '';
+
+    // Pain Points
+    const allPains = [...selectedPainPoints.people, ...selectedPainPoints.process, ...selectedPainPoints.technology];
+    if (allPains.length > 0) {
+      html += '<div class="exec-ba-section-label">Diagnosed Pain Points</div>';
+      allPains.slice(0, 6).forEach(p => {
+        html += '<div class="exec-ba-item">\u2022 ' + p + '</div>';
+      });
+      if (allPains.length > 6) html += '<div class="exec-ba-item" style="color:var(--text-muted)">+ ' + (allPains.length - 6) + ' more</div>';
+    }
+
+    // Current Locations
+    html += '<div class="exec-ba-section-label">Current Workforce</div>';
+    for (const [code, loc] of Object.entries(CONFIG.locations)) {
+      const c = COUNTRY_DB[code];
+      html += '<div class="exec-ba-loc-row"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + '<span class="loc-ftes">' + loc.headcount + ' FTEs</span></div>';
+    }
+
+    // Annual Cost
+    if (totalCurrentCost > 0) {
+      html += '<div class="exec-ba-section-label">Annual Operating Cost</div>';
+      html += '<div class="exec-ba-cost">' + formatCurrency(totalCurrentCost) + '</div>';
+    }
+
+    currentBody.innerHTML = html;
+  }
+
+  // === FUTURE STATE (right column) ===
+  const futureBody = document.getElementById('exec-future-body');
+  if (futureBody) {
+    let html = '';
+
+    // Solutions Applied (from recommendations)
+    const allPainPoints = [...selectedPainPoints.people, ...selectedPainPoints.process, ...selectedPainPoints.technology];
+    let recs = { process: [], automation: [], tech: [] };
+    if (allPainPoints.length > 0 && typeof classifyPainPointsForSolutions === 'function' && typeof buildDataDrivenRecommendations === 'function') {
+      try {
+        const classified = classifyPainPointsForSolutions(allPainPoints);
+        const dataCtx = collectDataContext();
+        recs = buildDataDrivenRecommendations(classified, dataCtx);
+      } catch(e) {}
+    }
+
+    const topRecs = [...(recs.process||[]), ...(recs.automation||[]), ...(recs.tech||[])].slice(0, 5);
+    if (topRecs.length > 0) {
+      html += '<div class="exec-ba-section-label">Solutions Applied</div>';
+      topRecs.forEach(r => {
+        html += '<div class="exec-ba-item highlight">\u2192 ' + r.title + '</div>';
+      });
+    }
+
+    // New Operating Model
+    html += '<div class="exec-ba-section-label">New Operating Model</div>';
+    for (const [code, loc] of Object.entries(CONFIG.locations)) {
+      const c = COUNTRY_DB[code];
+      const retained = impact.retainedBySource[code] || 0;
+      html += '<div class="exec-ba-loc-row"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (retained)<span class="loc-ftes">' + retained + ' FTEs</span></div>';
+    }
+    for (const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
+      const c = COUNTRY_DB[code];
+      const ftes = impact.movedByDestination[code] || 0;
+      html += '<div class="exec-ba-loc-row" style="color:var(--accent-cyan)"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (offshore)<span class="loc-ftes">' + ftes + ' FTEs</span></div>';
+    }
+
+    // Projected Savings
+    if (fin.annualSavings > 0) {
+      html += '<div class="exec-ba-section-label">Projected Annual Savings</div>';
+      html += '<div class="exec-ba-cost" style="color:#10b981">' + formatCurrency(fin.annualSavings) + '/yr</div>';
+    }
+
+    futureBody.innerHTML = html;
+  }
+
+  // === KPI STRIP ===
+  const kpiStrip = document.getElementById('exec-kpi-strip');
+  if (kpiStrip) {
+    kpiStrip.innerHTML = `
+      <div class="exec-kpi"><div class="exec-kpi-value green">${formatCurrency(fin.annualSavings)}</div><div class="exec-kpi-label">Annual Savings</div></div>
+      <div class="exec-kpi"><div class="exec-kpi-value blue">${impact.totalMovedFTEs}</div><div class="exec-kpi-label">FTEs Transitioned</div></div>
+      <div class="exec-kpi"><div class="exec-kpi-value purple">${fin.savingsPercent}%</div><div class="exec-kpi-label">Cost Reduction</div></div>
+      <div class="exec-kpi"><div class="exec-kpi-value orange">${fin.breakEvenMonths} mo</div><div class="exec-kpi-label">Time to ROI</div></div>`;
+  }
+
+  // Animate
+  const tl = gsap.timeline();
+  tl.from('.exec-ba-col', { y: 30, opacity: 0, duration: 0.5, stagger: 0.2, ease: 'power2.out' })
+    .from('.exec-ba-divider', { scale: 0, duration: 0.3, ease: 'back.out(2)' }, '-=0.3')
+    .from('.exec-ba-item, .exec-ba-loc-row', { x: -10, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.out' }, '-=0.2')
+    .from('.exec-kpi', { y: 20, opacity: 0, duration: 0.4, stagger: 0.1, ease: 'back.out(1.5)' }, '-=0.2')
+    .from('.cta-section', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, '-=0.2');
+
+  // Digital rain
+  if (typeof initDigitalRain === 'function') initDigitalRain('rain-canvas-summary');
 }
 
-function updateSummaryMetrics(){
-  const impact=calculateOffshoreImpact();
-  const fin=calculateFinancials(impact);
-  document.getElementById('summary-savings').textContent=formatCurrency(fin.annualSavings);
-  document.getElementById('summary-ftes').textContent=impact.totalMovedFTEs;
-  document.getElementById('summary-percent').textContent=fin.savingsPercent+'%';
-  document.getElementById('summary-breakeven').textContent=fin.breakEvenMonths;
+// ===== SLIDE 2: CONTEXT FUNCTIONS =====
+window.updateDiagnosticContext = function() {
+  const sel = document.getElementById('ctx-industry');
+  if (!sel) return;
+  diagnosticContext.industry = sel.value;
+  const otherInput = document.getElementById('ctx-industry-other');
+  if (otherInput) {
+    otherInput.style.display = sel.value === 'other' ? 'block' : 'none';
+    if (sel.value === 'other') diagnosticContext.industry = otherInput.value || 'other';
+  }
+  diagnosticContext.clientName = document.getElementById('ctx-client-name')?.value || '';
+};
+
+window.selectSize = function(el) {
+  document.querySelectorAll('.size-badge').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  diagnosticContext.companySize = el.dataset.size;
+};
+
+window.selectRegion = function(el) {
+  document.querySelectorAll('.region-badge').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  diagnosticContext.region = el.dataset.region;
+};
+
+// ===== SLIDE 3: PAIN POINT BOARD =====
+function initPainBoard() {
+  const industry = diagnosticContext.industry || '';
+  const categories = ['people', 'process', 'technology'];
+
+  categories.forEach(cat => {
+    const input = document.getElementById('pain-input-' + cat);
+    const dropdown = document.getElementById('suggest-' + cat);
+    if (!input || !dropdown) return;
+
+    // Build suggestion pool: _common + industry-specific
+    const lib = (typeof PAIN_POINT_LIBRARY !== 'undefined') ? PAIN_POINT_LIBRARY[cat] || {} : {};
+    const pool = [...(lib._common || [])];
+    if (industry && lib[industry]) pool.push(...lib[industry]);
+
+    const available = () => pool.filter(p => !selectedPainPoints[cat].includes(p));
+    let highlightIdx = -1;
+
+    input.oninput = function() {
+      const query = input.value.toLowerCase().trim();
+      highlightIdx = -1;
+      if (query.length < 2) { dropdown.classList.remove('visible'); return; }
+      const matches = available().filter(p => p.toLowerCase().includes(query)).slice(0, 8);
+      if (matches.length === 0) { dropdown.classList.remove('visible'); return; }
+      dropdown.innerHTML = matches.map(m =>
+        '<div class="suggest-item" data-value="' + m.replace(/"/g, '&quot;') + '">' + m + '</div>'
+      ).join('');
+      dropdown.classList.add('visible');
+      dropdown.querySelectorAll('.suggest-item').forEach(item => {
+        item.onmousedown = function(e) { e.preventDefault(); addPainPoint(cat, item.dataset.value); };
+      });
+    };
+
+    input.onkeydown = function(e) {
+      const items = dropdown.querySelectorAll('.suggest-item');
+      if (e.key === 'ArrowDown' && dropdown.classList.contains('visible')) {
+        e.preventDefault();
+        highlightIdx = Math.min(highlightIdx + 1, items.length - 1);
+        items.forEach((it, i) => it.classList.toggle('highlighted', i === highlightIdx));
+      } else if (e.key === 'ArrowUp' && dropdown.classList.contains('visible')) {
+        e.preventDefault();
+        highlightIdx = Math.max(highlightIdx - 1, 0);
+        items.forEach((it, i) => it.classList.toggle('highlighted', i === highlightIdx));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlightIdx >= 0 && items[highlightIdx]) {
+          addPainPoint(cat, items[highlightIdx].dataset.value);
+        } else if (input.value.trim()) {
+          addPainPoint(cat, input.value.trim());
+        }
+        highlightIdx = -1;
+      } else if (e.key === 'Tab') {
+        dropdown.classList.remove('visible');
+      }
+    };
+
+    input.onblur = function() { setTimeout(() => dropdown.classList.remove('visible'), 200); };
+  });
+
+  // Keyboard shortcuts: Ctrl+1/2/3 to jump columns
+  document.getElementById('slide-3')._painKeyHandler = function(e) {
+    if (e.ctrlKey && ['1','2','3'].includes(e.key)) {
+      e.preventDefault();
+      const targets = ['people','process','technology'];
+      const inp = document.getElementById('pain-input-' + targets[parseInt(e.key) - 1]);
+      if (inp) inp.focus();
+    }
+  };
+
+  renderPainCards();
+
+  // Ensure all columns and footer are visible
+  document.querySelectorAll('#slide-3 .pain-column').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
+  const footer3 = document.querySelector('#slide-3 .pain-board-footer');
+  if (footer3) { footer3.style.opacity = '1'; footer3.style.transform = 'none'; }
+
+  // Init digital rain if available
+  if (typeof initDigitalRain === 'function') initDigitalRain('rain-canvas-board');
+}
+
+function addPainPoint(category, text) {
+  if (selectedPainPoints[category].length >= 10) return;
+  if (selectedPainPoints[category].includes(text)) return;
+  selectedPainPoints[category].push(text);
+  const input = document.getElementById('pain-input-' + category);
+  const dropdown = document.getElementById('suggest-' + category);
+  if (input) input.value = '';
+  if (dropdown) dropdown.classList.remove('visible');
+  renderPainCards();
+}
+window.addPainPoint = addPainPoint;
+
+function removePainPoint(category, index) {
+  selectedPainPoints[category].splice(index, 1);
+  renderPainCards();
+}
+window.removePainPoint = removePainPoint;
+
+function renderPainCards() {
+  ['people', 'process', 'technology'].forEach(cat => {
+    const container = document.getElementById('pain-cards-' + cat);
+    const counter = document.getElementById(cat + '-counter');
+    if (!container) return;
+    container.innerHTML = selectedPainPoints[cat].map((text, i) =>
+      '<div class="pain-card"><span class="pain-category-dot ' + cat + '"></span>' +
+      '<span class="pain-text">' + text + '</span>' +
+      '<button class="pain-remove" onclick="removePainPoint(\'' + cat + '\',' + i + ')">&times;</button></div>'
+    ).join('');
+    if (counter) counter.textContent = selectedPainPoints[cat].length + '/10';
+  });
+  const total = Object.values(selectedPainPoints).reduce((s, arr) => s + arr.length, 0);
+  const totalEl = document.getElementById('pain-total');
+  if (totalEl) totalEl.textContent = total + ' pain point' + (total !== 1 ? 's' : '') + ' captured';
+}
+
+// ===== CLIENT NOTES =====
+window.saveClientNotes = function() {
+  const el = document.getElementById('client-notes-input');
+  if (el) clientNotes = el.value;
+};
+
+// ===== SLIDE 9: SOLUTION FRAMEWORK =====
+
+// Collect all real data into a single context object
+function collectDataContext() {
+  const industry = diagnosticContext.industry || 'technology';
+  let impact, financials;
+  try {
+    impact = calculateOffshoreImpact();
+    financials = calculateFinancials(impact);
+  } catch (e) {
+    impact = { totalMovedFTEs: 0, movedByDestination: {}, flowDetail: {}, affinities: {} };
+    financials = { annualSavings: 0, savingsPercent: 0, breakEvenMonths: 0, totalCurrentCost: 0, totalProposedCost: 0, transitionCost: 0 };
+  }
+
+  const offCodes = Object.keys(CONFIG.offshoreLocations || {});
+  const topDstCode = offCodes.sort((a, b) =>
+    ((impact.movedByDestination || {})[b] || 0) - ((impact.movedByDestination || {})[a] || 0)
+  )[0] || null;
+  const topDstName = topDstCode ? (COUNTRY_DB[topDstCode]?.name || null) : null;
+
+  let totalHeadcount = 0;
+  for (const loc of Object.values(CONFIG.locations || {})) totalHeadcount += (loc.headcount || 0);
+
+  let costRatio = null;
+  if (topDstCode) {
+    const firstSrcCode = Object.keys(CONFIG.locations)[0];
+    const srcRate = CONFIG.locations[firstSrcCode]?.hourlyRate || 35;
+    const dstRate = CONFIG.offshoreLocations[topDstCode]?.hourlyRate || 12;
+    costRatio = (srcRate / dstRate).toFixed(1);
+  }
+
+  const channels = {};
+  for (const loc of Object.values(CONFIG.locations || {})) {
+    for (const ch of Object.keys(loc.channels || {})) {
+      channels[ch] = (channels[ch] || 0) + (loc.channels[ch]?.total || 0);
+    }
+  }
+
+  const destSummary = offCodes.map(code => ({
+    code, name: COUNTRY_DB[code]?.name || code,
+    ftes: impact.movedByDestination[code] || 0,
+    rate: CONFIG.offshoreLocations[code]?.hourlyRate || 0
+  })).filter(d => d.ftes > 0);
+
+  return {
+    industry, totalHeadcount,
+    movedFTEs: impact.totalMovedFTEs || 0,
+    topDest: topDstName, topDstCode, costRatio,
+    annualSavings: financials.annualSavings || 0,
+    savingsPercent: financials.savingsPercent || 0,
+    breakEvenMonths: financials.breakEvenMonths || 0,
+    totalCurrentCost: financials.totalCurrentCost || 0,
+    transitionCost: financials.transitionCost || 0,
+    channels, destSummary,
+    flowDetail: impact.flowDetail || {},
+    clientNotes: clientNotes || ''
+  };
+}
+
+// Build expert analysis using ONLY real data
+function buildExpertAnalysis(allPainPoints, classified, ctx) {
+  const analysisEl = document.getElementById('expert-analysis-text');
+  if (!analysisEl) return;
+
+  if (allPainPoints.length === 0) {
+    analysisEl.textContent = 'Complete the pain point diagnostic and workforce configuration to generate expert analysis.';
+    return;
+  }
+
+  const v = function(key) { return typeof vocab === 'function' ? vocab(ctx.industry, key) : key; };
+  const parts = [];
+
+  // Sentence 1: Strategic framing
+  const processCount = (classified.process || []).length;
+  const autoCount = (classified.automation || []).length;
+  const techCount = (classified.tech || []).length;
+  const distParts = [];
+  if (processCount > 0) distParts.push(processCount + ' in process improvement');
+  if (autoCount > 0) distParts.push(autoCount + ' in automation/AI');
+  if (techCount > 0) distParts.push(techCount + ' in technology modernization');
+  parts.push('Our diagnostic uncovered ' + allPainPoints.length + ' operational pain point' +
+    (allPainPoints.length > 1 ? 's' : '') +
+    (distParts.length > 0 ? ' across three solution domains — ' + distParts.join(', ') : '') +
+    '. The solution framework above provides a structured transformation roadmap addressing each identified gap with targeted interventions.');
+
+  // Sentence 2: Geo + FTE strategic context (only if data exists)
+  if (ctx.movedFTEs > 0 && ctx.topDest) {
+    let geoSentence = 'The recommended operating model transitions ' + ctx.movedFTEs + ' FTEs to ' + ctx.topDest;
+    if (ctx.destSummary && ctx.destSummary.length > 1) {
+      const otherDests = ctx.destSummary.filter(d => d.name !== ctx.topDest);
+      if (otherDests.length > 0) geoSentence += ' and ' + otherDests.map(d => d.name + ' (' + d.ftes + ' FTEs)').join(', ');
+    }
+    if (ctx.costRatio) geoSentence += ', capturing a ' + ctx.costRatio + 'x labor cost arbitrage';
+    geoSentence += ' while maintaining service quality through the process and technology safeguards outlined above.';
+    parts.push(geoSentence);
+  }
+
+  // Sentence 3: Financial case (only if data exists)
+  if (ctx.annualSavings > 0) {
+    let finSentence = 'Combined, these interventions are projected to deliver $' + (ctx.annualSavings / 1e6).toFixed(1) + 'M in annual run-rate savings';
+    if (ctx.savingsPercent > 0) finSentence += ' (' + ctx.savingsPercent + '% cost reduction)';
+    if (ctx.breakEvenMonths > 0) finSentence += ' with full payback in ' + ctx.breakEvenMonths + ' months';
+    finSentence += ' — a compelling business case for immediate action.';
+    parts.push(finSentence);
+  }
+
+  // Add client notes context if provided
+  if (ctx.clientNotes && ctx.clientNotes.trim()) {
+    parts.push('Additional client context has been noted and factored into the recommendations above.');
+  }
+
+  analysisEl.textContent = parts.join(' ');
+
+  // LLM enhancement (async, if configured)
+  if (LLM_CONFIG.enabled && LLM_CONFIG.apiKey) {
+    const geoData = { topDest: ctx.topDest, totalMovedFTEs: ctx.movedFTEs, costRatio: ctx.costRatio };
+    const financials = { annualSavings: ctx.annualSavings, breakEvenMonths: ctx.breakEvenMonths };
+    callLLM(
+      buildLLMPrompt(allPainPoints, ctx.industry, geoData, financials),
+      'You are a McKinsey-grade management consultant. Be specific, cite the pain points, and quantify impact using ONLY the numbers provided. Do NOT fabricate percentages.'
+    ).then(function(result) {
+      if (result && analysisEl) analysisEl.textContent = result;
+    });
+  }
+}
+
+// ---- Rendering helper used by both rule-based and LLM paths ----
+const CATEGORY_CONFIG = [
+  { key: 'process', sectionId: 'sol-section-process', painsId: 'sol-pains-process',
+    cardsId: 'sol-cards-process', countId: 'sol-count-process' },
+  { key: 'automation', sectionId: 'sol-section-automation', painsId: 'sol-pains-automation',
+    cardsId: 'sol-cards-automation', countId: 'sol-count-automation' },
+  { key: 'tech', sectionId: 'sol-section-tech', painsId: 'sol-pains-tech',
+    cardsId: 'sol-cards-tech', countId: 'sol-count-tech' }
+];
+
+function renderRecommendations(classified, recommendations, allPainPoints) {
+  for (const cfg of CATEGORY_CONFIG) {
+    const pains = classified[cfg.key] || [];
+    const recs = recommendations[cfg.key] || [];
+    const section = document.getElementById(cfg.sectionId);
+
+    if (section) section.classList.toggle('empty', pains.length === 0 && allPainPoints.length > 0);
+
+    const countEl = document.getElementById(cfg.countId);
+    if (countEl) countEl.textContent = pains.length > 0 ? pains.length + ' pain point' + (pains.length > 1 ? 's' : '') : '';
+
+    const painsEl = document.getElementById(cfg.painsId);
+    if (painsEl) {
+      painsEl.innerHTML = pains.map(function(p) {
+        const painText = typeof p === 'string' ? p : p.pain;
+        return '<span class="sol-pain-tag" title="' + painText.replace(/"/g, '&quot;') + '">' + painText + '</span>';
+      }).join('');
+    }
+
+    const cardsEl = document.getElementById(cfg.cardsId);
+    if (cardsEl) {
+      if (recs.length === 0 && pains.length > 0) {
+        cardsEl.innerHTML = '<div class="sol-empty-msg">Pain points classified here — enable AI recommendations in ⚙ Settings for deeper analysis.</div>';
+      } else if (recs.length === 0) {
+        cardsEl.innerHTML = '<div class="sol-empty-msg">Add pain points on the Pain Point Board to generate recommendations.</div>';
+      } else {
+        cardsEl.innerHTML = recs.map(function(rec) {
+          const sourceHTML = rec.matchedPainTexts && rec.matchedPainTexts.length > 0
+            ? '<div class="sol-card-source">Based on: ' + rec.matchedPainTexts.slice(0, 3).join(' \u2022 ') + '</div>'
+            : '';
+          return '<div class="sol-card">' +
+            '<div class="sol-card-header"><span class="sol-card-title">' + rec.title + '</span></div>' +
+            '<div class="sol-card-insight">' + rec.insight + '</div>' +
+            sourceHTML +
+          '</div>';
+        }).join('');
+      }
+    }
+  }
+}
+
+function showSolutionLoading(show) {
+  for (const cfg of CATEGORY_CONFIG) {
+    const cardsEl = document.getElementById(cfg.cardsId);
+    if (cardsEl && show) {
+      cardsEl.innerHTML = '<div class="sol-loading"><div class="sol-loading-spinner"></div><span>AI is analyzing pain points and generating recommendations...</span></div>';
+    }
+  }
+}
+
+// ---- LLM recommendation builder ----
+function buildLLMRecommendationPrompt(allPainPoints, dataCtx) {
+  const painList = allPainPoints.map(function(p, i) { return (i + 1) + '. ' + p; }).join('\n');
+
+  let geoContext = '';
+  if (dataCtx.movedFTEs > 0 && dataCtx.topDest) {
+    geoContext = 'Offshore transition: ' + dataCtx.movedFTEs + ' FTEs to ' + dataCtx.topDest;
+    if (dataCtx.destSummary && dataCtx.destSummary.length > 1) {
+      geoContext += ' (also ' + dataCtx.destSummary.filter(function(d) { return d.name !== dataCtx.topDest; }).map(function(d) { return d.name + ': ' + d.ftes + ' FTEs'; }).join(', ') + ')';
+    }
+    if (dataCtx.costRatio) geoContext += '. Cost ratio: ' + dataCtx.costRatio + 'x.';
+  }
+
+  let finContext = '';
+  if (dataCtx.annualSavings > 0) {
+    finContext = 'Projected annual savings: $' + (dataCtx.annualSavings / 1e6).toFixed(1) + 'M (' + dataCtx.savingsPercent + '% reduction). Break-even: ' + dataCtx.breakEvenMonths + ' months.';
+  }
+
+  const channelList = Object.keys(dataCtx.channels || {}).join(', ') || 'not specified';
+
+  return `You are a senior transformation consultant (McKinsey/Bain caliber). A client in the **${dataCtx.industry}** industry has ${dataCtx.totalHeadcount} FTEs across their operations.
+
+DIAGNOSED PAIN POINTS:
+${painList}
+
+TRANSFORMATION CONTEXT:
+- ${geoContext || 'No offshore transition configured yet.'}
+- ${finContext || 'Financial projections not yet available.'}
+- Channels: ${channelList}
+- Total headcount: ${dataCtx.totalHeadcount}
+${dataCtx.clientNotes ? '\nADDITIONAL CLIENT CONTEXT (consultant notes from meeting):\n' + dataCtx.clientNotes + '\n' : ''}
+YOUR TASK:
+Analyze these pain points and produce actionable recommendations grouped into exactly 3 categories. For each recommendation:
+- Give it a clear, specific title (not generic)
+- Write 2-3 sentences of **prescriptive, actionable advice** — tell the client exactly WHAT to do, HOW to do it, and WHY it matters for their business
+- Reference the specific pain points it addresses
+- Where relevant, connect to the offshore geography, FTE numbers, cost ratios, and savings figures
+
+RESPOND IN THIS EXACT JSON FORMAT (no markdown, no code fences, pure JSON):
+{
+  "process": [
+    {"title": "...", "insight": "...", "painRefs": [1, 3]}
+  ],
+  "automation": [
+    {"title": "...", "insight": "...", "painRefs": [2, 5]}
+  ],
+  "tech": [
+    {"title": "...", "insight": "...", "painRefs": [4]}
+  ],
+  "synthesis": "A 2-3 sentence executive-level synthesis connecting all recommendations to the transformation business case."
+}
+
+RULES:
+- 2-4 recommendations per category (fewer if pain points don't warrant it; an empty array [] is fine)
+- painRefs are 1-indexed numbers from the pain point list above
+- No fabricated percentages or made-up statistics
+- Use ONLY the data provided above — do not invent metrics
+- Be specific to the ${dataCtx.industry} industry context
+- Each insight should be 2-3 sentences of direct, actionable advice`;
+}
+
+async function getLLMRecommendations(allPainPoints, dataCtx) {
+  const prompt = buildLLMRecommendationPrompt(allPainPoints, dataCtx);
+  const systemPrompt = 'You are a world-class management consultant specializing in operational transformation, offshore delivery model design, and technology modernization. You give specific, prescriptive advice grounded in data — never vague platitudes. Respond ONLY with valid JSON, no markdown formatting.';
+
+  const raw = await callLLM(prompt, systemPrompt, 4000);
+  if (!raw) return null;
+
+  try {
+    // Strip any markdown code fences the model might add
+    let cleaned = raw.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    }
+    const parsed = JSON.parse(cleaned);
+
+    // Map painRefs back to actual pain text
+    function mapRefs(recs) {
+      return (recs || []).map(function(rec) {
+        const texts = (rec.painRefs || []).map(function(idx) {
+          return allPainPoints[idx - 1] || '';
+        }).filter(Boolean);
+        return { title: rec.title, insight: rec.insight, matchedPainTexts: texts };
+      });
+    }
+
+    return {
+      process: mapRefs(parsed.process),
+      automation: mapRefs(parsed.automation),
+      tech: mapRefs(parsed.tech),
+      synthesis: parsed.synthesis || null
+    };
+  } catch (e) {
+    console.warn('Failed to parse LLM recommendations:', e.message);
+    return null;
+  }
+}
+
+// ---- Main entry point ----
+function buildSolutionFramework() {
+  const allPainPoints = [
+    ...selectedPainPoints.people,
+    ...selectedPainPoints.process,
+    ...selectedPainPoints.technology
+  ];
+
+  // 1. Classify pain points into 3 solution groups
+  const classified = (typeof classifyPainPointsForSolutions === 'function')
+    ? classifyPainPointsForSolutions(allPainPoints)
+    : { process: [], automation: [], tech: [] };
+
+  // 2. Collect real data context
+  const dataCtx = collectDataContext();
+
+  // 3. Rule-based recommendations (instant fallback)
+  let ruleBased = { process: [], automation: [], tech: [] };
+  if (allPainPoints.length > 0 && typeof buildDataDrivenRecommendations === 'function') {
+    try {
+      ruleBased = buildDataDrivenRecommendations(classified, dataCtx);
+    } catch (e) { console.warn('Rule-based builder error:', e); }
+  }
+
+  // 4. If LLM is enabled and we have pain points, try AI-powered recommendations
+  if (LLM_CONFIG.enabled && LLM_CONFIG.apiKey && allPainPoints.length > 0) {
+    // Show loading state
+    showSolutionLoading(true);
+
+    // Render pain point pills immediately (they don't need LLM)
+    for (const cfg of CATEGORY_CONFIG) {
+      const pains = classified[cfg.key] || [];
+      const section = document.getElementById(cfg.sectionId);
+      if (section) section.classList.toggle('empty', pains.length === 0 && allPainPoints.length > 0);
+      const countEl = document.getElementById(cfg.countId);
+      if (countEl) countEl.textContent = pains.length > 0 ? pains.length + ' pain point' + (pains.length > 1 ? 's' : '') : '';
+      const painsEl = document.getElementById(cfg.painsId);
+      if (painsEl) {
+        painsEl.innerHTML = pains.map(function(p) {
+          return '<span class="sol-pain-tag" title="' + p.pain.replace(/"/g, '&quot;') + '">' + p.pain + '</span>';
+        }).join('');
+      }
+    }
+
+    // Fire LLM call asynchronously
+    getLLMRecommendations(allPainPoints, dataCtx).then(function(llmResult) {
+      if (llmResult) {
+        // LLM succeeded — render AI recommendations
+        renderRecommendations(classified, llmResult, allPainPoints);
+
+        // Use LLM synthesis for expert analysis if provided
+        const analysisEl = document.getElementById('expert-analysis-text');
+        if (analysisEl && llmResult.synthesis) {
+          analysisEl.textContent = llmResult.synthesis;
+        }
+
+        // Mark AI-powered
+        const label = document.getElementById('expert-analysis-bar')?.querySelector('.expert-analysis-label');
+        if (label) label.textContent = 'AI-POWERED ANALYSIS \u2014 ' + (LLM_CONFIG.model || 'LLM');
+      } else {
+        // LLM failed — fall back to rule-based
+        console.warn('LLM returned null, falling back to rule-based engine');
+        renderRecommendations(classified, ruleBased, allPainPoints);
+        buildExpertAnalysis(allPainPoints, classified, dataCtx);
+      }
+    }).catch(function(err) {
+      console.warn('LLM error, falling back:', err);
+      renderRecommendations(classified, ruleBased, allPainPoints);
+      buildExpertAnalysis(allPainPoints, classified, dataCtx);
+    });
+  } else {
+    // No LLM — use rule-based engine directly
+    renderRecommendations(classified, ruleBased, allPainPoints);
+    buildExpertAnalysis(allPainPoints, classified, dataCtx);
+  }
+
+  // Digital rain
+  if (typeof initDigitalRain === 'function') initDigitalRain('rain-canvas-solution');
+}
+
+// ===== LLM INTEGRATION =====
+const LLM_CONFIG = {
+  enabled: false,
+  provider: 'openai',
+  endpoint: '',
+  apiKey: '',
+  model: 'gpt-4o',
+  timeout: 15000
+};
+
+// Load config from localStorage on init
+(function loadLLMConfig() {
+  try {
+    const saved = localStorage.getItem('pathfinder_llm');
+    if (saved) Object.assign(LLM_CONFIG, JSON.parse(saved));
+  } catch(e) {}
+})();
+
+window.toggleAssumptions = function() {
+  const overlay = document.getElementById('assumptions-overlay');
+  if (!overlay) return;
+  const isVisible = overlay.classList.contains('visible');
+  if (isVisible) {
+    overlay.classList.remove('visible');
+    return;
+  }
+
+  // Show modal
+  overlay.classList.add('visible');
+
+  // Update basic values
+  const asnHours = document.getElementById('asn-hours');
+  if (asnHours) asnHours.textContent = (CONFIG.workingHoursPerYear || 2080).toLocaleString();
+  const asnTrans = document.getElementById('asn-transition');
+  if (asnTrans) asnTrans.textContent = '$' + (CONFIG.transitionCostPerFTE || 5000).toLocaleString();
+  const slider = document.getElementById('offshore-slider');
+  const asnOff = document.getElementById('asn-offshore');
+  if (slider && asnOff) asnOff.textContent = slider.value + '%';
+
+  // Populate hourly rates grid
+  const ratesGrid = document.getElementById('asn-rates-grid');
+  if (ratesGrid) {
+    let ratesHTML = '';
+    for (const [code, loc] of Object.entries(CONFIG.locations || {})) {
+      const name = COUNTRY_DB[code]?.name || code;
+      ratesHTML += '<span class="asn-rate-chip">' + name + '<span class="asn-rate-val">$' + loc.hourlyRate + '/hr</span></span>';
+    }
+    for (const [code, off] of Object.entries(CONFIG.offshoreLocations || {})) {
+      const name = COUNTRY_DB[code]?.name || code;
+      ratesHTML += '<span class="asn-rate-chip offshore">' + name + '<span class="asn-rate-val">$' + off.hourlyRate + '/hr</span></span>';
+    }
+    ratesGrid.innerHTML = ratesHTML;
+  }
+
+  // Populate calculation breakdown
+  const calcEl = document.getElementById('asn-calc-breakdown');
+  if (calcEl) {
+    try {
+      const impact = calculateOffshoreImpact();
+      const fin = calculateFinancials(impact);
+      const hours = CONFIG.workingHoursPerYear || 2080;
+      let calcHTML = '';
+
+      // Current cost breakdown
+      calcHTML += '<div class="asn-calc-step"><strong>Current Annual Cost:</strong><br>';
+      for (const [code, loc] of Object.entries(CONFIG.locations || {})) {
+        const name = COUNTRY_DB[code]?.name || code;
+        const cost = loc.headcount * loc.hourlyRate * hours;
+        calcHTML += name + ': ' + loc.headcount + ' FTEs × $' + loc.hourlyRate + '/hr × ' + hours.toLocaleString() + ' hrs = <span class="asn-calc-result">' + formatCurrency(cost) + '</span><br>';
+      }
+      calcHTML += 'Total Current: <span class="asn-calc-result">' + formatCurrency(fin.totalCurrentCost) + '</span></div>';
+
+      // Proposed cost breakdown
+      calcHTML += '<div class="asn-calc-step"><strong>Proposed Annual Cost:</strong><br>';
+      for (const [code, loc] of Object.entries(CONFIG.locations || {})) {
+        const retained = impact.retainedBySource[code] || 0;
+        if (retained > 0) {
+          const name = COUNTRY_DB[code]?.name || code;
+          calcHTML += name + ' (retained): ' + retained + ' FTEs × $' + loc.hourlyRate + '/hr × ' + hours.toLocaleString() + ' hrs = ' + formatCurrency(retained * loc.hourlyRate * hours) + '<br>';
+        }
+      }
+      for (const [code, off] of Object.entries(CONFIG.offshoreLocations || {})) {
+        const moved = impact.movedByDestination[code] || 0;
+        if (moved > 0) {
+          const name = COUNTRY_DB[code]?.name || code;
+          calcHTML += name + ' (offshore): ' + moved + ' FTEs × $' + off.hourlyRate + '/hr × ' + hours.toLocaleString() + ' hrs = ' + formatCurrency(moved * off.hourlyRate * hours) + '<br>';
+        }
+      }
+      calcHTML += 'Total Proposed: <span class="asn-calc-result">' + formatCurrency(fin.totalProposedCost) + '</span></div>';
+
+      // Savings + transition
+      calcHTML += '<div class="asn-calc-step"><strong>Savings & ROI:</strong><br>';
+      calcHTML += 'Annual Savings: ' + formatCurrency(fin.totalCurrentCost) + ' − ' + formatCurrency(fin.totalProposedCost) + ' = <span class="asn-calc-result">' + formatCurrency(fin.annualSavings) + '</span><br>';
+      calcHTML += 'Transition Cost: ' + impact.totalMovedFTEs + ' FTEs × $' + (CONFIG.transitionCostPerFTE || 5000).toLocaleString() + ' = ' + formatCurrency(fin.transitionCost) + '<br>';
+      if (fin.annualSavings > 0) {
+        calcHTML += 'Break-even: ' + formatCurrency(fin.transitionCost) + ' ÷ (' + formatCurrency(fin.annualSavings) + ' / 12) = <span class="asn-calc-result">' + fin.breakEvenMonths + ' months</span>';
+      }
+      calcHTML += '</div>';
+
+      calcEl.innerHTML = calcHTML;
+    } catch (e) {
+      calcEl.innerHTML = '<em>Configure workforce details to see calculation breakdown.</em>';
+    }
+  }
+
+  // Close on overlay background click
+  overlay.onclick = function(e) {
+    if (e.target === overlay) overlay.classList.remove('visible');
+  };
+};
+
+const MODEL_OPTIONS = {
+  openai: [
+    {value:'gpt-4o',label:'GPT-4o'},
+    {value:'gpt-4o-mini',label:'GPT-4o Mini'},
+    {value:'o3-mini',label:'o3 Mini'},
+    {value:'gpt-4.1',label:'GPT-4.1'}
+  ],
+  anthropic: [
+    {value:'claude-sonnet-4-5-20250929',label:'Claude Sonnet 4.5'},
+    {value:'claude-sonnet-4-20250514',label:'Claude Sonnet 4'},
+    {value:'claude-opus-4-20250514',label:'Claude Opus 4'}
+  ],
+  google: [
+    {value:'gemini-2.5-pro-preview-06-05',label:'Gemini 2.5 Pro'},
+    {value:'gemini-2.5-flash-preview-05-20',label:'Gemini 2.5 Flash'},
+    {value:'gemini-2.0-flash',label:'Gemini 2.0 Flash'}
+  ],
+  custom: [
+    {value:'custom',label:'Custom Model'}
+  ]
+};
+
+function populateModelDropdown(provider) {
+  const modelEl = document.getElementById('llm-model');
+  if (!modelEl) return;
+  const options = MODEL_OPTIONS[provider] || MODEL_OPTIONS.openai;
+  modelEl.innerHTML = options.map(function(opt) {
+    return '<option value="' + opt.value + '">' + opt.label + '</option>';
+  }).join('');
+  // Try to restore previously selected model
+  if (LLM_CONFIG.model) {
+    const match = options.find(function(o) { return o.value === LLM_CONFIG.model; });
+    if (match) modelEl.value = LLM_CONFIG.model;
+  }
+}
+
+window.toggleSettingsModal = function() {
+  const overlay = document.getElementById('settings-overlay');
+  if (!overlay) return;
+  const isVisible = overlay.classList.contains('visible');
+  if (isVisible) {
+    overlay.classList.remove('visible');
+  } else {
+    // Populate fields from config
+    const providerEl = document.getElementById('llm-provider');
+    const keyEl = document.getElementById('llm-api-key');
+    const endpointEl = document.getElementById('llm-endpoint');
+    const enabledEl = document.getElementById('llm-enabled');
+    if (providerEl) providerEl.value = LLM_CONFIG.provider;
+    populateModelDropdown(LLM_CONFIG.provider);
+    if (keyEl) keyEl.value = LLM_CONFIG.apiKey;
+    if (endpointEl) endpointEl.value = LLM_CONFIG.endpoint;
+    if (enabledEl) enabledEl.checked = LLM_CONFIG.enabled;
+    document.getElementById('llm-endpoint-group').style.display = LLM_CONFIG.provider === 'custom' ? 'flex' : 'none';
+    overlay.classList.add('visible');
+  }
+};
+
+window.updateLLMConfig = function() {
+  const provider = document.getElementById('llm-provider')?.value || 'openai';
+  const prevProvider = LLM_CONFIG.provider;
+  LLM_CONFIG.provider = provider;
+  LLM_CONFIG.apiKey = document.getElementById('llm-api-key')?.value || '';
+  LLM_CONFIG.endpoint = document.getElementById('llm-endpoint')?.value || '';
+  LLM_CONFIG.enabled = document.getElementById('llm-enabled')?.checked || false;
+
+  // Populate model dropdown when provider changes
+  if (provider !== prevProvider) {
+    populateModelDropdown(provider);
+  }
+  LLM_CONFIG.model = document.getElementById('llm-model')?.value || '';
+
+  // Set default endpoints per provider
+  if (provider === 'openai') {
+    LLM_CONFIG.endpoint = LLM_CONFIG.endpoint || 'https://api.openai.com/v1/chat/completions';
+  } else if (provider === 'anthropic') {
+    LLM_CONFIG.endpoint = LLM_CONFIG.endpoint || 'https://api.anthropic.com/v1/messages';
+  } else if (provider === 'google') {
+    LLM_CONFIG.endpoint = ''; // Google uses model-specific URLs
+  }
+
+  document.getElementById('llm-endpoint-group').style.display = provider === 'custom' ? 'flex' : 'none';
+
+  // Save to localStorage
+  try {
+    localStorage.setItem('pathfinder_llm', JSON.stringify(LLM_CONFIG));
+  } catch(e) {}
+};
+
+async function callLLM(prompt, systemPrompt, maxTokens) {
+  if (!LLM_CONFIG.enabled || !LLM_CONFIG.apiKey) return null;
+  const tokens = maxTokens || 1500;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), LLM_CONFIG.timeout || 30000);
+
+    let endpoint, headers, body;
+
+    if (LLM_CONFIG.provider === 'anthropic') {
+      endpoint = LLM_CONFIG.endpoint || 'https://api.anthropic.com/v1/messages';
+      headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': LLM_CONFIG.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      };
+      body = JSON.stringify({
+        model: LLM_CONFIG.model || 'claude-sonnet-4-5-20250929',
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: tokens
+      });
+    } else if (LLM_CONFIG.provider === 'google') {
+      endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+        (LLM_CONFIG.model || 'gemini-2.5-pro-preview-06-05') +
+        ':generateContent?key=' + LLM_CONFIG.apiKey;
+      headers = { 'Content-Type': 'application/json' };
+      body = JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: tokens, temperature: 0.7 }
+      });
+    } else {
+      // OpenAI-compatible (openai, custom)
+      endpoint = LLM_CONFIG.endpoint || 'https://api.openai.com/v1/chat/completions';
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + LLM_CONFIG.apiKey
+      };
+      body = JSON.stringify({
+        model: LLM_CONFIG.model || 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: tokens,
+        temperature: 0.7
+      });
+    }
+
+    const response = await fetch(endpoint, { method: 'POST', headers, body, signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('LLM HTTP error:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    if (LLM_CONFIG.provider === 'anthropic') {
+      return data.content?.[0]?.text || null;
+    } else if (LLM_CONFIG.provider === 'google') {
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    }
+    return data.choices?.[0]?.message?.content || null;
+  } catch (e) {
+    console.warn('LLM call failed, using rule-based fallback:', e.message);
+    return null;
+  }
+}
+
+function buildLLMPrompt(painPoints, industry, geoData, financials) {
+  return 'You are a management consultant. Given these operational pain points in the ' + industry + ' industry:\n' +
+    painPoints.map((p, i) => (i + 1) + '. ' + p).join('\n') +
+    '\n\nGeographic context: transitioning ' + (geoData.totalMovedFTEs || 0) + ' FTEs to ' + (geoData.topDest || 'offshore locations') + '.' +
+    '\nFinancial context: projected annual savings of ' + formatCurrency(financials.annualSavings || 0) + ', breakeven in ' + (financials.breakEvenMonths || 'N/A') + ' months.' +
+    '\n\nProvide a 2-3 sentence executive synthesis connecting pain points to the offshore transformation strategy. Be specific, cite the pain points, and quantify impact where possible. No generic statements.';
+}
+
+// ===== DIGITAL RAIN CANVAS =====
+const rainCanvases = {};
+
+function initDigitalRain(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  // Stop any existing rain on this canvas first so we can re-init
+  stopDigitalRain(canvasId);
+
+  const ctx = canvas.getContext('2d');
+  const parent = canvas.parentElement;
+
+  // Use getBoundingClientRect with fallbacks — offsetWidth/Height returns 0 on hidden slides
+  const rect = parent.getBoundingClientRect();
+  const w = rect.width || parent.offsetWidth || window.innerWidth;
+  const h = rect.height || parent.offsetHeight || window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+
+  const colW = 20;
+  const columns = Math.max(Math.floor(w / colW), 1);
+  const drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -20));
+  const chars = '0123456789+-=%$'.split('');
+
+  rainCanvases[canvasId] = { running: true };
+
+  function draw() {
+    if (!rainCanvases[canvasId]?.running) return;
+    ctx.fillStyle = 'rgba(10,22,40,0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(0,212,255,0.35)';
+    ctx.font = '14px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      if (drops[i] >= 0) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, i * colW, drops[i] * colW);
+      }
+      if (drops[i] * colW > canvas.height && Math.random() > 0.975) drops[i] = Math.floor(Math.random() * -10);
+      drops[i] += 0.5;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // Re-size after GSAP slide transition completes (canvas may have been 0-sized initially)
+  setTimeout(() => {
+    if (!rainCanvases[canvasId]?.running) return;
+    const rect2 = parent.getBoundingClientRect();
+    const w2 = rect2.width || window.innerWidth;
+    const h2 = rect2.height || window.innerHeight;
+    if (w2 !== canvas.width || h2 !== canvas.height) {
+      canvas.width = w2;
+      canvas.height = h2;
+    }
+  }, 700);
+}
+
+function stopDigitalRain(canvasId) {
+  if (rainCanvases[canvasId]) {
+    rainCanvases[canvasId].running = false;
+    delete rainCanvases[canvasId];
+  }
+}
+
+// ===== GLOBE BACKGROUND (Slide 2) =====
+let globeRunning = false;
+let globeAnimFrame = null;
+
+function initGlobe() {
+  const container = document.querySelector('.globe-bg');
+  if (!container) return;
+
+  // Stop any existing globe first so we can re-init
+  stopGlobe();
+
+  let canvas = container.querySelector('canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+  }
+
+  // Use getBoundingClientRect with fallbacks — container may be hidden during GSAP transition
+  const rect = container.getBoundingClientRect();
+  canvas.width = rect.width || container.offsetWidth || window.innerWidth;
+  canvas.height = rect.height || container.offsetHeight || window.innerHeight;
+
+  const ctx = canvas.getContext('2d');
+  let angle = 0;
+  globeRunning = true;
+
+  function drawGlobe() {
+    if (!globeRunning) return;
+
+    // Recompute center/radius each frame in case canvas was resized
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const radius = Math.min(cx, cy) * 0.7;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+    ctx.lineWidth = 0.8;
+
+    // Latitude lines
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const y = cy - radius * Math.sin(lat * Math.PI / 180);
+      const rLine = radius * Math.cos(lat * Math.PI / 180);
+      ctx.beginPath();
+      ctx.ellipse(cx, y, rLine, rLine * 0.3, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Longitude lines (rotating)
+    for (let lon = 0; lon < 180; lon += 30) {
+      ctx.beginPath();
+      const rot = (lon + angle) * Math.PI / 180;
+      for (let t = -90; t <= 90; t += 5) {
+        const tr = t * Math.PI / 180;
+        const x = cx + radius * Math.cos(tr) * Math.sin(rot);
+        const y = cy - radius * Math.sin(tr);
+        if (t === -90) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    angle += 0.15;
+    globeAnimFrame = requestAnimationFrame(drawGlobe);
+  }
+  drawGlobe();
+
+  // Re-size after GSAP slide transition completes
+  setTimeout(() => {
+    if (!globeRunning) return;
+    const rect2 = container.getBoundingClientRect();
+    const w2 = rect2.width || window.innerWidth;
+    const h2 = rect2.height || window.innerHeight;
+    if (w2 !== canvas.width || h2 !== canvas.height) {
+      canvas.width = w2;
+      canvas.height = h2;
+    }
+  }, 700);
+}
+
+function stopGlobe() {
+  globeRunning = false;
+  if (globeAnimFrame) {
+    cancelAnimationFrame(globeAnimFrame);
+    globeAnimFrame = null;
+  }
 }
 
 // ===== UTILS =====

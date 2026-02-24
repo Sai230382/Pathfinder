@@ -137,6 +137,31 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.3)}
 .analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 
+/* === SEGMENT INPUTS === */
+.segment-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.segment-input-group{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.02);padding:14px;border-radius:8px;border:1px solid rgba(255,255,255,.04);transition:border-color .2s}
+.segment-input-group:hover{border-color:rgba(0,212,255,.2)}
+.segment-header{display:flex;align-items:center;gap:6px}
+.segment-header .segment-icon{font-size:1.1rem}
+.segment-header label{font-size:.82rem;font-weight:600;color:var(--text-secondary)}
+.complexity-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.complexity-badge.simple{background:rgba(16,185,129,.15);color:#10b981}
+.complexity-badge.medium{background:rgba(245,158,11,.15);color:#f59e0b}
+.complexity-badge.complex{background:rgba(239,68,68,.15);color:#ef4444}
+.segment-input-group input[type="number"]{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:8px 12px;border-radius:6px;font-family:var(--font-body);font-size:1rem;text-align:center;width:72px}
+.segment-input-group .segment-desc{font-size:.65rem;color:var(--text-muted);text-align:center;line-height:1.3}
+.segment-validation{text-align:center;margin-top:8px;font-size:.8rem;font-weight:600}
+.form-card-hint{font-size:.8rem;color:var(--text-muted);margin:-8px 0 12px 0}
+/* Segment badges (downstream slides) */
+.segment-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600;background:rgba(124,92,252,.12);color:var(--accent-purple);border:1px solid rgba(124,92,252,.2)}
+/* Segment bars (Slide 5 detail panel) */
+.segment-bars{display:flex;flex-direction:column;gap:6px}
+.segment-bar-row{display:flex;align-items:center;gap:8px}
+.segment-bar-label{font-size:.7rem;color:var(--text-muted);width:110px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.segment-bar-bg{flex:1;height:16px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden}
+.segment-bar-fill{height:100%;border-radius:4px;font-size:.6rem;color:white;display:flex;align-items:center;padding:0 6px;white-space:nowrap;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue))}
+.segment-bar-complexity{margin-left:4px}
+
 /* === SLIDE 3: MAP === */
 .slide-map{padding-top:32px}
 .map-layout{display:flex;gap:24px;flex:1;min-height:0}
@@ -883,6 +908,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <div class="tier-bars" id="tier-bars"></div>
         <div class="panel-section-label">DAILY VOLUMES</div>
         <div class="volume-grid" id="volume-grid"></div>
+        <div class="panel-section-label">CONTACT SEGMENTS</div>
+        <div class="segment-bars" id="segment-bars"></div>
       </div>
     </div>
   </section>
@@ -961,6 +988,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         </div>
       </div>
       <div class="dashboard-card"><h4>Cumulative Savings Over 24 Months</h4><div class="chart-area"><canvas id="roi-chart"></canvas></div></div>
+      <div class="dashboard-card" style="grid-column:1/-1"><h4>Savings Potential by Contact Segment</h4><div class="chart-area" style="max-height:220px"><canvas id="segment-chart"></canvas></div></div>
     </div>
 
     <!-- Assumptions Toggle Button -->
@@ -1427,6 +1455,16 @@ const OFFSHORE_MATRIX = {
 
 const ICONS = {Phone:'\u{1F4DE}',Email:'\u{1F4E7}',Chat:'\u{1F4AC}',Social:'\u{1F310}'};
 
+// ===== CONTACT SEGMENTS =====
+const CONTACT_SEGMENTS = {
+  billing:        { name:'Billing & Payments',  icon:'\u{1F4B3}', complexity:'Simple',         offshoreAffinity:0.90, automationPotential:0.70 },
+  techSupport:    { name:'Technical Support',   icon:'\u{1F527}', complexity:'Medium-Complex',  offshoreAffinity:0.60, automationPotential:0.45 },
+  accountMgmt:    { name:'Account Management',  icon:'\u{1F4C1}', complexity:'Medium',          offshoreAffinity:0.80, automationPotential:0.55 },
+  salesRetention: { name:'Sales & Retention',   icon:'\u{1F4C8}', complexity:'Complex',         offshoreAffinity:0.40, automationPotential:0.30 },
+  orderMgmt:      { name:'Order Management',    icon:'\u{1F4E6}', complexity:'Simple-Medium',   offshoreAffinity:0.85, automationPotential:0.75 },
+  generalInquiry: { name:'General Inquiries',   icon:'\u{2753}',  complexity:'Simple',          offshoreAffinity:0.95, automationPotential:0.85 }
+};
+
 // ===== CONFIG (rebuilt from form) =====
 let CONFIG = {
   locations: {
@@ -1453,6 +1491,7 @@ let CONFIG = {
     IN: {name:'India',hourlyRate:12},
     PH: {name:'Philippines',hourlyRate:10}
   },
+  segments: {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10},
   workingHoursPerYear: 2080,
   transitionCostPerFTE: 5000,
   scenarios: {
@@ -1483,6 +1522,7 @@ let formLocations = [
 let formTiers = {L1:50,L2:30,L3:20};
 let formRates = {};
 let formOffshoreSelections = {IN:true,PH:true};
+let formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10};
 
 // Diagnostic context state (Pathfinder)
 let diagnosticContext = { industry: '', companySize: 'mid', region: 'americas', clientName: '' };
@@ -1726,6 +1766,14 @@ function renderForm() {
       <div class="tier-validation" id="tier-validation"></div>
     </div>
 
+    <!-- Contact Segments -->
+    <div class="form-card full-width">
+      <h3><span class="card-icon">\u{1F3AF}</span> Contact Segments (% of Volume)</h3>
+      <p class="form-card-hint">What types of inquiries does your contact center handle?</p>
+      <div class="segment-inputs" id="segment-inputs"></div>
+      <div class="segment-validation" id="segment-validation"></div>
+    </div>
+
     <!-- Hourly Rates -->
     <div class="form-card">
       <h3><span class="card-icon">\u{1F4B2}</span> Hourly Rates ($/hr)</h3>
@@ -1744,6 +1792,7 @@ function renderForm() {
 
   renderSourceLocations();
   renderChannelMix();
+  renderSegmentInputs();
   renderRateCards();
   renderOffshoreGrid();
   updateTierValidation();
@@ -1928,6 +1977,55 @@ function updateTierValidation() {
   }
 }
 
+// === Segment inputs ===
+function renderSegmentInputs() {
+  const container = document.getElementById('segment-inputs');
+  if(!container) return;
+  container.innerHTML = Object.entries(CONTACT_SEGMENTS).map(([key, seg]) => {
+    const cxClass = seg.complexity.toLowerCase().replace('-','');
+    let badgeClass = 'simple';
+    if(seg.complexity.includes('Complex')) badgeClass = 'complex';
+    else if(seg.complexity.includes('Medium')) badgeClass = 'medium';
+    return `
+      <div class="segment-input-group">
+        <div class="segment-header">
+          <span class="segment-icon">${seg.icon}</span>
+          <label>${seg.name}</label>
+        </div>
+        <span class="complexity-badge ${badgeClass}">${seg.complexity}</span>
+        <input type="number" id="segment-${key}" value="${formSegments[key]}" min="0" max="100" onchange="updateSegment('${key}',this.value)">
+        <div class="segment-desc">${getSegmentDescription(key)}</div>
+      </div>`;
+  }).join('');
+  updateSegmentValidation();
+}
+
+function getSegmentDescription(key) {
+  const descs = {
+    billing:'Invoice queries, payment issues, refunds',
+    techSupport:'Troubleshooting, outages, bug reports',
+    accountMgmt:'Account changes, upgrades, closures',
+    salesRetention:'Upsell, renewals, churn prevention',
+    orderMgmt:'Order status, shipping, returns',
+    generalInquiry:'FAQs, info requests, routing'
+  };
+  return descs[key]||'';
+}
+
+window.updateSegment = function(key, val) {
+  formSegments[key] = parseInt(val)||0;
+  updateSegmentValidation();
+};
+
+function updateSegmentValidation() {
+  const sum = Object.values(formSegments).reduce((a,b)=>a+b,0);
+  const el = document.getElementById('segment-validation');
+  if(el) {
+    if(sum===100) el.innerHTML = '<span style="color:var(--accent-green)">\u2713 Total: 100%</span>';
+    else el.innerHTML = `<span style="color:var(--accent-red)">\u2717 Total: ${sum}% (must be 100%)</span>`;
+  }
+}
+
 window.updateRate = function(code, val) {
   formRates[code] = parseInt(val)||1;
 };
@@ -1946,6 +2044,9 @@ window.handleAnalyze = async function() {
   // Validate
   const tierSum = formTiers.L1 + formTiers.L2 + formTiers.L3;
   if(tierSum !== 100) { alert('Tier percentages must sum to 100%'); return; }
+
+  const segSum = Object.values(formSegments).reduce((a,b)=>a+b,0);
+  if(segSum !== 100) { alert('Segment percentages must sum to 100%'); return; }
 
   for(let i=0;i<formLocations.length;i++){
     const loc = formLocations[i];
@@ -2027,6 +2128,7 @@ function rebuildConfig() {
   CONFIG = {
     locations,
     offshoreLocations,
+    segments: { ...formSegments },
     workingHoursPerYear: 2080,
     transitionCostPerFTE: 5000,
     scenarios: {
@@ -2231,7 +2333,48 @@ window.showLocationDetail = function(code) {
   ).join('');
 
   gsap.from('#volume-grid .volume-card',{y:15,opacity:0,duration:0.4,stagger:0.08,ease:'power2.out',delay:0.3});
+
+  // Segment bars
+  const segBars = document.getElementById('segment-bars');
+  if(segBars && CONFIG.segments) {
+    segBars.innerHTML = Object.entries(CONTACT_SEGMENTS).map(([key, seg]) => {
+      const pct = CONFIG.segments[key] || 0;
+      if(pct === 0) return '';
+      let badgeClass = 'simple';
+      if(seg.complexity.includes('Complex')) badgeClass = 'complex';
+      else if(seg.complexity.includes('Medium')) badgeClass = 'medium';
+      return `<div class="segment-bar-row">
+        <span class="segment-bar-label">${seg.icon} ${seg.name}</span>
+        <div class="segment-bar-bg"><div class="segment-bar-fill" style="width:0%">${pct}%</div></div>
+        <span class="complexity-badge ${badgeClass} segment-bar-complexity">${seg.complexity}</span>
+      </div>`;
+    }).join('');
+    setTimeout(()=>{
+      segBars.querySelectorAll('.segment-bar-fill').forEach(fill=>{
+        const pct = parseInt(fill.textContent);
+        gsap.to(fill,{width:pct+'%',duration:0.8,ease:'power2.out'});
+      });
+    },50);
+  }
 };
+
+// ===== SEGMENT-WEIGHTED CONFIDENCE =====
+function getSegmentWeightedConfidence(channel, tier) {
+  const baseConf = OFFSHORE_MATRIX[channel][tier].confidence;
+  const segs = CONFIG.segments || {};
+  let weightedAffinity = 0;
+  let totalPct = 0;
+  for(const [key, pct] of Object.entries(segs)) {
+    const seg = CONTACT_SEGMENTS[key];
+    if(!seg || pct <= 0) continue;
+    weightedAffinity += (pct / 100) * seg.offshoreAffinity;
+    totalPct += pct;
+  }
+  if(totalPct === 0) return baseConf;
+  // Blend: 70% base matrix confidence + 30% segment affinity influence
+  const adjusted = Math.round(baseConf * 0.7 + (weightedAffinity * 100) * 0.3);
+  return Math.min(100, Math.max(0, adjusted));
+}
 
 // ===== SLIDE 4: MATRIX =====
 let matrixBuilt = false;
@@ -2258,7 +2401,8 @@ function buildMatrix() {
   for(const [channel,tiers] of Object.entries(OFFSHORE_MATRIX)){
     for(const [tier,cfg] of Object.entries(tiers)){
       const isChecked = offshoreSelections[channel][tier];
-      const confClass = cfg.confidence>=80?'high':cfg.confidence>=50?'medium':'low';
+      const adjConf = getSegmentWeightedConfidence(channel, tier);
+      const confClass = adjConf>=80?'high':adjConf>=50?'medium':'low';
 
       // Show all offshore destinations for offshored items, or Onshore for non-offshored
       let destNames = null;
@@ -2280,7 +2424,7 @@ function buildMatrix() {
         <td><span class="tier-badge">${tier}</span></td>
         ${fteColumns}
         <td><label class="toggle-switch"><input type="checkbox" data-channel="${channel}" data-tier="${tier}" ${isChecked?'checked':''}><span class="toggle-slider"></span></label></td>
-        <td><div class="confidence-bar"><div class="confidence-track"><div class="confidence-fill ${confClass}" style="width:${cfg.confidence}%"></div></div><span class="confidence-value">${cfg.confidence}%</span></div></td>
+        <td><div class="confidence-bar"><div class="confidence-track"><div class="confidence-fill ${confClass}" style="width:${adjConf}%"></div></div><span class="confidence-value">${adjConf}%</span></div></td>
         <td>${destNames?destNames.map(n=>`<span class="destination-badge">${n}</span>`).join(' '):'<span class="destination-badge none">Onshore</span>'}</td>
         <td><span class="rationale">${cfg.rationale}</span></td>`;
       tbody.appendChild(tr);
@@ -2453,6 +2597,7 @@ function exportReport() {
       <tr><td class="rpt-label">Total FTEs Assessed</td><td class="rpt-value">${totalHC.toLocaleString()}</td></tr>
       <tr><td class="rpt-label">FTEs for Transition</td><td class="rpt-value rpt-highlight">${impact.totalMovedFTEs.toLocaleString()}</td></tr>
       <tr><td class="rpt-label">Scenario</td><td class="rpt-value">${currentScenario}</td></tr>
+      <tr><td class="rpt-label">Contact Segments</td><td class="rpt-value">${Object.entries(CONFIG.segments||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>(CONTACT_SEGMENTS[k]?.name||k)+' ('+v+'%)').join(', ')}</td></tr>
       <tr><td class="rpt-label">Projected Annual Savings</td><td class="rpt-value rpt-highlight">${formatCurrency(fin.annualSavings)}</td></tr>
       <tr><td class="rpt-label">Cost Reduction</td><td class="rpt-value rpt-highlight">${fin.savingsPercent}%</td></tr>`;
 
@@ -2757,10 +2902,11 @@ async function triggerSlide5() {
     const totalFTEs = Object.values(CONFIG.locations).reduce((s,l)=>s+l.headcount,0);
     const srcLangs = [...new Set(Object.keys(CONFIG.locations).flatMap(c=>(COUNTRY_DB[c]?.languages||['en']).map(l=>LANG_NAMES[l]||l)))];
     const destNames = Object.keys(CONFIG.offshoreLocations).map(c=>COUNTRY_DB[c]?.name||c);
+    const segCount = CONFIG.segments ? Object.values(CONFIG.segments).filter(v=>v>0).length : 0;
     await showAIThinking([
       `Scoring language affinity: ${srcLangs.join(', ')} proficiency across ${destNames.length} destinations...`,
       `Computing timezone overlap and cultural proximity for ${Object.keys(CONFIG.locations).length} source markets...`,
-      `Applying 5-factor affinity model to rank destination pairings...`,
+      segCount > 0 ? `Evaluating offshore suitability across ${segCount} contact segments...` : `Applying 5-factor affinity model to rank destination pairings...`,
       `Generating affinity-weighted transformation blueprint for ${totalFTEs} FTEs...`
     ],3500);
   }
@@ -2969,8 +3115,19 @@ function updateBeforeAfterPanel(impact) {
     return `<div class="ba-card highlight"><div class="ba-location">${COUNTRY_DB[code]?.flag||''} ${code}</div><div class="ba-count">${ftes}</div></div>`;
   }).join('');
 
+  // Add top segment badges
+  let segHTML = '';
+  if (CONFIG.segments) {
+    const top3 = Object.entries(CONFIG.segments).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    if (top3.length > 0) {
+      segHTML = '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px">'
+        + top3.map(([k,pct])=>`<span class="segment-badge" style="font-size:.55rem;padding:2px 6px">${CONTACT_SEGMENTS[k].icon} ${pct}%</span>`).join('')
+        + '</div>';
+    }
+  }
+
   document.getElementById('before-after-panel').innerHTML = `
-    <div class="ba-column before"><h4>Current State</h4><div class="ba-cards">${beforeCards}</div></div>
+    <div class="ba-column before"><h4>Current State</h4><div class="ba-cards">${beforeCards}</div>${segHTML}</div>
     <div class="ba-arrow">\u2192</div>
     <div class="ba-column after"><h4>Proposed State</h4><div class="ba-cards">${afterCards}</div></div>`;
 }
@@ -3022,7 +3179,34 @@ function renderTransformSolutions() {
     return html;
   }
 
-  leftCol.innerHTML = buildGroupHTML('Process', '\uD83D\uDCCB', recs.process)
+  // Build segment insight badges
+  let segBadgesHTML = '';
+  if (CONFIG.segments) {
+    const topSegs = Object.entries(CONFIG.segments)
+      .filter(([k, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+    if (topSegs.length > 0) {
+      segBadgesHTML = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'
+        + topSegs.map(([key, pct]) => {
+          const seg = CONTACT_SEGMENTS[key];
+          return `<span class="segment-badge">${seg.icon} ${seg.name} ${pct}%</span>`;
+        }).join('') + '</div>';
+    }
+    // Add risk callouts for low-affinity high-volume segments
+    const riskSegs = Object.entries(CONFIG.segments)
+      .filter(([k, v]) => v >= 15 && CONTACT_SEGMENTS[k] && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
+    for (const [key, pct] of riskSegs) {
+      const seg = CONTACT_SEGMENTS[key];
+      recs.process.push({
+        title: seg.name + ' — Retain Onshore',
+        insight: seg.name + ' (' + pct + '% of volume) requires cultural nuance — retain onshore with specialized training'
+      });
+    }
+  }
+
+  leftCol.innerHTML = segBadgesHTML
+                    + buildGroupHTML('Process', '\uD83D\uDCCB', recs.process)
                     + buildGroupHTML('Automation', '\uD83E\uDD16', recs.automation);
 
   // Preserve the before-after panel reference
@@ -3155,6 +3339,22 @@ function buildFinancialDashboard() {
     data:{labels:Array.from({length:25},(_,i)=>'M'+i),datasets:[{label:'Cumulative Net Savings',data:roiData,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.1)',fill:true,tension:.3,pointRadius:0,pointHitRadius:10,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>formatCurrency(c.raw)}}},scales:{y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>formatShort(v)}},x:{grid:{display:false},ticks:{color:'#64748b',font:{size:9},maxTicksLimit:13}}},animation:{duration:1000}}
   });
+
+  // Segment savings doughnut chart
+  if(chartInstances.segment) chartInstances.segment.destroy();
+  const segCanvas = document.getElementById('segment-chart');
+  if(segCanvas && CONFIG.segments) {
+    const segEntries = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0);
+    const segLabels = segEntries.map(([k,s])=>s.name);
+    const segPcts = segEntries.map(([k])=>CONFIG.segments[k]||0);
+    const segSavings = segPcts.map(pct=>Math.round(fin.annualSavings * pct / 100));
+    const segColors = ['#3b82f6','#f59e0b','#8b5cf6','#ef4444','#10b981','#6366f1'];
+    chartInstances.segment = new Chart(segCanvas.getContext('2d'),{
+      type:'bar',
+      data:{labels:segLabels,datasets:[{label:'Savings Potential',data:segSavings,backgroundColor:segColors.slice(0,segEntries.length),borderRadius:6,borderSkipped:false}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${formatCurrency(c.raw)} (${segPcts[c.dataIndex]}% of volume)`}}},scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#64748b',callback:v=>formatShort(v)}},y:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10}}}},animation:{duration:800}}
+    });
+  }
 }
 
 // ===== SLIDE 7: ROADMAP =====
@@ -3173,12 +3373,19 @@ function animateRoadmap() {
   const secondName = topDest[1] ? (COUNTRY_DB[topDest[1]]?.name || topDest[1]) : null;
   const pilotFTEs = Math.round(total * 0.2);
 
+  // Sort segments by offshore affinity for roadmap milestones
+  const sortedSegs = Object.entries(CONTACT_SEGMENTS)
+    .filter(([k])=>(CONFIG.segments && CONFIG.segments[k]||0)>0)
+    .sort((a,b)=>b[1].offshoreAffinity-a[1].offshoreAffinity);
+  const pilotSegNames = sortedSegs.slice(0,2).map(([k,s])=>s.name);
+  const retainSegNames = sortedSegs.filter(([k,s])=>s.offshoreAffinity<0.5).map(([k,s])=>s.name);
+
   // Phase 1 milestones
   const p1List = document.querySelector('#phase-1 .milestone-list');
   if(p1List) p1List.innerHTML = `
     <li>${topName} site selection & infrastructure setup</li>
     <li>Recruit initial ${pilotFTEs} pilot FTEs</li>
-    <li>Knowledge transfer framework design</li>
+    ${pilotSegNames.length>0?`<li>Pilot with ${pilotSegNames.join(' & ')} segments</li>`:`<li>Knowledge transfer framework design</li>`}
     <li>Language & cultural training programs</li>`;
 
   // Phase 2 milestones - reference channels
@@ -3198,7 +3405,7 @@ function animateRoadmap() {
     <li>Full ramp across ${offCodes.length} offshore site${offCodes.length>1?'s':''}</li>
     ${secondName?`<li>${secondName} expansion for overflow capacity</li>`:`<li>Remaining tier transitions</li>`}
     <li>AI augmentation & automation deployment</li>
-    <li>Onshore team restructuring & upskilling</li>`;
+    ${retainSegNames.length>0?`<li>Retain ${retainSegNames.join(' & ')} onshore with specialized training</li>`:`<li>Onshore team restructuring & upskilling</li>`}`;
 
   const tl = gsap.timeline();
   gsap.set('.timeline-marker',{scale:0});
@@ -3240,6 +3447,22 @@ function buildExecutiveSummary() {
     for (const [code, loc] of Object.entries(CONFIG.locations)) {
       const c = COUNTRY_DB[code];
       html += '<div class="exec-ba-loc-row"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + '<span class="loc-ftes">' + loc.headcount + ' FTEs</span></div>';
+    }
+
+    // Contact Segments
+    if (CONFIG.segments) {
+      const activeSegs = Object.entries(CONFIG.segments).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+      if (activeSegs.length > 0) {
+        html += '<div class="exec-ba-section-label">Contact Segments</div>';
+        activeSegs.forEach(([key, pct]) => {
+          const seg = CONTACT_SEGMENTS[key];
+          if (!seg) return;
+          let badgeClass = 'simple';
+          if(seg.complexity.includes('Complex')) badgeClass = 'complex';
+          else if(seg.complexity.includes('Medium')) badgeClass = 'medium';
+          html += '<div class="exec-ba-item">' + seg.icon + ' ' + seg.name + ' — ' + pct + '% <span class="complexity-badge ' + badgeClass + '">' + seg.complexity + '</span></div>';
+        });
+      }
     }
 
     // Annual Cost
@@ -3286,6 +3509,18 @@ function buildExecutiveSummary() {
       const c = COUNTRY_DB[code];
       const ftes = impact.movedByDestination[code] || 0;
       html += '<div class="exec-ba-loc-row" style="color:var(--accent-cyan)"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (offshore)<span class="loc-ftes">' + ftes + ' FTEs</span></div>';
+    }
+
+    // Segment Strategy
+    if (CONFIG.segments) {
+      const highAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>5 && CONTACT_SEGMENTS[k].offshoreAffinity>=0.8).map(([k,s])=>s.name);
+      const lowAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>5 && CONTACT_SEGMENTS[k].offshoreAffinity<0.5).map(([k,s])=>s.name);
+      if (highAff.length > 0) {
+        html += '<div class="exec-ba-item highlight">\u2192 Priority offshore: ' + highAff.join(', ') + '</div>';
+      }
+      if (lowAff.length > 0) {
+        html += '<div class="exec-ba-item">\u2192 Retain onshore: ' + lowAff.join(', ') + '</div>';
+      }
     }
 
     // Projected Savings
@@ -3512,6 +3747,9 @@ function collectDataContext() {
     rate: CONFIG.offshoreLocations[code]?.hourlyRate || 0
   })).filter(d => d.ftes > 0);
 
+  // Segment profile
+  const segProfile = getSegmentProfile();
+
   return {
     industry, totalHeadcount,
     movedFTEs: impact.totalMovedFTEs || 0,
@@ -3523,8 +3761,23 @@ function collectDataContext() {
     transitionCost: financials.transitionCost || 0,
     channels, destSummary,
     flowDetail: impact.flowDetail || {},
+    segments: CONFIG.segments || {},
+    segmentProfile: segProfile,
     clientNotes: clientNotes || ''
   };
+}
+
+function getSegmentProfile() {
+  const segs = CONFIG.segments || {};
+  const entries = Object.entries(segs).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const dominant = entries.length > 0 ? { key:entries[0][0], name:CONTACT_SEGMENTS[entries[0][0]]?.name, pct:entries[0][1] } : null;
+  const highAutomation = Object.entries(CONTACT_SEGMENTS)
+    .filter(([k])=>(segs[k]||0)>15 && CONTACT_SEGMENTS[k].automationPotential>0.6)
+    .map(([k,s])=>s.name);
+  const lowOffshore = Object.entries(CONTACT_SEGMENTS)
+    .filter(([k])=>(segs[k]||0)>10 && CONTACT_SEGMENTS[k].offshoreAffinity<0.5)
+    .map(([k,s])=>s.name);
+  return { dominant, highAutomation, lowOffshore };
 }
 
 // Build expert analysis using ONLY real data

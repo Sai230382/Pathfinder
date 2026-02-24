@@ -162,7 +162,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .segment-bar-fill{height:100%;border-radius:4px;font-size:.6rem;color:white;display:flex;align-items:center;padding:0 6px;white-space:nowrap;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue))}
 .segment-bar-complexity{margin-left:4px}
 /* Segment strip (Slide 6) */
-.segment-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.segment-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0}
 .segment-strip-card{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;flex:1;min-width:140px}
 .segment-strip-icon{font-size:1.1rem}
 .segment-strip-info{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -2437,6 +2437,14 @@ function buildMatrix() {
   // Get offshore destination names
   const offshoreCodes = Object.keys(CONFIG.offshoreLocations);
 
+  // Pre-compute segment insights for rationale enrichment
+  const segEntries = CONFIG.segments ? Object.entries(CONFIG.segments).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]) : [];
+  const dominantSeg = segEntries.length > 0 ? CONTACT_SEGMENTS[segEntries[0][0]] : null;
+  const dominantPct = segEntries.length > 0 ? segEntries[0][1] : 0;
+  const complexSegs = segEntries.filter(([k])=>CONTACT_SEGMENTS[k] && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
+  const simpleSegs = segEntries.filter(([k])=>CONTACT_SEGMENTS[k] && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.85);
+  const totalFTEsOnSlide = locationCodes.reduce((s,c)=>s+CONFIG.locations[c].headcount,0);
+
   for(const [channel,tiers] of Object.entries(OFFSHORE_MATRIX)){
     for(const [tier,cfg] of Object.entries(tiers)){
       const isChecked = offshoreSelections[channel][tier];
@@ -2450,10 +2458,36 @@ function buildMatrix() {
       }
 
       let fteColumns = '';
+      let rowFTEs = 0;
       for(const code of locationCodes){
         const loc = CONFIG.locations[code];
         const fte = loc.channels[channel]?.[tier] || 0;
+        rowFTEs += fte;
         fteColumns += `<td>${fte}</td>`;
+      }
+
+      // Build enriched rationale
+      let rationale = cfg.rationale;
+      if(CONFIG.segments && segEntries.length > 0) {
+        const confDelta = adjConf - cfg.confidence;
+        if(adjConf >= 80 && simpleSegs.length > 0) {
+          const names = simpleSegs.slice(0,2).map(([k])=>CONTACT_SEGMENTS[k].name).join(' & ');
+          rationale += '. ' + names + ' (' + simpleSegs.slice(0,2).map(([k,v])=>v+'%').join('+') + ' volume) are highly standardized — strong offshore fit';
+        } else if(adjConf < 50 && complexSegs.length > 0) {
+          const names = complexSegs.slice(0,2).map(([k])=>CONTACT_SEGMENTS[k].name).join(' & ');
+          rationale += '. Segment risk: ' + names + ' require cultural nuance & domain expertise — recommend onshore retention';
+        } else if(confDelta < -5) {
+          rationale += '. Confidence adjusted ' + confDelta + 'pts due to ' + (dominantSeg?.name||'segment') + ' complexity (' + dominantPct + '% of volume)';
+        } else if(confDelta > 3) {
+          rationale += '. Confidence boosted +' + confDelta + 'pts — segment mix favors offshore delivery';
+        }
+        // Add automation hint for relevant tiers
+        if(tier === 'L1') {
+          const autoSegs = segEntries.filter(([k])=>CONTACT_SEGMENTS[k] && CONTACT_SEGMENTS[k].automationPotential >= 0.7);
+          if(autoSegs.length > 0) {
+            rationale += '. Automation opportunity: ' + autoSegs.slice(0,2).map(([k])=>CONTACT_SEGMENTS[k].name).join(' & ') + ' L1 volume can be 40-60% deflected via AI/chatbot';
+          }
+        }
       }
 
       const tr = document.createElement('tr');
@@ -2465,7 +2499,7 @@ function buildMatrix() {
         <td><label class="toggle-switch"><input type="checkbox" data-channel="${channel}" data-tier="${tier}" ${isChecked?'checked':''}><span class="toggle-slider"></span></label></td>
         <td><div class="confidence-bar"><div class="confidence-track"><div class="confidence-fill ${confClass}" style="width:${adjConf}%"></div></div><span class="confidence-value">${adjConf}%</span></div></td>
         <td>${destNames?destNames.map(n=>`<span class="destination-badge">${n}</span>`).join(' '):'<span class="destination-badge none">Onshore</span>'}</td>
-        <td><span class="rationale">${cfg.rationale}</span></td>`;
+        <td><span class="rationale">${rationale}</span></td>`;
       tbody.appendChild(tr);
     }
   }

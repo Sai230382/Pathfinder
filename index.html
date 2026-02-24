@@ -161,6 +161,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .segment-bar-bg{flex:1;height:16px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden}
 .segment-bar-fill{height:100%;border-radius:4px;font-size:.6rem;color:white;display:flex;align-items:center;padding:0 6px;white-space:nowrap;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue))}
 .segment-bar-complexity{margin-left:4px}
+/* Segment strip (Slide 6) */
+.segment-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.segment-strip-card{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;flex:1;min-width:140px}
+.segment-strip-icon{font-size:1.1rem}
+.segment-strip-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.segment-strip-name{font-size:.72rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.segment-strip-meta{display:flex;align-items:center;gap:6px}
+.segment-strip-pct{font-size:.85rem;font-weight:700;color:var(--text-primary)}
+.segment-strip-affinity{font-size:.6rem;color:var(--text-muted)}
+.segment-strip-affinity.high{color:#10b981}
+.segment-strip-affinity.medium{color:#f59e0b}
+.segment-strip-affinity.low{color:#ef4444}
 
 /* === SLIDE 3: MAP === */
 .slide-map{padding-top:32px}
@@ -924,6 +936,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <div class="fte-stat"><span class="fte-label">CSAT Impact</span><span class="fte-value" id="csat-impact" style="color:var(--accent-yellow)">0%</span></div>
       <button class="ai-insights-btn" id="ai-insights-btn-s4" onclick="openAIModal()" style="margin-left:auto;display:none"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button>
     </div>
+    <div class="segment-strip" id="segment-strip"></div>
     <div class="matrix-container">
       <table class="analysis-table">
         <thead id="matrix-thead"><tr><th>Channel</th><th>Tier</th><th>Total FTEs</th><th>Offshore</th><th>Confidence</th><th>Destination</th><th>Rationale</th></tr></thead>
@@ -2381,6 +2394,32 @@ let matrixBuilt = false;
 function buildMatrix() {
   if(matrixBuilt){updateMatrixCalculations();return;}
   matrixBuilt=true;
+
+  // Render segment strip
+  const segStrip = document.getElementById('segment-strip');
+  if(segStrip && CONFIG.segments) {
+    segStrip.innerHTML = Object.entries(CONTACT_SEGMENTS).map(([key, seg]) => {
+      const pct = CONFIG.segments[key] || 0;
+      if(pct === 0) return '';
+      let badgeClass = 'simple';
+      if(seg.complexity.includes('Complex')) badgeClass = 'complex';
+      else if(seg.complexity.includes('Medium')) badgeClass = 'medium';
+      const affPct = Math.round(seg.offshoreAffinity * 100);
+      const affClass = affPct >= 80 ? 'high' : affPct >= 50 ? 'medium' : 'low';
+      return `<div class="segment-strip-card">
+        <span class="segment-strip-icon">${seg.icon}</span>
+        <div class="segment-strip-info">
+          <span class="segment-strip-name">${seg.name}</span>
+          <div class="segment-strip-meta">
+            <span class="segment-strip-pct">${pct}%</span>
+            <span class="complexity-badge ${badgeClass}">${seg.complexity}</span>
+            <span class="segment-strip-affinity ${affClass}">${affPct}% offshore fit</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    gsap.from('.segment-strip-card',{y:10,opacity:0,duration:0.3,stagger:0.06,ease:'power2.out'});
+  }
 
   // Build dynamic headers
   const thead = document.getElementById('matrix-thead');

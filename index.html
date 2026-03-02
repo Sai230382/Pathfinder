@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="painPointLibrary.js"></script>
 <script src="recommendation-engine.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgenjs.bundle.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -43,9 +44,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .scenario-btn.active{background:var(--accent-cyan);color:#0a1628;font-weight:600}
 
 /* === EXPORT === */
-#export-btn{position:fixed;top:20px;left:24px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s;opacity:0;pointer-events:none}
+#export-btn{position:fixed;top:20px;left:24px;z-index:100;display:flex;gap:6px;transition:all .2s;opacity:0;pointer-events:none}
 #export-btn.visible{opacity:1;pointer-events:all}
-#export-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+.export-nav-btn{background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s}
+.export-nav-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
 #settings-btn{position:fixed;top:20px;left:120px;z-index:100;background:rgba(15,23,42,.85);backdrop-filter:blur(12px);border:1px solid var(--border-subtle);color:var(--text-muted);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-family:var(--font-body);transition:all .2s;opacity:0;pointer-events:none}
 #settings-btn.visible{opacity:1;pointer-events:all}
 #settings-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
@@ -63,7 +65,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === SLIDES === */
 .slides-container{position:relative;width:100%;height:100vh;overflow:hidden}
-.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:var(--slide-padding);opacity:0;visibility:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:var(--slide-padding) var(--slide-padding) 100px var(--slide-padding);opacity:0;visibility:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
 .slide::-webkit-scrollbar{width:6px}
 .slide::-webkit-scrollbar-thumb{background:var(--border-subtle);border-radius:3px}
 .slide.active{opacity:1;visibility:visible}
@@ -87,7 +89,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === SLIDE 2: INPUT FORM === */
 .slide-input{padding-top:32px}
-.input-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;overflow-y:auto;padding-bottom:80px}
+.input-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;overflow-y:auto;padding-bottom:20px}
 .form-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:20px}
 .form-card h3{font-family:var(--font-heading);font-size:1.1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .form-card h3 .card-icon{font-size:1.2rem}
@@ -584,12 +586,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === PRINT === */
 @media print{
+  @page{margin:0.6in 0.75in;size:A4 portrait}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif}
+  body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif;counter-reset:page-num}
   .slides-container{position:static!important;width:100%!important;height:auto!important;overflow:visible!important}
-  .slide{display:block!important;position:relative!important;opacity:1!important;visibility:visible!important;transform:none!important;page-break-after:always;padding:40px;min-height:100vh;background:white!important;overflow:visible!important;height:auto!important}
-  #slide-2,#slide-3,#slide-4,.cta-section{display:none!important}
-  #slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg{display:none!important}
+  .slide,.cta-section,#slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg,#digital-rain-canvas{display:none!important}
   .slide-heading{-webkit-text-fill-color:#1a1a1a;background:none;color:#1a1a1a}
   .dashboard-card,.phase-card,.detail-panel,.ba-card,.exec-ba-col,.exec-kpi{border:1px solid #ddd;background:#fafafa}
   .savings-amount{-webkit-text-fill-color:#10b981;background:none}
@@ -600,8 +601,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   .slide-subtitle{color:#555!important}
 
   /* Print pages visible */
-  .print-page{display:block!important;page-break-after:always;padding:48px 56px;min-height:100vh;background:white!important;color:#1a1a1a;position:relative;box-sizing:border-box}
+  .print-page{display:block!important;page-break-after:always;padding:32px 0;min-height:100vh;background:white!important;color:#1a1a1a;position:relative;box-sizing:border-box;counter-increment:page-num}
   .print-page *{color:#1a1a1a}
+  .print-page:last-of-type{page-break-after:avoid}
 
   /* Report header */
   .rpt-header{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:2px solid #0a1628;margin-bottom:28px}
@@ -642,7 +644,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   .rpt-level-l{color:#dc2626!important;font-weight:600}
 
   /* Footer */
-  .rpt-footer{position:absolute;bottom:40px;left:56px;right:56px;display:flex;justify-content:space-between;font-size:.65rem;color:#aaa!important;border-top:1px solid #e5e5e5;padding-top:10px}
+  .rpt-footer{position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:space-between;font-size:.65rem;color:#aaa!important;border-top:1px solid #e5e5e5;padding-top:10px}
+  .rpt-footer::after{content:'Page ' counter(page-num) ' of 4';color:#aaa!important}
 
   /* Page 2: Recommendation cards */
   .rpt-pairing{margin-bottom:20px;padding:16px;border:1px solid #e0e0e0;border-radius:8px;background:#fafbfc;page-break-inside:avoid}
@@ -708,7 +711,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   <button class="scenario-btn" data-scenario="Aggressive">Aggressive</button>
 </div>
 
-<button id="export-btn" onclick="exportReport()">Export PDF</button>
+<div id="export-btn">
+  <button class="export-nav-btn" onclick="exportReport()">PDF</button>
+  <button class="export-nav-btn" onclick="exportPPT()">PPT</button>
+</div>
 <button id="settings-btn" onclick="toggleSettingsModal()">&#9881;</button>
 
 <div class="ai-overlay" id="ai-overlay">
@@ -1104,7 +1110,43 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- PRINT PAGE 3: DIAGNOSTIC & SOLUTION FRAMEWORK -->
+  <!-- PRINT PAGE 3: FINANCIAL SUMMARY -->
+  <section class="print-page" id="print-financials">
+    <div class="rpt-header">
+      <div class="rpt-logo">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="#0a1628" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/><circle cx="32" cy="32" r="18" stroke="#0a1628" stroke-width="2.5" opacity="0.6"/><circle cx="32" cy="32" r="6" fill="#0a1628"/></svg>
+      </div>
+      <div class="rpt-header-text">
+        <div class="rpt-title">Intelligent Consulting</div>
+        <div class="rpt-date" id="rpt-date-fin"></div>
+      </div>
+      <div class="rpt-badge">Financial Summary</div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Cost Comparison — Current vs Proposed</div>
+      <table class="rpt-table" id="rpt-cost-table">
+        <thead><tr><th>Metric</th><th>Current State</th><th>Proposed State</th><th>Impact</th></tr></thead>
+        <tbody id="rpt-cost-tbody"></tbody>
+      </table>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Contact Segment Analysis</div>
+      <table class="rpt-table" id="rpt-segment-table">
+        <thead><tr><th>Segment</th><th>Volume %</th><th>Complexity</th><th>Offshore Affinity</th><th>Automation Potential</th></tr></thead>
+        <tbody id="rpt-segment-tbody"></tbody>
+      </table>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Savings Breakdown</div>
+      <div id="rpt-savings-detail"></div>
+    </div>
+    <div class="rpt-footer">
+      <span>Confidential — Prepared by Intelligent Consulting</span>
+      <span id="rpt-footer-date-fin"></span>
+    </div>
+  </section>
+
+  <!-- PRINT PAGE 4: DIAGNOSTIC & SOLUTION FRAMEWORK -->
   <section class="print-page" id="print-diagnostic">
     <div class="rpt-header">
       <div class="rpt-logo">
@@ -1112,7 +1154,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       </div>
       <div class="rpt-header-text">
         <div class="rpt-title">Intelligent Consulting</div>
-        <div class="rpt-date" id="rpt-date-3"></div>
+        <div class="rpt-date" id="rpt-date-4"></div>
       </div>
       <div class="rpt-badge">Pathfinder Diagnostic</div>
     </div>
@@ -1130,7 +1172,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
     <div class="rpt-footer">
       <span>Confidential — Prepared by Intelligent Consulting</span>
-      <span id="rpt-footer-date-3"></span>
+      <span id="rpt-footer-date-4"></span>
     </div>
   </section>
 
@@ -1159,7 +1201,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     <div class="exec-kpi-strip" id="exec-kpi-strip"></div>
     <div class="cta-section">
       <button class="cta-button primary" onclick="navigateToSlide(1,'backward')">Restart Pathfinder</button>
-      <button class="cta-button secondary" onclick="exportReport()">Export Report</button>
+      <button class="cta-button secondary" onclick="exportReport()">Export PDF Report</button>
+      <button class="cta-button secondary" onclick="exportPPT()" style="border-color:var(--accent-purple);color:var(--accent-purple)">Export PowerPoint</button>
     </div>
   </section>
 </div>
@@ -2649,11 +2692,15 @@ function exportReport() {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
 
-    // Set dates
+    // Set dates on all 4 pages
     document.getElementById('rpt-date').textContent = dateStr;
     document.getElementById('rpt-date-2').textContent = dateStr;
+    document.getElementById('rpt-date-fin').textContent = dateStr;
+    document.getElementById('rpt-date-4').textContent = dateStr;
     document.getElementById('rpt-footer-date').textContent = dateStr;
     document.getElementById('rpt-footer-date-2').textContent = dateStr;
+    document.getElementById('rpt-footer-date-fin').textContent = dateStr;
+    document.getElementById('rpt-footer-date-4').textContent = dateStr;
 
     // === PAGE 1: Executive Brief ===
     // Engagement Overview table
@@ -2777,9 +2824,42 @@ function exportReport() {
       <strong>Channel Fit</strong> (10%) — suitability for voice vs. written channel delivery.
       Each factor is scored 0-100 and presented as Low / Medium / High / Very High. The composite score determines FTE allocation priority across destinations.`;
 
-    // === PAGE 3: Diagnostic & Solution Framework ===
-    document.getElementById('rpt-date-3').textContent = dateStr;
-    document.getElementById('rpt-footer-date-3').textContent = dateStr;
+    // === PAGE 3: Financial Summary ===
+    const totalHCAll = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
+    const currentAnnual = fin.currentAnnualCost || (totalHCAll * (CONFIG.avgRate || 35) * 2080);
+    const proposedAnnual = currentAnnual - fin.annualSavings;
+    const costRows = [
+      ['Total FTEs', totalHCAll.toLocaleString(), totalHCAll.toLocaleString(), '—'],
+      ['FTEs Transitioned Offshore', '0', impact.totalMovedFTEs.toLocaleString(), impact.totalMovedFTEs.toLocaleString() + ' moved'],
+      ['Annual Operating Cost', formatCurrency(currentAnnual), formatCurrency(proposedAnnual), '<strong style="color:#16a34a!important">-' + formatCurrency(fin.annualSavings) + '</strong>'],
+      ['Cost Reduction', '—', '—', '<strong style="color:#16a34a!important">' + fin.savingsPercent + '%</strong>'],
+      ['Monthly Savings', '—', '—', formatCurrency(fin.annualSavings / 12)],
+      ['Break-even Period', '—', '—', fin.breakEvenMonths ? fin.breakEvenMonths + ' months' : '< 6 months']
+    ];
+    document.getElementById('rpt-cost-tbody').innerHTML = costRows.map(r =>
+      '<tr><td class="rpt-label">' + r[0] + '</td><td class="rpt-value">' + r[1] + '</td><td class="rpt-value">' + r[2] + '</td><td class="rpt-value">' + r[3] + '</td></tr>'
+    ).join('');
+
+    // Contact segment table
+    const segEntries = Object.entries(CONFIG.segments || {}).filter(([k,v]) => v > 0).sort((a,b) => b[1] - a[1]);
+    document.getElementById('rpt-segment-tbody').innerHTML = segEntries.map(([key, vol]) => {
+      const seg = CONTACT_SEGMENTS[key];
+      if(!seg) return '';
+      return '<tr><td class="rpt-label">' + seg.icon + ' ' + seg.name + '</td><td class="rpt-value" style="text-align:center">' + vol + '%</td><td class="rpt-value" style="text-align:center">' + seg.complexity + '</td><td class="rpt-value" style="text-align:center">' + Math.round(seg.offshoreAffinity * 100) + '%</td><td class="rpt-value" style="text-align:center">' + Math.round(seg.automationPotential * 100) + '%</td></tr>';
+    }).join('');
+
+    // Savings detail
+    const savingsPerFTE = impact.totalMovedFTEs > 0 ? fin.annualSavings / impact.totalMovedFTEs : 0;
+    let savingsDetailHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">';
+    savingsDetailHTML += '<div style="padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.4rem;font-weight:700;color:#16a34a!important">' + formatCurrency(fin.annualSavings) + '</div><div style="font-size:.72rem;color:#555!important;margin-top:4px">Annual Savings</div></div>';
+    savingsDetailHTML += '<div style="padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.4rem;font-weight:700;color:#16a34a!important">' + fin.savingsPercent + '%</div><div style="font-size:.72rem;color:#555!important;margin-top:4px">Cost Reduction</div></div>';
+    savingsDetailHTML += '<div style="padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:center;background:#f5f7fa"><div style="font-size:1.4rem;font-weight:700;color:#0a1628!important">' + formatCurrency(savingsPerFTE) + '</div><div style="font-size:.72rem;color:#555!important;margin-top:4px">Savings per FTE</div></div>';
+    savingsDetailHTML += '</div>';
+    document.getElementById('rpt-savings-detail').innerHTML = savingsDetailHTML;
+
+    // === PAGE 4: Diagnostic & Solution Framework ===
+    document.getElementById('rpt-date-4').textContent = dateStr;
+    document.getElementById('rpt-footer-date-4').textContent = dateStr;
 
     // Pain points by category
     const allPainPoints = { ...selectedPainPoints };
@@ -2839,6 +2919,306 @@ function exportReport() {
   setTimeout(() => window.print(), 100);
 }
 window.exportReport = exportReport;
+
+// ===== PPT EXPORT =====
+function exportPPT() {
+  try {
+    const pptx = new PptxGenJS();
+    pptx.defineLayout({ name:'WIDE', width:13.33, height:7.5 });
+    pptx.layout = 'WIDE';
+
+    const impact = calculateOffshoreImpact();
+    const fin = calculateFinancials(impact);
+    const segProfile = getSegmentProfile();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+    const clientName = diagnosticContext.clientName || CONFIG.clientName || 'Client';
+    const industry = diagnosticContext.industry || 'Technology';
+
+    // Colors
+    const BG = '0a1628';
+    const CYAN = '00d4ff';
+    const PURPLE = '7c5cfc';
+    const GREEN = '10b981';
+    const WHITE = 'FFFFFF';
+    const GRAY = '94a3b8';
+    const DARK_CARD = '1e293b';
+    const BORDER = '334155';
+
+    // Helper: add footer to each slide
+    function addFooter(slide) {
+      slide.addText('Confidential — Prepared by Intelligent Consulting', { x:0.5, y:6.95, w:12.33, h:0.35, fontSize:8, color:GRAY, fontFace:'Arial' });
+      slide.addShape(pptx.shapes.LINE, { x:0.5, y:6.9, w:12.33, h:0, line:{ color:BORDER, width:0.5 } });
+    }
+
+    // Helper: section header shape
+    function addSectionHeader(slide, title) {
+      slide.addText(title, { x:0.5, y:0.4, w:12.33, h:0.5, fontSize:24, fontFace:'Arial', bold:true, color:WHITE });
+      slide.addShape(pptx.shapes.LINE, { x:0.5, y:0.95, w:2.5, h:0, line:{ color:CYAN, width:2.5 } });
+    }
+
+    // ===== SLIDE 1: Title =====
+    const s1 = pptx.addSlide();
+    s1.background = { color: BG };
+    s1.addText('PATHFINDER', { x:0.5, y:1.6, w:12.33, h:0.55, fontSize:14, fontFace:'Arial', bold:true, color:CYAN, letterSpacing:6 });
+    s1.addText('Transformation Assessment', { x:0.5, y:2.15, w:12.33, h:0.9, fontSize:40, fontFace:'Arial', bold:true, color:WHITE });
+    s1.addShape(pptx.shapes.LINE, { x:0.5, y:3.15, w:2, h:0, line:{ color:CYAN, width:3 } });
+    s1.addText(clientName, { x:0.5, y:3.5, w:12.33, h:0.5, fontSize:20, fontFace:'Arial', color:GRAY });
+    s1.addText(industry.charAt(0).toUpperCase() + industry.slice(1) + '  |  ' + dateStr, { x:0.5, y:4.1, w:12.33, h:0.4, fontSize:14, fontFace:'Arial', color:GRAY });
+    s1.addText('Intelligent Consulting', { x:0.5, y:5.5, w:5, h:0.5, fontSize:16, fontFace:'Arial', bold:true, color:WHITE });
+    addFooter(s1);
+
+    // ===== SLIDE 2: Executive Summary =====
+    const s2 = pptx.addSlide();
+    s2.background = { color: BG };
+    addSectionHeader(s2, 'Executive Summary');
+
+    const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
+    const kpiData = [
+      { label:'Total FTEs', value:totalHC.toLocaleString(), color:CYAN },
+      { label:'FTEs Transitioned', value:impact.totalMovedFTEs.toLocaleString(), color:CYAN },
+      { label:'Annual Savings', value:formatCurrency(fin.annualSavings), color:GREEN },
+      { label:'Cost Reduction', value:fin.savingsPercent+'%', color:GREEN }
+    ];
+    kpiData.forEach((kpi, i) => {
+      const xPos = 0.5 + i * 3.15;
+      s2.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:1.3, w:2.9, h:1.4, rectRadius:0.1, fill:{ color:DARK_CARD }, line:{ color:BORDER, width:0.75 } });
+      s2.addText(kpi.value, { x:xPos, y:1.45, w:2.9, h:0.7, fontSize:28, fontFace:'Arial', bold:true, color:kpi.color, align:'center' });
+      s2.addText(kpi.label, { x:xPos, y:2.15, w:2.9, h:0.4, fontSize:11, fontFace:'Arial', color:GRAY, align:'center' });
+    });
+
+    // Key findings bullets
+    const srcLocations = Object.entries(CONFIG.locations).map(([code,loc]) => (COUNTRY_DB[code]?.name||code) + ' (' + loc.headcount + ' FTEs)').join(', ');
+    const dstLocations = Object.keys(CONFIG.offshoreLocations).map(code => COUNTRY_DB[code]?.name||code).join(', ');
+    let narrative;
+    try { narrative = generateInsightNarrative(impact); } catch(e) { narrative = {pairings:[],factors:[],risks:[],summary:''}; }
+
+    const bullets = [
+      'Source locations: ' + srcLocations,
+      'Offshore destinations: ' + dstLocations,
+      'Transitioning ' + impact.totalMovedFTEs + ' FTEs yields ' + formatCurrency(fin.annualSavings) + ' annual savings (' + fin.savingsPercent + '% reduction)',
+      'Break-even in ' + (fin.breakEvenMonths || '< 6') + ' months with ' + formatCurrency(fin.transitionCost) + ' transition investment',
+      segProfile.dominant ? 'Dominant segment: ' + segProfile.dominant.name + ' (' + segProfile.dominant.pct + '% volume)' : '',
+      narrative.risks.length > 0 ? narrative.risks.length + ' risk consideration(s) identified — mitigation recommended during pilot' : 'No significant risks identified across destination pairings'
+    ].filter(b => b);
+
+    s2.addText(bullets.map(b => ({ text:b, options:{ bullet:{ type:'bullet', color:CYAN }, fontSize:13, color:WHITE, breakLine:true, lineSpacingMultiple:1.5 } })),
+      { x:0.5, y:3.0, w:12.33, h:3.5, fontFace:'Arial', valign:'top' });
+    addFooter(s2);
+
+    // ===== SLIDE 3: Current State Overview =====
+    const s3 = pptx.addSlide();
+    s3.background = { color: BG };
+    addSectionHeader(s3, 'Current State Overview');
+
+    // Locations table
+    s3.addText('Workforce Locations', { x:0.5, y:1.2, w:6, h:0.35, fontSize:13, fontFace:'Arial', bold:true, color:CYAN });
+    const locRows = [[ { text:'Location', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Headcount', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Hourly Rate', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } } ]];
+    for(const [code, loc] of Object.entries(CONFIG.locations)) {
+      const cost = loc.headcount * loc.hourlyRate * CONFIG.workingHoursPerYear;
+      locRows.push([
+        { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE } },
+        { text:loc.headcount.toLocaleString(), options:{ color:WHITE, align:'center' } },
+        { text:'$'+loc.hourlyRate, options:{ color:WHITE, align:'center' } },
+        { text:formatCurrency(cost), options:{ color:WHITE, align:'right' } }
+      ]);
+    }
+    s3.addTable(locRows, { x:0.5, y:1.6, w:6, colW:[2.2,1.3,1.2,1.3], fontSize:11, fontFace:'Arial', border:{ type:'solid', color:BORDER, pt:0.5 }, rowH:0.35,
+      autoPage:false });
+
+    // Segment table
+    s3.addText('Contact Segments', { x:7, y:1.2, w:5.8, h:0.35, fontSize:13, fontFace:'Arial', bold:true, color:CYAN });
+    const segRows = [[ { text:'Segment', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Volume', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Complexity', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Offshore Fit', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } } ]];
+    const segEntries = Object.entries(CONFIG.segments||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    for(const [key, vol] of segEntries) {
+      const seg = CONTACT_SEGMENTS[key];
+      if(!seg) continue;
+      segRows.push([
+        { text:seg.name, options:{ color:WHITE } },
+        { text:vol+'%', options:{ color:WHITE, align:'center' } },
+        { text:seg.complexity, options:{ color:WHITE, align:'center' } },
+        { text:Math.round(seg.offshoreAffinity*100)+'%', options:{ color: seg.offshoreAffinity >= 0.7 ? GREEN : seg.offshoreAffinity >= 0.5 ? 'f59e0b' : 'ef4444', align:'center', bold:true } }
+      ]);
+    }
+    s3.addTable(segRows, { x:7, y:1.6, w:5.8, colW:[2,1,1.3,1.5], fontSize:11, fontFace:'Arial', border:{ type:'solid', color:BORDER, pt:0.5 }, rowH:0.35,
+      autoPage:false });
+    addFooter(s3);
+
+    // ===== SLIDE 4: Proposed Transformation =====
+    const s4 = pptx.addSlide();
+    s4.background = { color: BG };
+    addSectionHeader(s4, 'Proposed Transformation');
+
+    // Destination summary
+    s4.addText('Offshore Destinations', { x:0.5, y:1.2, w:6, h:0.35, fontSize:13, fontFace:'Arial', bold:true, color:CYAN });
+    const dstRows = [[ { text:'Destination', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'FTEs Assigned', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Hourly Rate', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } } ]];
+    for(const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
+      const ftes = impact.movedByDestination[code] || 0;
+      const cost = ftes * off.hourlyRate * CONFIG.workingHoursPerYear;
+      dstRows.push([
+        { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE } },
+        { text:ftes.toLocaleString(), options:{ color:CYAN, align:'center', bold:true } },
+        { text:'$'+off.hourlyRate, options:{ color:WHITE, align:'center' } },
+        { text:formatCurrency(cost), options:{ color:WHITE, align:'right' } }
+      ]);
+    }
+    s4.addTable(dstRows, { x:0.5, y:1.6, w:6, colW:[2.2,1.3,1.2,1.3], fontSize:11, fontFace:'Arial', border:{ type:'solid', color:BORDER, pt:0.5 }, rowH:0.35,
+      autoPage:false });
+
+    // Segment strategy summary
+    s4.addText('Segment Offshore Strategy', { x:7, y:1.2, w:5.8, h:0.35, fontSize:13, fontFace:'Arial', bold:true, color:CYAN });
+    const highAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.7).sort((a,b)=>b[1].offshoreAffinity-a[1].offshoreAffinity);
+    const lowAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
+    const midAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.5 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.7);
+
+    const stratBullets = [];
+    if(highAff.length > 0) stratBullets.push({ text:'Priority Offshore: ' + highAff.map(([k,s])=>s.name).join(', '), options:{ bullet:{ type:'bullet', color:GREEN }, fontSize:12, color:WHITE, breakLine:true } });
+    if(midAff.length > 0) stratBullets.push({ text:'Phased Transition: ' + midAff.map(([k,s])=>s.name).join(', '), options:{ bullet:{ type:'bullet', color:'f59e0b' }, fontSize:12, color:WHITE, breakLine:true } });
+    if(lowAff.length > 0) stratBullets.push({ text:'Retain Onshore: ' + lowAff.map(([k,s])=>s.name).join(', '), options:{ bullet:{ type:'bullet', color:'ef4444' }, fontSize:12, color:WHITE, breakLine:true } });
+    if(stratBullets.length > 0) {
+      s4.addText(stratBullets, { x:7, y:1.6, w:5.8, h:2, fontFace:'Arial', valign:'top', lineSpacingMultiple:1.8 });
+    }
+
+    // Affinity pairings (top 4)
+    if(narrative.pairings.length > 0) {
+      s4.addText('Top Destination Pairings', { x:0.5, y:4.0, w:12.33, h:0.35, fontSize:13, fontFace:'Arial', bold:true, color:CYAN });
+      const pairBullets = narrative.pairings.slice(0,4).map(p => ({
+        text: (COUNTRY_DB[p.sourceCode]?.name||p.source) + ' → ' + (COUNTRY_DB[p.destinationCode]?.name||p.destination) + ' (' + p.ftes + ' FTEs) — ' + (p.reasons[0]||'Strong affinity match'),
+        options:{ bullet:{ type:'bullet', color:CYAN }, fontSize:11, color:WHITE, breakLine:true, lineSpacingMultiple:1.5 }
+      }));
+      s4.addText(pairBullets, { x:0.5, y:4.4, w:12.33, h:2.2, fontFace:'Arial', valign:'top' });
+    }
+    addFooter(s4);
+
+    // ===== SLIDE 5: Financial Impact =====
+    const s5 = pptx.addSlide();
+    s5.background = { color: BG };
+    addSectionHeader(s5, 'Financial Impact');
+
+    // Cost comparison table
+    const currentAnnual = fin.totalCurrentCost;
+    const proposedAnnual = fin.totalProposedCost;
+    const finRows = [
+      [ { text:'Metric', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Current State', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Proposed State', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } }, { text:'Impact', options:{ bold:true, color:WHITE, fill:{ color:'0f2847' } } } ],
+      [ { text:'Annual Operating Cost' }, { text:formatCurrency(currentAnnual) }, { text:formatCurrency(proposedAnnual) }, { text:'-'+formatCurrency(fin.annualSavings), options:{ color:GREEN, bold:true } } ],
+      [ { text:'Total FTEs' }, { text:totalHC.toLocaleString() }, { text:totalHC.toLocaleString() }, { text:'—' } ],
+      [ { text:'FTEs Offshore' }, { text:'0' }, { text:impact.totalMovedFTEs.toLocaleString() }, { text:'+'+impact.totalMovedFTEs.toLocaleString(), options:{ color:CYAN } } ],
+      [ { text:'Monthly Savings' }, { text:'—' }, { text:'—' }, { text:formatCurrency(fin.annualSavings/12)+'/mo', options:{ color:GREEN, bold:true } } ],
+      [ { text:'Break-even Period' }, { text:'—' }, { text:'—' }, { text:(fin.breakEvenMonths||'< 6')+' months' } ],
+      [ { text:'Transition Investment' }, { text:'—' }, { text:'—' }, { text:formatCurrency(fin.transitionCost) } ]
+    ];
+    // Apply default styling to data cells
+    for(let r=1; r<finRows.length; r++) {
+      for(let c=0; c<finRows[r].length; c++) {
+        if(typeof finRows[r][c] === 'object' && !finRows[r][c].options) finRows[r][c].options = { color:WHITE };
+        else if(typeof finRows[r][c] === 'object') finRows[r][c].options.color = finRows[r][c].options.color || WHITE;
+      }
+    }
+    s5.addTable(finRows, { x:0.5, y:1.3, w:12.33, colW:[3.5,2.8,2.8,3.23], fontSize:12, fontFace:'Arial', border:{ type:'solid', color:BORDER, pt:0.5 }, rowH:0.4,
+      autoPage:false });
+
+    // Savings KPI cards
+    const savingsPerFTE = impact.totalMovedFTEs > 0 ? fin.annualSavings / impact.totalMovedFTEs : 0;
+    const savingsKPIs = [
+      { label:'Annual Savings', value:formatCurrency(fin.annualSavings), color:GREEN },
+      { label:'Cost Reduction', value:fin.savingsPercent+'%', color:GREEN },
+      { label:'Savings per FTE', value:formatCurrency(savingsPerFTE), color:CYAN },
+      { label:'3-Year Value', value:formatCurrency(fin.annualSavings*3 - fin.transitionCost), color:GREEN }
+    ];
+    savingsKPIs.forEach((kpi, i) => {
+      const xPos = 0.5 + i * 3.15;
+      s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:4.5, w:2.9, h:1.3, rectRadius:0.1, fill:{ color:DARK_CARD }, line:{ color:BORDER, width:0.75 } });
+      s5.addText(kpi.value, { x:xPos, y:4.6, w:2.9, h:0.65, fontSize:24, fontFace:'Arial', bold:true, color:kpi.color, align:'center' });
+      s5.addText(kpi.label, { x:xPos, y:5.25, w:2.9, h:0.35, fontSize:10, fontFace:'Arial', color:GRAY, align:'center' });
+    });
+    addFooter(s5);
+
+    // ===== SLIDE 6: Recommendations =====
+    const s6 = pptx.addSlide();
+    s6.background = { color: BG };
+    addSectionHeader(s6, 'Recommendations');
+
+    let recCards = [];
+    const totalPain = Object.values(selectedPainPoints).reduce((s,a)=>s+a.length, 0);
+    if(totalPain > 0 && typeof buildDataDrivenRecommendations === 'function') {
+      try {
+        const allPains = [...selectedPainPoints.people, ...selectedPainPoints.process, ...selectedPainPoints.technology];
+        const classified = classifyPainPointsForSolutions(allPains);
+        const dataCtx = collectDataContext();
+        const recs = buildDataDrivenRecommendations(classified, dataCtx);
+        const groupLabels = { process:'Process', automation:'Automation & AI', tech:'Technology' };
+        for(const [group, label] of Object.entries(groupLabels)) {
+          const items = recs[group] || [];
+          items.forEach(r => recCards.push({ title:r.title, insight:r.insight, group:label }));
+        }
+      } catch(e) { console.warn('Rec PPT error:', e); }
+    }
+
+    if(recCards.length > 0) {
+      recCards.slice(0,6).forEach((rec, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const xPos = 0.5 + col * 6.3;
+        const yPos = 1.3 + row * 1.7;
+        s6.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:yPos, w:5.9, h:1.5, rectRadius:0.1, fill:{ color:DARK_CARD }, line:{ color:BORDER, width:0.75 } });
+        s6.addText(rec.title, { x:xPos+0.2, y:yPos+0.15, w:5.5, h:0.4, fontSize:13, fontFace:'Arial', bold:true, color:WHITE });
+        s6.addText(rec.group.toUpperCase(), { x:xPos+0.2, y:yPos+0.55, w:5.5, h:0.25, fontSize:8, fontFace:'Arial', bold:true, color:PURPLE, letterSpacing:1 });
+        s6.addText(rec.insight, { x:xPos+0.2, y:yPos+0.8, w:5.5, h:0.55, fontSize:10, fontFace:'Arial', color:GRAY, valign:'top' });
+      });
+    } else {
+      s6.addText('Complete the Pathfinder diagnostic to generate recommendations.', { x:0.5, y:3, w:12.33, h:0.5, fontSize:14, fontFace:'Arial', color:GRAY, align:'center' });
+    }
+    addFooter(s6);
+
+    // ===== SLIDE 7: Implementation Roadmap =====
+    const s7 = pptx.addSlide();
+    s7.background = { color: BG };
+    addSectionHeader(s7, 'Implementation Roadmap');
+
+    const total = impact.totalMovedFTEs;
+    const offCodes = Object.keys(CONFIG.offshoreLocations);
+    const topDest = offCodes.sort((a,b)=>(impact.movedByDestination[b]||0)-(impact.movedByDestination[a]||0));
+    const topName = COUNTRY_DB[topDest[0]]?.name || topDest[0] || 'primary destination';
+    const sortedSegs = Object.entries(CONTACT_SEGMENTS)
+      .filter(([k])=>(CONFIG.segments&&CONFIG.segments[k]||0)>0)
+      .sort((a,b)=>b[1].offshoreAffinity-a[1].offshoreAffinity);
+    const pilotSegNames = sortedSegs.slice(0,2).map(([k,s])=>s.name);
+
+    const phases = [
+      { title:'Phase 1: Foundation', duration:'0 - 3 Months', target:Math.round(total*0.2)+' FTEs', color:CYAN,
+        items:[ topName+' site setup & infrastructure', 'Recruit pilot team ('+Math.round(total*0.2)+' FTEs)', pilotSegNames.length>0?'Pilot with '+pilotSegNames.join(' & ')+' segments':'Knowledge transfer design', 'Training & cultural alignment' ] },
+      { title:'Phase 2: Scale', duration:'3 - 9 Months', target:Math.round(total*0.6)+' FTEs', color:PURPLE,
+        items:[ 'Channel transition (Email, Chat, Phone L1)', 'Quality monitoring & CSAT tracking', 'Performance baseline measurement', 'Process optimization & refinement' ] },
+      { title:'Phase 3: Optimize', duration:'9 - 12 Months', target:total+' FTEs', color:GREEN,
+        items:[ 'Full ramp across '+offCodes.length+' site(s)', 'AI augmentation & automation deployment', 'Continuous improvement framework', 'Steady-state operations handover' ] }
+    ];
+
+    phases.forEach((phase, i) => {
+      const xPos = 0.5 + i * 4.2;
+      s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:1.3, w:3.9, h:5.2, rectRadius:0.1, fill:{ color:DARK_CARD }, line:{ color:phase.color, width:1 } });
+      s7.addText(phase.title, { x:xPos+0.2, y:1.45, w:3.5, h:0.4, fontSize:15, fontFace:'Arial', bold:true, color:phase.color });
+      s7.addText(phase.duration, { x:xPos+0.2, y:1.85, w:3.5, h:0.3, fontSize:10, fontFace:'Arial', color:GRAY });
+      s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos+0.2, y:2.2, w:3.5, h:0.4, rectRadius:0.05, fill:{ color:'0f2847' } });
+      s7.addText('Target: ' + phase.target, { x:xPos+0.2, y:2.2, w:3.5, h:0.4, fontSize:11, fontFace:'Arial', bold:true, color:phase.color, align:'center' });
+      s7.addText(phase.items.map(item => ({ text:item, options:{ bullet:{ type:'bullet', color:phase.color }, fontSize:11, color:WHITE, breakLine:true, lineSpacingMultiple:1.6 } })),
+        { x:xPos+0.2, y:2.8, w:3.5, h:3.2, fontFace:'Arial', valign:'top' });
+    });
+
+    // Next steps
+    s7.addText('Next Steps: Schedule stakeholder alignment session  |  Finalize destination selection  |  Initiate pilot recruitment',
+      { x:0.5, y:6.55, w:12.33, h:0.3, fontSize:10, fontFace:'Arial', color:CYAN, align:'center' });
+    addFooter(s7);
+
+    // Save
+    const fileName = 'Pathfinder_' + clientName.replace(/[^a-zA-Z0-9]/g,'_') + '_' + now.toISOString().slice(0,10) + '.pptx';
+    pptx.writeFile({ fileName: fileName });
+
+  } catch(e) {
+    console.error('PPT export error:', e);
+    alert('PPT export failed: ' + e.message);
+  }
+}
+window.exportPPT = exportPPT;
 
 // ===== DYNAMIC CALCULATIONS (Affinity-Weighted) =====
 function calculateOffshoreImpact() {

@@ -2928,9 +2928,17 @@ function exportPPT() {
     const dateStr = now.toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
     const clientName = diagnosticContext.clientName || CONFIG.clientName || 'Client';
     const industry = diagnosticContext.industry || 'Technology';
-    const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
+    const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + (l.headcount||0), 0) || 0;
     let narrative;
     try { narrative = generateInsightNarrative(impact); } catch(e) { narrative = {pairings:[],factors:[],risks:[],summary:''}; }
+    // Safeguard financial values against NaN/undefined
+    fin.annualSavings = fin.annualSavings || 0;
+    fin.savingsPercent = fin.savingsPercent || 0;
+    fin.totalCurrentCost = fin.totalCurrentCost || 0;
+    fin.totalProposedCost = fin.totalProposedCost || 0;
+    fin.transitionCost = fin.transitionCost || 0;
+    fin.breakEvenMonths = fin.breakEvenMonths || 0;
+    impact.totalMovedFTEs = impact.totalMovedFTEs || 0;
 
     // === COLORS ===
     const BG = '0a1628';
@@ -2995,8 +3003,8 @@ function exportPPT() {
         slide.addText(subtitle, { x:0.6, y:1.0, w:10, h:0.35, fontSize:11, fontFace:'Arial', color:GRAY });
       }
       // Corner accent (top-right decorative element)
-      slide.addShape(pptx.shapes.RECTANGLE, { x:12.73, y:0.3, w:0.1, h:0.7, fill:{ color:CYAN }, rectRadius:0.02 });
-      slide.addShape(pptx.shapes.RECTANGLE, { x:12.43, y:0.3, w:0.1, h:0.5, fill:{ color:PURPLE }, rectRadius:0.02 });
+      slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:12.73, y:0.3, w:0.1, h:0.7, fill:{ color:CYAN }, rectRadius:0.02 });
+      slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:12.43, y:0.3, w:0.1, h:0.5, fill:{ color:PURPLE }, rectRadius:0.02 });
     }
 
     function addKPICard(slide, x, y, w, h, value, label, accentColor, opts) {
@@ -3014,12 +3022,12 @@ function exportPPT() {
     s1.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:13.33, h:0.06, fill:{ color:CYAN } });
     s1.addShape(pptx.shapes.RECTANGLE, { x:0, y:7.44, w:13.33, h:0.06, fill:{ color:PURPLE } });
     // Vertical accent bars (right side)
-    s1.addShape(pptx.shapes.RECTANGLE, { x:12.5, y:1.5, w:0.12, h:3.5, fill:{ color:CYAN }, rectRadius:0.03 });
-    s1.addShape(pptx.shapes.RECTANGLE, { x:12.15, y:2.0, w:0.12, h:2.5, fill:{ color:PURPLE }, rectRadius:0.03 });
+    s1.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:12.5, y:1.5, w:0.12, h:3.5, fill:{ color:CYAN }, rectRadius:0.03 });
+    s1.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:12.15, y:2.0, w:0.12, h:2.5, fill:{ color:PURPLE }, rectRadius:0.03 });
     // Compass logo
     s1.addImage({ data:'image/png;base64,'+LOGO_B64, x:0.6, y:1.0, w:0.7, h:0.7 });
     // Title text
-    s1.addText('PATHFINDER', { x:0.6, y:1.9, w:11, h:0.5, fontSize:14, fontFace:'Arial', bold:true, color:CYAN, charSpacing:6 });
+    s1.addText('PATHFINDER', { x:0.6, y:1.9, w:11, h:0.5, fontSize:14, fontFace:'Arial', bold:true, color:CYAN });
     s1.addText('Transformation\nAssessment', { x:0.6, y:2.4, w:11, h:1.4, fontSize:42, fontFace:'Arial', bold:true, color:WHITE, lineSpacingMultiple:1.1 });
     s1.addShape(pptx.shapes.LINE, { x:0.6, y:3.9, w:2.5, h:0, line:{ color:CYAN, width:3 } });
     s1.addText(clientName, { x:0.6, y:4.15, w:11, h:0.5, fontSize:22, fontFace:'Arial', color:GRAY_LIGHT });
@@ -3069,13 +3077,13 @@ function exportPPT() {
     addSectionHeader(s3, 'Current State Overview', 'Workforce distribution and contact segment composition');
 
     // Locations table
-    s3.addText('WORKFORCE LOCATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+    s3.addText('WORKFORCE LOCATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
     const locRows = [[ { text:'Location', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL} } }, { text:'Headcount', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Rate/hr', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'right' } } ]];
     for(const [code, loc] of Object.entries(CONFIG.locations)) {
       const cost = loc.headcount * loc.hourlyRate * CONFIG.workingHoursPerYear;
       const rowFill = locRows.length % 2 === 0 ? DARK_CARD : BG;
       locRows.push([
-        { text:(COUNTRY_DB[code]?.flag||'')+' '+(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
+        { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
         { text:loc.headcount.toLocaleString(), options:{ color:WHITE, align:'center', fill:{color:rowFill} } },
         { text:'$'+loc.hourlyRate, options:{ color:GRAY_LIGHT, align:'center', fill:{color:rowFill} } },
         { text:formatCurrency(cost), options:{ color:WHITE, align:'right', fill:{color:rowFill} } }
@@ -3084,20 +3092,22 @@ function exportPPT() {
     s3.addTable(locRows, { x:0.5, y:1.8, w:5.9, colW:[2.2,1.2,1.0,1.5], fontSize:10.5, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.38, autoPage:false });
 
     // Segment donut chart
-    s3.addText('CONTACT SEGMENTS', { x:7, y:1.4, w:5.8, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+    s3.addText('CONTACT SEGMENTS', { x:7, y:1.4, w:5.8, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
     const segEntries = Object.entries(CONFIG.segments||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
     const segChartLabels = segEntries.map(([k])=>CONTACT_SEGMENTS[k]?.name||k);
     const segChartValues = segEntries.map(([k,v])=>v);
     const segChartColors = [CYAN, PURPLE, GREEN, AMBER, '6366f1', 'ec4899'];
 
-    s3.addChart(pptx.charts.DOUGHNUT, [{ name:'Segments', labels:segChartLabels, values:segChartValues }], {
-      x:7, y:1.8, w:3, h:3,
-      showTitle:false, showValue:true, showPercent:false,
-      showLegend:false, showLabel:false,
-      dataLabelColor:WHITE, dataLabelFontSize:8,
-      chartColors:segChartColors.slice(0, segEntries.length),
-      holeSize:55
-    });
+    if(segChartLabels.length > 0 && segChartValues.length > 0) {
+      s3.addChart(pptx.charts.DOUGHNUT, [{ name:'Segments', labels:segChartLabels, values:segChartValues }], {
+        x:7, y:1.8, w:3, h:3,
+        showTitle:false, showValue:true,
+        showLegend:false,
+        dataLabelColor:WHITE, dataLabelFontSize:8,
+        chartColors:segChartColors.slice(0, segEntries.length),
+        holeSize:55
+      });
+    }
 
     // Segment legend + details
     segEntries.forEach(([key, vol], i) => {
@@ -3116,14 +3126,14 @@ function exportPPT() {
     addSectionHeader(s4, 'Proposed Transformation', 'Offshore destination strategy and segment alignment');
 
     // Destinations table
-    s4.addText('OFFSHORE DESTINATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+    s4.addText('OFFSHORE DESTINATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
     const dstRows = [[ { text:'Destination', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL} } }, { text:'FTEs', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Rate/hr', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'right' } } ]];
     for(const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
       const ftes = impact.movedByDestination[code] || 0;
       const cost = ftes * off.hourlyRate * CONFIG.workingHoursPerYear;
       const rowFill = dstRows.length % 2 === 0 ? DARK_CARD : BG2;
       dstRows.push([
-        { text:(COUNTRY_DB[code]?.flag||'')+' '+(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
+        { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
         { text:ftes.toLocaleString(), options:{ color:CYAN, align:'center', bold:true, fill:{color:rowFill} } },
         { text:'$'+off.hourlyRate, options:{ color:GRAY_LIGHT, align:'center', fill:{color:rowFill} } },
         { text:formatCurrency(cost), options:{ color:WHITE, align:'right', fill:{color:rowFill} } }
@@ -3132,22 +3142,22 @@ function exportPPT() {
     s4.addTable(dstRows, { x:0.5, y:1.8, w:5.9, colW:[2.2,1.0,1.0,1.7], fontSize:10.5, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.38, autoPage:false });
 
     // Segment strategy cards
-    s4.addText('SEGMENT STRATEGY', { x:7, y:1.4, w:5.8, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+    s4.addText('SEGMENT STRATEGY', { x:7, y:1.4, w:5.8, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
     const highAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.7).sort((a,b)=>b[1].offshoreAffinity-a[1].offshoreAffinity);
     const midAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.5 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.7);
     const lowAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
 
     const stratGroups = [
-      { label:'PRIORITY OFFSHORE', items:highAff, color:GREEN, icon:'\u2713' },
-      { label:'PHASED TRANSITION', items:midAff, color:AMBER, icon:'\u2794' },
-      { label:'RETAIN ONSHORE', items:lowAff, color:RED, icon:'\u2716' }
+      { label:'PRIORITY OFFSHORE', items:highAff, color:GREEN, icon:'>' },
+      { label:'PHASED TRANSITION', items:midAff, color:AMBER, icon:'>>' },
+      { label:'RETAIN ONSHORE', items:lowAff, color:RED, icon:'x' }
     ];
     let stratY = 1.8;
     stratGroups.forEach(g => {
       if(g.items.length === 0) return;
       const shadow = { type:'outer', blur:6, offset:2, color:'000000', opacity:0.25 };
       s4.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:7, y:stratY, w:5.8, h: 0.35 + g.items.length * 0.32, rectRadius:0.08, fill:{color:DARK_CARD}, line:{color:g.color, width:1}, shadow:shadow });
-      s4.addText(g.label, { x:7.15, y:stratY+0.08, w:5.5, h:0.22, fontSize:8, fontFace:'Arial', bold:true, color:g.color, charSpacing:1.5 });
+      s4.addText(g.label, { x:7.15, y:stratY+0.08, w:5.5, h:0.22, fontSize:8, fontFace:'Arial', bold:true, color:g.color });
       g.items.forEach(([k,s], i) => {
         s4.addText(s.name + ' (' + (CONFIG.segments[k]||0) + '%)', { x:7.35, y:stratY+0.35+i*0.32, w:5.3, h:0.28, fontSize:10, fontFace:'Arial', color:WHITE });
       });
@@ -3156,9 +3166,9 @@ function exportPPT() {
 
     // Top pairings
     if(narrative.pairings.length > 0) {
-      s4.addText('TOP PAIRINGS', { x:0.6, y:4.4, w:12, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+      s4.addText('TOP PAIRINGS', { x:0.6, y:4.4, w:12, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
       const pairBullets = narrative.pairings.slice(0,4).map(p => ({
-        text: (COUNTRY_DB[p.sourceCode]?.name||p.source) + ' \u2192 ' + (COUNTRY_DB[p.destinationCode]?.name||p.destination) + ' (' + p.ftes + ' FTEs) — ' + (p.reasons[0]||'Strong affinity match'),
+        text: (COUNTRY_DB[p.sourceCode]?.name||p.source) + ' -> ' + (COUNTRY_DB[p.destinationCode]?.name||p.destination) + ' (' + p.ftes + ' FTEs) - ' + (p.reasons[0]||'Strong affinity match'),
         options:{ bullet:{type:'bullet',color:CYAN}, fontSize:11, color:WHITE, breakLine:true, lineSpacingMultiple:1.4 }
       }));
       s4.addText(pairBullets, { x:0.6, y:4.8, w:12.1, h:1.7, fontFace:'Arial', valign:'top' });
@@ -3172,7 +3182,7 @@ function exportPPT() {
     // LEFT: Current State card
     const shadow = { type:'outer', blur:8, offset:2, color:'000000', opacity:0.3 };
     s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:1.5, w:5.5, h:4.8, rectRadius:0.12, fill:{color:DARK_CARD}, line:{color:BORDER, width:1}, shadow:shadow });
-    s5.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:1.5, w:5.5, h:0.5, fill:{color:HDR_FILL}, rectRadius:0.12 });
+    s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:1.5, w:5.5, h:0.5, fill:{color:HDR_FILL}, rectRadius:0.12 });
     s5.addText('CURRENT STATE', { x:0.7, y:1.55, w:5.1, h:0.4, fontSize:13, fontFace:'Arial', bold:true, color:GRAY_LIGHT, align:'center' });
 
     const currentItems = [
@@ -3195,15 +3205,15 @@ function exportPPT() {
 
     // CENTER: Arrow connector
     s5.addShape(pptx.shapes.RECTANGLE, { x:6.15, y:3.3, w:1.03, h:0.06, fill:{color:CYAN} });
-    s5.addText('\u25B6', { x:6.9, y:3.05, w:0.5, h:0.55, fontSize:20, color:CYAN, fontFace:'Arial', align:'center' });
-    s5.addText('TRANSFORM', { x:6.0, y:3.6, w:1.33, h:0.3, fontSize:7, fontFace:'Arial', bold:true, color:CYAN, align:'center', charSpacing:2 });
+    s5.addText('>', { x:6.9, y:3.05, w:0.5, h:0.55, fontSize:24, color:CYAN, fontFace:'Arial', bold:true, align:'center' });
+    s5.addText('TRANSFORM', { x:6.0, y:3.6, w:1.33, h:0.3, fontSize:7, fontFace:'Arial', bold:true, color:CYAN, align:'center' });
     // Vertical accent in center
-    s5.addShape(pptx.shapes.RECTANGLE, { x:6.62, y:2.0, w:0.08, h:1.0, fill:{color:PURPLE}, rectRadius:0.02 });
-    s5.addShape(pptx.shapes.RECTANGLE, { x:6.62, y:4.1, w:0.08, h:1.0, fill:{color:PURPLE}, rectRadius:0.02 });
+    s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:6.62, y:2.0, w:0.08, h:1.0, fill:{color:PURPLE}, rectRadius:0.02 });
+    s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:6.62, y:4.1, w:0.08, h:1.0, fill:{color:PURPLE}, rectRadius:0.02 });
 
     // RIGHT: Future State card
     s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:7.33, y:1.5, w:5.5, h:4.8, rectRadius:0.12, fill:{color:DARK_CARD}, line:{color:CYAN, width:1.5}, shadow:shadow });
-    s5.addShape(pptx.shapes.RECTANGLE, { x:7.33, y:1.5, w:5.5, h:0.5, fill:{color:'0a3a5c'}, rectRadius:0.12 });
+    s5.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:7.33, y:1.5, w:5.5, h:0.5, fill:{color:'0a3a5c'}, rectRadius:0.12 });
     s5.addText('FUTURE STATE', { x:7.53, y:1.55, w:5.1, h:0.4, fontSize:13, fontFace:'Arial', bold:true, color:CYAN, align:'center' });
 
     const retainedFTEs = totalHC - impact.totalMovedFTEs;
@@ -3246,19 +3256,20 @@ function exportPPT() {
     s6.addTable(finRows, { x:0.5, y:1.5, w:7.8, colW:[2.5,1.7,1.7,1.9], fontSize:10.5, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.4, autoPage:false });
 
     // Savings bar chart by segment
-    s6.addText('SAVINGS BY SEGMENT', { x:8.8, y:1.3, w:4, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN, charSpacing:2 });
+    s6.addText('SAVINGS BY SEGMENT', { x:8.8, y:1.3, w:4, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
     const segSavingsLabels = segEntries.map(([k])=>CONTACT_SEGMENTS[k]?.name||k);
     const segSavingsValues = segEntries.map(([k,v])=>Math.round(fin.annualSavings * v / 100));
-    s6.addChart(pptx.charts.BAR, [{ name:'Savings', labels:segSavingsLabels, values:segSavingsValues }], {
-      x:8.5, y:1.6, w:4.3, h:2.6,
-      showTitle:false, showValue:true, barDir:'bar',
-      showLegend:false, catAxisHidden:false, valAxisHidden:true,
-      chartColors:[CYAN],
-      dataLabelColor:WHITE, dataLabelFontSize:8,
-      dataLabelFormatCode:'$#,##0',
-      catAxisLabelColor:WHITE, catAxisLabelFontSize:8,
-      plotBgColor:DARK_CARD
-    });
+    if(segSavingsLabels.length > 0 && segSavingsValues.length > 0) {
+      s6.addChart(pptx.charts.BAR, [{ name:'Savings', labels:segSavingsLabels, values:segSavingsValues }], {
+        x:8.5, y:1.6, w:4.3, h:2.6,
+        showTitle:false, showValue:true, barDir:'bar',
+        showLegend:false, catAxisHidden:false, valAxisHidden:true,
+        chartColors:[CYAN],
+        dataLabelColor:WHITE, dataLabelFontSize:8,
+        dataLabelFormatCode:'$#,##0',
+        catAxisLabelColor:WHITE, catAxisLabelFontSize:8
+      });
+    }
 
     // KPI cards with glow/shadow
     const savingsPerFTE = impact.totalMovedFTEs > 0 ? fin.annualSavings / impact.totalMovedFTEs : 0;
@@ -3303,7 +3314,7 @@ function exportPPT() {
         s7.addShape(pptx.shapes.LINE, { x:xPos+0.85, y:yPos+0.15, w:0, h:1.15, line:{color:BORDER, width:0.75} });
         // Title + group tag
         s7.addText(rec.title, { x:xPos+1.0, y:yPos+0.1, w:4.7, h:0.38, fontSize:12.5, fontFace:'Arial', bold:true, color:WHITE });
-        s7.addText(rec.group.toUpperCase(), { x:xPos+1.0, y:yPos+0.48, w:4.7, h:0.22, fontSize:7.5, fontFace:'Arial', bold:true, color:PURPLE, charSpacing:1.5 });
+        s7.addText(rec.group.toUpperCase(), { x:xPos+1.0, y:yPos+0.48, w:4.7, h:0.22, fontSize:7.5, fontFace:'Arial', bold:true, color:PURPLE });
         // Insight
         s7.addText(rec.insight, { x:xPos+1.0, y:yPos+0.72, w:4.7, h:0.6, fontSize:9.5, fontFace:'Arial', color:GRAY_LIGHT, valign:'top' });
       });

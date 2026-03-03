@@ -85,7 +85,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .title-meta{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:48px}
 .meta-item{background:var(--bg-card);padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:500;color:var(--accent-cyan);border:1px solid rgba(0,212,255,.2)}
 .meta-dot{width:4px;height:4px;border-radius:50%;background:var(--text-muted)}
-.title-cta{font-size:.8rem;color:var(--text-muted)}
+.title-cta{font-size:.8rem;color:var(--text-muted);cursor:pointer}
 
 /* === SLIDE 2: INPUT FORM === */
 .slide-input{padding-top:32px}
@@ -757,7 +757,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <div class="title-divider"></div>
       <h2 class="title-sub">Strategic Transformation Assessment</h2>
       <div class="title-meta" id="title-meta"></div>
-      <div class="title-cta">Press &rarr; or click to begin</div>
+      <div class="title-cta" onclick="navigateToSlide(2,'forward')">Press &rarr; or click to begin</div>
     </div>
   </section>
 

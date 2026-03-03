@@ -754,13 +754,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <h1 class="title-main">Pathfinder</h1>
       <div class="title-divider"></div>
       <h2 class="title-sub">Strategic Transformation Assessment</h2>
-      <div class="title-meta" id="title-meta">
-        <span class="meta-item" id="meta-ftes">500 FTEs</span>
-        <span class="meta-dot"></span>
-        <span class="meta-item">4 Channels</span>
-        <span class="meta-dot"></span>
-        <span class="meta-item" id="meta-regions">2 Regions</span>
-      </div>
+      <div class="title-meta" id="title-meta"></div>
       <div class="title-cta">Press &rarr; or click to begin</div>
     </div>
   </section>
@@ -776,24 +770,20 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <select id="ctx-industry" class="ctx-select" onchange="updateDiagnosticContext()">
           <option value="">Select industry...</option>
           <option value="healthcare">Healthcare</option>
-          <option value="financial_services">Financial Services</option>
-          <option value="manufacturing">Manufacturing</option>
-          <option value="retail">Retail / E-commerce</option>
-          <option value="technology">Technology</option>
-          <option value="telecom">Telecommunications</option>
-          <option value="insurance">Insurance</option>
-          <option value="logistics">Logistics & Supply Chain</option>
-          <option value="energy">Energy & Utilities</option>
-          <option value="government">Government / Public Sector</option>
-          <option value="professional_services">Professional Services</option>
-          <option value="cx_operations">CX / Contact Center Operations</option>
-          <option value="media">Media & Entertainment</option>
-          <option value="hospitality">Hospitality & Travel</option>
-          <option value="pharma">Pharmaceutical</option>
-          <option value="education">Education</option>
-          <option value="other">Other</option>
+          <option value="financial_services">Banking & Financial Services</option>
+          <option value="retail">Retail</option>
+          <option value="telecom">Communications, Media & Technology</option>
         </select>
-        <input type="text" id="ctx-industry-other" class="ctx-input" placeholder="Specify industry..." style="display:none;margin-top:8px" onchange="updateDiagnosticContext()">
+      </div>
+      <div class="form-card">
+        <h3><span class="card-icon">📐</span> Horizontal</h3>
+        <select id="ctx-horizontal" class="ctx-select" onchange="updateDiagnosticContext()">
+          <option value="">Select horizontal...</option>
+          <option value="customer_ops">Customer Ops & CX</option>
+          <option value="back_office">Back Office</option>
+          <option value="mortgages">Mortgages</option>
+          <option value="collections">Collections</option>
+        </select>
       </div>
       <div class="form-card">
         <h3><span class="card-icon">📏</span> Company Size</h3>
@@ -1581,7 +1571,7 @@ let formOffshoreSelections = {IN:true,PH:true};
 let formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10};
 
 // Diagnostic context state (Pathfinder)
-let diagnosticContext = { industry: '', companySize: 'mid', region: 'americas', clientName: '' };
+let diagnosticContext = { industry: '', horizontal: '', companySize: 'mid', region: 'americas', clientName: '' };
 let selectedPainPoints = { people: [], process: [], technology: [] };
 let clientNotes = '';
 
@@ -1610,8 +1600,6 @@ function playTitleAnimation() {
     .from('.title-main', {y:40, opacity:0, duration:0.8}, '-=0.2')
     .to('.title-divider', {scaleX:1, duration:0.5, ease:'power2.inOut'}, '-=0.3')
     .from('.title-sub', {y:30, opacity:0, duration:0.7}, '-=0.2')
-    .from('.meta-item', {y:20, opacity:0, duration:0.5, stagger:0.15}, '-=0.3')
-    .from('.meta-dot', {scale:0, duration:0.3, stagger:0.1}, '-=0.5')
     .from('.title-cta', {opacity:0, duration:0.6}, '-=0.2')
     .to('.title-cta', {opacity:0.5, duration:1, repeat:-1, yoyo:true, ease:'sine.inOut'});
 }
@@ -2712,6 +2700,8 @@ function exportReport() {
     ).join(', ');
     const totalHC = Object.values(CONFIG.locations).reduce((s,l) => s + l.headcount, 0);
     document.getElementById('rpt-overview-table').querySelector('tbody').innerHTML = `
+      <tr><td class="rpt-label">Industry</td><td class="rpt-value">${document.getElementById('ctx-industry')?.selectedOptions[0]?.text || diagnosticContext.industry || '—'}</td></tr>
+      ${diagnosticContext.horizontal ? '<tr><td class="rpt-label">Horizontal</td><td class="rpt-value">'+( document.getElementById('ctx-horizontal')?.selectedOptions[0]?.text || diagnosticContext.horizontal)+'</td></tr>' : ''}
       <tr><td class="rpt-label">Source Locations</td><td class="rpt-value">${srcLocations}</td></tr>
       <tr><td class="rpt-label">Offshore Destinations</td><td class="rpt-value">${dstLocations}</td></tr>
       <tr><td class="rpt-label">Total FTEs Assessed</td><td class="rpt-value">${totalHC.toLocaleString()}</td></tr>
@@ -3032,7 +3022,10 @@ function exportPPT() {
     s1.addText('Transformation\nAssessment', { x:0.6, y:2.4, w:11, h:1.4, fontSize:42, fontFace:'Arial', bold:true, color:WHITE, lineSpacingMultiple:1.1 });
     s1.addShape(pptx.shapes.LINE, { x:0.6, y:3.9, w:2.5, h:0, line:{ color:CYAN, width:3 } });
     s1.addText(clientName, { x:0.6, y:4.15, w:11, h:0.5, fontSize:22, fontFace:'Arial', color:GRAY_LIGHT });
-    s1.addText(industry.charAt(0).toUpperCase() + industry.slice(1) + '  |  ' + dateStr, { x:0.6, y:4.7, w:11, h:0.4, fontSize:13, fontFace:'Arial', color:GRAY });
+    const horizLabel = document.getElementById('ctx-horizontal')?.selectedOptions[0]?.text || '';
+    const industryLabel = document.getElementById('ctx-industry')?.selectedOptions[0]?.text || industry.charAt(0).toUpperCase() + industry.slice(1);
+    const metaLine = [industryLabel, horizLabel, dateStr].filter(x=>x).join('  |  ');
+    s1.addText(metaLine, { x:0.6, y:4.7, w:11, h:0.4, fontSize:13, fontFace:'Arial', color:GRAY });
     // Branding
     s1.addShape(pptx.shapes.LINE, { x:0.6, y:5.7, w:4, h:0, line:{ color:BORDER, width:0.5 } });
     s1.addText('Intelligent Consulting', { x:0.6, y:5.85, w:5, h:0.4, fontSize:15, fontFace:'Arial', bold:true, color:WHITE });
@@ -4176,11 +4169,8 @@ window.updateDiagnosticContext = function() {
   const sel = document.getElementById('ctx-industry');
   if (!sel) return;
   diagnosticContext.industry = sel.value;
-  const otherInput = document.getElementById('ctx-industry-other');
-  if (otherInput) {
-    otherInput.style.display = sel.value === 'other' ? 'block' : 'none';
-    if (sel.value === 'other') diagnosticContext.industry = otherInput.value || 'other';
-  }
+  const horizSel = document.getElementById('ctx-horizontal');
+  if (horizSel) diagnosticContext.horizontal = horizSel.value;
   diagnosticContext.clientName = document.getElementById('ctx-client-name')?.value || '';
 };
 
@@ -4368,7 +4358,7 @@ function collectDataContext() {
   const segProfile = getSegmentProfile();
 
   return {
-    industry, totalHeadcount,
+    industry, horizontal: diagnosticContext.horizontal || '', totalHeadcount,
     movedFTEs: impact.totalMovedFTEs || 0,
     topDest: topDstName, topDstCode, costRatio,
     annualSavings: financials.annualSavings || 0,

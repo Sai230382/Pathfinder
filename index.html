@@ -186,21 +186,29 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .leaflet-control-zoom{display:none!important}
 .map-bubble{text-align:center;pointer-events:all!important}
 .bubble-marker{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;pointer-events:all!important}
-.bubble-marker .bubble-dot{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent-cyan);background:rgba(30,41,59,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 0 12px rgba(0,212,255,.25)}
-.bubble-marker:hover .bubble-dot{transform:scale(1.08);box-shadow:0 0 24px rgba(0,212,255,.45)}
-.bubble-marker .bubble-dot .fte-num{font-size:.85rem;font-weight:700;color:var(--text-primary);line-height:1}
-.bubble-marker .bubble-dot .fte-code{font-size:.45rem;color:var(--accent-cyan);font-weight:600;text-transform:uppercase;letter-spacing:.5px;line-height:1}
-.bubble-marker .bubble-name{font-size:.65rem;color:var(--text-secondary);font-weight:600;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,1);margin-top:1px;background:rgba(10,22,40,.7);padding:0 4px;border-radius:3px}
-.bubble-marker.green .bubble-dot{border-color:var(--accent-green);box-shadow:0 0 12px rgba(16,185,129,.25)}
-.bubble-marker.green:hover .bubble-dot{box-shadow:0 0 24px rgba(16,185,129,.45)}
+.bubble-marker .bubble-dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--accent-cyan);background:rgba(30,41,59,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 0 10px rgba(0,212,255,.2)}
+.bubble-marker:hover .bubble-dot{transform:scale(1.1);box-shadow:0 0 20px rgba(0,212,255,.45)}
+.bubble-marker .bubble-dot .fte-num{font-size:.8rem;font-weight:700;color:var(--text-primary);line-height:1}
+.bubble-marker .bubble-dot .fte-code{font-size:.4rem;color:var(--accent-cyan);font-weight:600;text-transform:uppercase;letter-spacing:.5px;line-height:1}
+.bubble-marker .bubble-name{font-size:.6rem;color:var(--text-secondary);font-weight:600;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,1);margin-top:1px;background:rgba(10,22,40,.75);padding:1px 5px;border-radius:3px}
+.bubble-marker.green .bubble-dot{border-color:var(--accent-green);box-shadow:0 0 10px rgba(16,185,129,.2)}
+.bubble-marker.green:hover .bubble-dot{box-shadow:0 0 20px rgba(16,185,129,.45)}
 .bubble-marker.green .bubble-dot .fte-code{color:var(--accent-green)}
 .bubble-marker.green .bubble-name{color:var(--accent-green)}
-.bubble-marker.inactive .bubble-dot{border-color:var(--border-subtle);background:rgba(30,41,59,.5);width:28px;height:28px;cursor:default}
-.bubble-marker.inactive .bubble-dot .fte-num{font-size:.6rem;color:var(--text-muted)}
+.bubble-marker.inactive .bubble-dot{border-color:var(--border-subtle);background:rgba(30,41,59,.5);width:26px;height:26px;cursor:default}
+.bubble-marker.inactive .bubble-dot .fte-num{font-size:.55rem;color:var(--text-muted)}
 .bubble-marker.inactive .bubble-dot .fte-code{color:var(--text-muted)}
-.bubble-marker.inactive .bubble-name{color:var(--text-muted);font-size:.55rem}
+.bubble-marker.inactive .bubble-name{color:var(--text-muted);font-size:.5rem}
 .bubble-marker .bubble-lang{display:none}
 .bubble-marker.inactive .bubble-lang{display:none}
+.flow-summary-panel{position:absolute;bottom:8px;left:8px;z-index:1000;background:rgba(10,22,40,.88);border:1px solid var(--border-subtle);border-radius:8px;padding:8px 10px;max-width:220px;max-height:180px;overflow-y:auto;backdrop-filter:blur(8px)}
+.flow-summary-panel::-webkit-scrollbar{width:3px}
+.flow-summary-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.flow-summary-panel h5{font-size:.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;font-family:var(--font-body)}
+.flow-summary-row{display:flex;align-items:center;gap:4px;padding:2px 0;font-size:.6rem;font-family:var(--font-body);color:var(--text-secondary)}
+.flow-summary-row .fs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.flow-summary-row .fs-route{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow-summary-row .fs-ftes{color:var(--accent-cyan);font-weight:700;flex-shrink:0}
 /* Location selector tabs on slide 3 */
 .location-tabs{display:flex;gap:6px;margin-bottom:12px}
 .location-tab{padding:6px 14px;border:1px solid var(--border-subtle);border-radius:8px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;font-weight:500;font-family:var(--font-body);transition:all .2s;display:flex;align-items:center;gap:6px}
@@ -3569,6 +3577,10 @@ function initTransformMap(impact) {
   }
   antPaths = [];
 
+  // Remove any existing flow summary panel
+  const existingPanel = container.parentElement.querySelector('.flow-summary-panel');
+  if(existingPanel) existingPanel.remove();
+
   transformMap = L.map(container, {
     scrollWheelZoom:false, dragging:true, zoomControl:false,
     attributionControl:false, doubleClickZoom:false
@@ -3582,17 +3594,42 @@ function initTransformMap(impact) {
   const sourceCoords = {};
   const destCoords = {};
 
-  // Determine total location count for adaptive sizing
-  const totalLocations = Object.keys(CONFIG.locations).length + Object.keys(CONFIG.offshoreLocations).length;
-  const isCompact = totalLocations > 4;
-  const iconSz = isCompact ? 56 : 64;
+  // Collect all marker positions for proximity detection
+  const allPositions = [];
+  const allCodes = [...Object.keys(CONFIG.locations), ...Object.keys(CONFIG.offshoreLocations)];
+  allCodes.forEach(code => {
+    const c = COUNTRY_DB[code];
+    if(c) allPositions.push({ code, lat:c.lat, lng:c.lng });
+  });
+
+  // Nudge markers that are too close together (within ~5 degrees)
+  function getNudgedLatLng(code) {
+    const c = COUNTRY_DB[code];
+    if(!c) return null;
+    let lat = c.lat, lng = c.lng;
+    const nearby = allPositions.filter(p => p.code !== code && Math.abs(p.lat - lat) < 5 && Math.abs(p.lng - lng) < 8);
+    if(nearby.length > 0) {
+      const idx = allCodes.indexOf(code);
+      const angles = [0, 60, 120, 180, 240, 300];
+      const angle = (angles[idx % angles.length]) * Math.PI / 180;
+      const nudge = 2.5 + (idx % 3) * 1.5;
+      lat += Math.sin(angle) * nudge;
+      lng += Math.cos(angle) * nudge;
+    }
+    return [lat, lng];
+  }
+
+  // Adaptive sizing based on total locations
+  const totalLocations = allCodes.length;
+  const iconSz = totalLocations > 6 ? 44 : totalLocations > 4 ? 48 : 56;
   const iconAnch = iconSz / 2;
 
-  // Source location markers (retained FTEs)
+  // Source location markers
   for(const [code, loc] of Object.entries(CONFIG.locations)){
     const c = COUNTRY_DB[code];
     if(!c) continue;
-    const latlng = [c.lat, c.lng];
+    const latlng = getNudgedLatLng(code);
+    if(!latlng) continue;
     bounds.push(latlng);
     sourceCoords[code] = latlng;
 
@@ -3605,7 +3642,7 @@ function initTransformMap(impact) {
                   <span class="fte-num">${retained}</span>
                   <span class="fte-code">${code}</span>
                 </div>
-                <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-name">${c.name}</span>
               </div>`,
         iconSize:[iconSz,iconSz],
         iconAnchor:[iconAnch,iconAnch]
@@ -3613,11 +3650,12 @@ function initTransformMap(impact) {
     }).addTo(transformMap);
   }
 
-  // Offshore destination markers (moved FTEs)
+  // Offshore destination markers
   for(const [code, off] of Object.entries(CONFIG.offshoreLocations)){
     const c = COUNTRY_DB[code];
     if(!c) continue;
-    const latlng = [c.lat, c.lng];
+    const latlng = getNudgedLatLng(code);
+    if(!latlng) continue;
     bounds.push(latlng);
     destCoords[code] = latlng;
 
@@ -3630,7 +3668,7 @@ function initTransformMap(impact) {
                   <span class="fte-num">${ftes}</span>
                   <span class="fte-code">${code}</span>
                 </div>
-                <span class="bubble-name">${c.flag} ${c.name}</span>
+                <span class="bubble-name">${c.name}</span>
               </div>`,
         iconSize:[iconSz,iconSz],
         iconAnchor:[iconAnch,iconAnch]
@@ -3638,13 +3676,13 @@ function initTransformMap(impact) {
     }).addTo(transformMap);
   }
 
-  // Fit bounds
+  // Fit bounds — more padding for many locations
   if(bounds.length>0) {
-    transformMap.fitBounds(bounds, {padding:[50,50], maxZoom: totalLocations > 5 ? 2 : 3});
+    const pad = totalLocations > 6 ? 30 : 40;
+    transformMap.fitBounds(bounds, {padding:[pad,pad], maxZoom: totalLocations > 5 ? 2 : 3});
   }
 
-  // Simple straight dotted flow lines — colored by source region
-  // Each source country gets a distinct color for clear visual grouping
+  // Flow lines — hair-thin animated dots, no mid-line labels
   const regionColors = {};
   const regionPalette = ['#00d4ff', '#7c5cfc', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
   let colorIdx = 0;
@@ -3653,8 +3691,7 @@ function initTransformMap(impact) {
     colorIdx++;
   }
 
-  let flowIdx = 0;
-  const totalFlows = Object.keys(CONFIG.locations).length * Object.keys(CONFIG.offshoreLocations).length;
+  const flowData = []; // collect for summary panel
   for(const srcCode of Object.keys(CONFIG.locations)){
     for(const destCode of Object.keys(CONFIG.offshoreLocations)){
       const srcLL = sourceCoords[srcCode];
@@ -3665,36 +3702,39 @@ function initTransformMap(impact) {
       if(ftesMoved <= 0) continue;
 
       const color = regionColors[srcCode] || '#00d4ff';
-      const lineWeight = Math.max(1, Math.min(1.8, ftesMoved/80));
 
-      // Thin dotted line with small dash pattern
+      // Hair-thin dotted line
       const flowLine = L.polyline([srcLL, destLL], {
         color: color,
-        weight: lineWeight,
-        opacity: 0.55,
-        dashArray: '4 6',
+        weight: 0.8,
+        opacity: 0.45,
+        dashArray: '2 5',
         lineCap: 'round',
         className: 'animated-flow-line'
       }).addTo(transformMap);
       antPaths.push(flowLine);
 
-      // FTE count label at midpoint — spread labels to avoid overlap
-      const t = 0.35 + (flowIdx % 3) * 0.15; // stagger along the line (35%, 50%, 65%)
-      const midLat = srcLL[0] + (destLL[0] - srcLL[0]) * t;
-      const midLng = srcLL[1] + (destLL[1] - srcLL[1]) * t;
-      const offsets = [1.5, -1.5, 3, -3, 0];
-      const labelOffset = offsets[flowIdx % offsets.length];
-      L.marker([midLat + labelOffset, midLng], {
-        icon: L.divIcon({
-          className: 'map-bubble',
-          html: `<span class="flow-line-label" style="border-color:${color};color:${color}">${ftesMoved} FTEs</span>`,
-          iconSize: [50, 18],
-          iconAnchor: [25, 9]
-        })
-      }).addTo(transformMap);
-
-      flowIdx++;
+      flowData.push({ src:srcCode, dest:destCode, ftes:ftesMoved, color:color });
     }
+  }
+
+  // Flow summary panel (replaces cluttered mid-line labels)
+  if(flowData.length > 0) {
+    const panel = document.createElement('div');
+    panel.className = 'flow-summary-panel';
+    let html = '<h5>FTE Flows</h5>';
+    // Sort by FTEs descending, show top flows
+    flowData.sort((a,b) => b.ftes - a.ftes);
+    flowData.forEach(f => {
+      html += `<div class="flow-summary-row">
+        <span class="fs-dot" style="background:${f.color}"></span>
+        <span class="fs-route">${f.src} → ${f.dest}</span>
+        <span class="fs-ftes">${f.ftes}</span>
+      </div>`;
+    });
+    panel.innerHTML = html;
+    container.parentElement.style.position = 'relative';
+    container.parentElement.appendChild(panel);
   }
 
   // CSS animation for dash motion — inject once
@@ -3703,11 +3743,10 @@ function initTransformMap(impact) {
     animStyle.id = 'flow-line-anim-style';
     animStyle.textContent = `
       .animated-flow-line {
-        animation: dash-flow 2s linear infinite;
-        filter: drop-shadow(0 0 1px currentColor);
+        animation: dash-flow 1.5s linear infinite;
       }
       @keyframes dash-flow {
-        to { stroke-dashoffset: -20; }
+        to { stroke-dashoffset: -14; }
       }
     `;
     document.head.appendChild(animStyle);

@@ -3687,7 +3687,7 @@ function initTransformMap(impact) {
 
   // Flow lines — hair-thin animated dots, no mid-line labels
   const regionColors = {};
-  const regionPalette = ['#00d4ff', '#7c5cfc', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+  const regionPalette = ['#00d4ff', '#a78bfa', '#fbbf24', '#34d399', '#f87171', '#f472b6', '#22d3ee', '#a3e635'];
   let colorIdx = 0;
   for (const srcCode of Object.keys(CONFIG.locations)) {
     regionColors[srcCode] = regionPalette[colorIdx % regionPalette.length];
@@ -3706,12 +3706,12 @@ function initTransformMap(impact) {
 
       const color = regionColors[srcCode] || '#00d4ff';
 
-      // Hair-thin dotted line
+      // Thin dotted line — bright enough to see on dark map
       const flowLine = L.polyline([srcLL, destLL], {
         color: color,
-        weight: 0.8,
-        opacity: 0.45,
-        dashArray: '2 5',
+        weight: 1.2,
+        opacity: 0.7,
+        dashArray: '3 5',
         lineCap: 'round',
         className: 'animated-flow-line'
       }).addTo(transformMap);

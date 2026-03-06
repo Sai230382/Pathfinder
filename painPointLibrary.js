@@ -147,6 +147,54 @@ const PAIN_POINT_LIBRARY = {
       'IT support staff turnover in campus systems',
       'Enrollment counselor burnout and attrition',
       'Research staff grant-dependent instability'
+    ],
+    utilities: [
+      'Field technician recruitment pipeline insufficient',
+      'Aging workforce succession planning gaps',
+      'Safety culture compliance fatigue in field crews',
+      'Control room operator retention challenges',
+      'Storm response staffing surge capability limited',
+      'Regulatory affairs talent scarcity increasing'
+    ],
+    diversified: [
+      'Cross-business unit talent mobility barriers',
+      'Inconsistent HR practices across divisions',
+      'Leadership pipeline fragmented by business line',
+      'Shared services staffing model misaligned',
+      'M&A integration workforce planning gaps',
+      'Corporate vs divisional culture misalignment'
+    ],
+    customer_ops: [
+      'Contact center agent attrition exceeding benchmarks',
+      'Omnichannel workforce skill gaps widening',
+      'Quality assurance team capacity insufficient',
+      'Workforce management forecasting accuracy low',
+      'Supervisor span of control too wide',
+      'Real-time adherence monitoring gaps'
+    ],
+    back_office: [
+      'Data entry staff turnover disrupting operations',
+      'Claims processing team skill gaps',
+      'Reconciliation team understaffed for volume',
+      'Document management specialists hard to retain',
+      'Compliance review team bandwidth constrained',
+      'Exception handling expertise concentrated in few staff'
+    ],
+    mortgages: [
+      'Loan officer productivity below industry benchmarks',
+      'Underwriter pipeline insufficient for volume',
+      'Closing coordinator turnover causing delays',
+      'Compliance officer workload exceeding capacity',
+      'Appraisal review team bottleneck growing',
+      'Post-closing specialist retention challenges'
+    ],
+    collections: [
+      'Collector attrition rates exceeding 40% annually',
+      'Skip tracing analyst recruitment pipeline thin',
+      'Negotiation skill gaps in early-stage collectors',
+      'Legal recovery team capacity limits',
+      'Dialer management specialist shortage',
+      'Compliance-trained collectors insufficient for volume'
     ]
   },
 
@@ -298,6 +346,54 @@ const PAIN_POINT_LIBRARY = {
       'Research grant reporting process fragmented',
       'Campus facilities work order tracking gaps',
       'Accreditation compliance documentation scattered'
+    ],
+    utilities: [
+      'Outage management response workflow fragmented',
+      'Meter-to-cash billing cycle delays excessive',
+      'Service order dispatch routing inefficient',
+      'Regulatory filing preparation process manual',
+      'Asset lifecycle maintenance scheduling reactive',
+      'Customer move-in/move-out process error-prone'
+    ],
+    diversified: [
+      'Cross-divisional reporting consolidation manual',
+      'Shared services SLA tracking fragmented',
+      'Procurement process inconsistent across business units',
+      'Internal transfer pricing reconciliation delays',
+      'Corporate governance reporting workflow slow',
+      'M&A integration playbook execution unstructured'
+    ],
+    customer_ops: [
+      'First contact resolution rate below target',
+      'Escalation routing rules outdated and inconsistent',
+      'Quality monitoring sample size insufficient',
+      'Average handle time trending upward',
+      'Customer callback process unreliable',
+      'Knowledge base article maintenance neglected'
+    ],
+    back_office: [
+      'Invoice processing cycle time exceeding SLA',
+      'Document indexing and classification manual',
+      'Exception queue management process undefined',
+      'Batch processing windows insufficient for volume',
+      'Reconciliation break resolution process slow',
+      'Audit trail documentation gaps across systems'
+    ],
+    mortgages: [
+      'Loan origination cycle time exceeding benchmarks',
+      'Document collection and stacking order manual',
+      'Underwriting condition clearing process fragmented',
+      'Rate lock management workflow error-prone',
+      'Closing disclosure preparation delays recurring',
+      'Post-closing trailing document follow-up slow'
+    ],
+    collections: [
+      'Right-party contact rates declining month-over-month',
+      'Promise-to-pay follow-up process inconsistent',
+      'Account segmentation and strategy assignment manual',
+      'Payment arrangement monitoring gaps',
+      'Regulatory compliance call scripting outdated',
+      'Agency placement and recall process fragmented'
     ]
   },
 
@@ -449,6 +545,54 @@ const PAIN_POINT_LIBRARY = {
       'Campus ERP integration incomplete',
       'Admissions CRM analytics limited',
       'Library digital resource platform outdated'
+    ],
+    utilities: [
+      'SCADA/OT system integration with IT stack poor',
+      'Customer information system aging and inflexible',
+      'Outage management system lacks real-time analytics',
+      'GIS asset management platform outdated',
+      'Meter data management system scalability limited',
+      'Mobile workforce management technology fragmented'
+    ],
+    diversified: [
+      'ERP landscape fragmented across business units',
+      'Data warehouse silos preventing enterprise analytics',
+      'Identity and access management inconsistent',
+      'Integration middleware creating bottlenecks',
+      'Business intelligence tools vary by division',
+      'Cybersecurity posture inconsistent across entities'
+    ],
+    customer_ops: [
+      'CRM system lacking unified customer view',
+      'IVR technology outdated causing poor containment',
+      'Workforce management tool forecasting inaccurate',
+      'Quality management platform capabilities limited',
+      'Omnichannel routing engine not optimized',
+      'Speech analytics and sentiment tools absent'
+    ],
+    back_office: [
+      'Document management system search capability poor',
+      'Workflow automation platform adoption low',
+      'OCR and data extraction accuracy insufficient',
+      'Legacy mainframe systems limiting agility',
+      'Batch processing infrastructure aging',
+      'Reporting tools require manual data consolidation'
+    ],
+    mortgages: [
+      'Loan origination system inflexible for new products',
+      'Document recognition technology accuracy low',
+      'Automated underwriting engine rules outdated',
+      'E-closing platform adoption lagging',
+      'Pricing engine integration with secondary market poor',
+      'Compliance monitoring system coverage gaps'
+    ],
+    collections: [
+      'Dialer platform capacity limiting contact attempts',
+      'Collections scoring model accuracy declining',
+      'Payment portal self-service capabilities limited',
+      'Skip tracing data integration fragmented',
+      'Regulatory compliance monitoring tools insufficient',
+      'Analytics platform lacking predictive capabilities'
     ]
   }
 };

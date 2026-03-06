@@ -349,6 +349,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .ts-bullet:hover{border-color:rgba(0,212,255,.25)}
 .ts-bullet-title{font-size:.78rem;font-weight:600;color:var(--text-primary);margin-bottom:3px}
 .ts-bullet-body{font-size:.72rem;color:var(--text-secondary);line-height:1.45}
+.ts-bullet-list{margin:3px 0 0;padding-left:14px;font-size:.68rem;color:var(--text-secondary);line-height:1.5}
+.ts-bullet-list li{margin-bottom:2px}
+.ts-bullet-list li::marker{color:var(--accent-cyan)}
+.ts-trigger{font-size:.6rem;color:var(--accent-purple);font-style:italic;margin-bottom:3px;opacity:.85}
 .ts-empty{font-size:.72rem;color:var(--text-muted);font-style:italic;padding:8px 0}
 .ba-column{text-align:center}
 .ba-column h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px}
@@ -3847,7 +3851,20 @@ function renderTransformSolutions() {
       html += '<div class="ts-empty">No matching recommendations</div>';
     } else {
       for (const r of items) {
-        html += '<div class="ts-bullet"><div class="ts-bullet-title">' + r.title + '</div><div class="ts-bullet-body">' + r.insight + '</div></div>';
+        // Split insight into bullet points by → arrows or sentences
+        const parts = r.insight.includes('\u2192')
+          ? r.insight.split(/\s*\u2192\s*/).filter(s => s.trim().length > 3)
+          : r.insight.split(/(?<=\.)\s+/).filter(s => s.trim().length > 5);
+        let bodyHTML = '';
+        if (parts.length > 1) {
+          bodyHTML = '<ul class="ts-bullet-list">' + parts.map(s => '<li>' + s.trim() + '</li>').join('') + '</ul>';
+        } else {
+          bodyHTML = '<div class="ts-bullet-body">' + r.insight + '</div>';
+        }
+        // Show triggering pain points if available
+        const triggers = r.matchedPainTexts || [];
+        const triggerHTML = triggers.length > 0 ? '<div class="ts-trigger">' + triggers.slice(0,2).join(' · ') + '</div>' : '';
+        html += '<div class="ts-bullet"><div class="ts-bullet-title">' + r.title + '</div>' + triggerHTML + bodyHTML + '</div>';
       }
     }
     return html;
@@ -4253,6 +4270,7 @@ window.selectRegion = function(el) {
 // ===== SLIDE 3: PAIN POINT BOARD =====
 function initPainBoard() {
   const industry = diagnosticContext.industry || '';
+  const horizontal = diagnosticContext.horizontal || '';
   const categories = ['people', 'process', 'technology'];
 
   categories.forEach(cat => {
@@ -4260,10 +4278,11 @@ function initPainBoard() {
     const dropdown = document.getElementById('suggest-' + cat);
     if (!input || !dropdown) return;
 
-    // Build suggestion pool: _common + industry-specific
+    // Build suggestion pool: _common + industry-specific + horizontal-specific
     const lib = (typeof PAIN_POINT_LIBRARY !== 'undefined') ? PAIN_POINT_LIBRARY[cat] || {} : {};
     const pool = [...(lib._common || [])];
     if (industry && lib[industry]) pool.push(...lib[industry]);
+    if (horizontal && lib[horizontal]) pool.push(...lib[horizontal]);
 
     const available = () => pool.filter(p => !selectedPainPoints[cat].includes(p));
     let highlightIdx = -1;

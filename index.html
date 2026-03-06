@@ -201,13 +201,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .bubble-marker.inactive .bubble-name{color:var(--text-muted);font-size:.5rem}
 .bubble-marker .bubble-lang{display:none}
 .bubble-marker.inactive .bubble-lang{display:none}
-.flow-summary-panel{position:absolute;bottom:8px;left:8px;z-index:1000;background:rgba(10,22,40,.88);border:1px solid var(--border-subtle);border-radius:8px;padding:8px 10px;max-width:220px;max-height:180px;overflow-y:auto;backdrop-filter:blur(8px)}
-.flow-summary-panel::-webkit-scrollbar{width:3px}
-.flow-summary-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
-.flow-summary-panel h5{font-size:.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;font-family:var(--font-body)}
-.flow-summary-row{display:flex;align-items:center;gap:4px;padding:2px 0;font-size:.6rem;font-family:var(--font-body);color:var(--text-secondary)}
-.flow-summary-row .fs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.flow-summary-row .fs-route{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow-summary-panel{position:absolute;bottom:8px;left:8px;right:8px;z-index:1000;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.flow-summary-card{background:rgba(10,22,40,.88);border:1px solid var(--border-subtle);border-radius:8px;padding:6px 10px;backdrop-filter:blur(8px);flex:1;min-width:100px;max-width:200px;pointer-events:all}
+.flow-summary-card .fs-source{font-size:.6rem;font-weight:700;color:var(--text-primary);margin-bottom:3px;font-family:var(--font-body);display:flex;align-items:center;gap:4px}
+.flow-summary-card .fs-source .fs-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.flow-summary-row{display:flex;align-items:center;gap:4px;padding:1px 0;font-size:.55rem;font-family:var(--font-body);color:var(--text-secondary)}
+.flow-summary-row .fs-dest{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:11px}
 .flow-summary-row .fs-ftes{color:var(--accent-cyan);font-weight:700;flex-shrink:0}
 /* Location selector tabs on slide 3 */
 .location-tabs{display:flex;gap:6px;margin-bottom:12px}
@@ -3722,21 +3721,30 @@ function initTransformMap(impact) {
     }
   }
 
-  // Flow summary panel (replaces cluttered mid-line labels)
+  // Flow summary panel — grouped by source, side-by-side cards
   if(flowData.length > 0) {
     const panel = document.createElement('div');
     panel.className = 'flow-summary-panel';
-    let html = '<h5>FTE Flows</h5>';
-    // Sort by FTEs descending, show top flows
-    flowData.sort((a,b) => b.ftes - a.ftes);
+    // Group flows by source
+    const grouped = {};
     flowData.forEach(f => {
-      html += `<div class="flow-summary-row">
-        <span class="fs-dot" style="background:${f.color}"></span>
-        <span class="fs-route">${f.src} → ${f.dest}</span>
-        <span class="fs-ftes">${f.ftes}</span>
-      </div>`;
+      if(!grouped[f.src]) grouped[f.src] = { color:f.color, flows:[] };
+      grouped[f.src].flows.push(f);
     });
-    panel.innerHTML = html;
+    // Build a card per source
+    for(const [src, g] of Object.entries(grouped)) {
+      g.flows.sort((a,b) => b.ftes - a.ftes);
+      const srcName = COUNTRY_DB[src]?.name || src;
+      let cardHTML = `<div class="fs-source"><span class="fs-dot" style="background:${g.color}"></span>${srcName}</div>`;
+      g.flows.forEach(f => {
+        const destName = COUNTRY_DB[f.dest]?.name || f.dest;
+        cardHTML += `<div class="flow-summary-row"><span class="fs-dest">→ ${destName}</span><span class="fs-ftes">${f.ftes}</span></div>`;
+      });
+      const card = document.createElement('div');
+      card.className = 'flow-summary-card';
+      card.innerHTML = cardHTML;
+      panel.appendChild(card);
+    }
     container.parentElement.style.position = 'relative';
     container.parentElement.appendChild(panel);
   }
@@ -3857,7 +3865,7 @@ function renderTransformSolutions() {
           : r.insight.split(/(?<=\.)\s+/).filter(s => s.trim().length > 5);
         let bodyHTML = '';
         if (parts.length > 1) {
-          bodyHTML = '<ul class="ts-bullet-list">' + parts.map(s => '<li>' + s.trim() + '</li>').join('') + '</ul>';
+          bodyHTML = '<ul class="ts-bullet-list">' + parts.map(s => { const t = s.trim(); return '<li>' + t.charAt(0).toUpperCase() + t.slice(1) + '</li>'; }).join('') + '</ul>';
         } else {
           bodyHTML = '<div class="ts-bullet-body">' + r.insight + '</div>';
         }

@@ -7,10 +7,10 @@ An interactive consulting presentation tool called **Pathfinder**. Built for liv
 **GitHub:** https://github.com/Sai230382/Pathfinder
 
 ## Architecture
-- **Single-page app** — all HTML/CSS/JS in `index.html` (~5000+ lines)
+- **Single-page app** — all HTML/CSS/JS in `index.html` (~5500+ lines)
 - **External data files:**
-  - `painPointLibrary.js` — 342 pain points across 17 industries (1 common + 16 specific) × 3 categories (People/Process/Technology), perfectly balanced at 114 per category
-  - `recommendation-engine.js` — 60+ recommendation templates, industry vocabulary, synthesis functions
+  - `painPointLibrary.js` — 450 pain points across 23 keys (1 common + 16 industries + 6 new: utilities, diversified, customer_ops, back_office, mortgages, collections) × 3 categories (People/Process/Technology)
+  - `recommendation-engine.js` — 60+ recommendation templates, industry vocabulary (including utilities & diversified), synthesis functions
 - **Libraries (CDN):**
   - Chart.js 4.x — all charts (bar, doughnut, radar, line)
   - GSAP 3.12.5 — slide transitions + element animations
@@ -23,29 +23,40 @@ An interactive consulting presentation tool called **Pathfinder**. Built for liv
 ## 10-Slide Flow
 | # | Slide | Purpose |
 |---|-------|---------|
-| 1 | Title | "Intelligent Consulting — Pathfinder" with particle animation, compass logo |
-| 2 | Client Profile | Industry (4 options) + Horizontal + company size + region + client name |
-| 3 | Pain Point Board | 3-column capture: People/Process/Technology with autocomplete from 342-item library |
+| 1 | Title | "Intelligent Consulting — Pathfinder" with particle animation, compass logo, clickable CTA button |
+| 2 | Client Profile | Industry (6 options) + Horizontal (4 options) + company size + region + client name |
+| 3 | Pain Point Board | 3-column capture: People/Process/Technology with autocomplete filtered by industry + horizontal |
 | 4 | Client Configuration | Workforce details: locations, headcount, channels, tiers, rates, offshore picks, contact segments |
 | 5 | Current State Map | Leaflet map with bubble markers + detail panel with segment bars |
 | 6 | Channel & Tier Matrix | Toggle work packages, segment-weighted confidence, FTE calculator, segment strip |
-| 7 | Proposed Transformation | Map with animated dotted flow lines + AI thinking overlay + segment badges |
-| 8 | Financial Dashboard | Rate comparison, cost charts, ROI projection, segment savings chart, assumptions panel |
+| 7 | Proposed Transformation | Map with hair-thin animated dotted flow lines + FTE flow cards (grouped by source) + proximity-nudged markers + AI thinking overlay + segment badges |
+| 8 | Financial Dashboard | Rate comparison, cost charts, ROI projection, segment savings chart, assumptions panel (dark card with cyan border above segment chart) |
 | 9 | Solution Framework + Roadmap | Radar chart + recommendation cards + synthesis + 3-phase timeline |
 | 10 | Executive Summary | Before/After comparison, KPI strip, segment strategy, PDF + PPT export buttons |
 
 ## Industries & Horizontals (Slide 2)
-**Industries (4):**
+**Industries (6):**
 - Healthcare
 - Banking & Financial Services (BFS)
 - Retail
 - Communications, Media & Technology (CMT)
+- Utilities
+- Diversified
 
 **Horizontals (4):**
 - Customer Ops & CX
 - Back Office
 - Mortgages
 - Collections
+
+## Pain Point Library (450 entries)
+Structure: `PAIN_POINT_LIBRARY.{people|process|technology}.{key}` → array of strings
+- `_common` — 18 universal pain points per category
+- 16 original industries: healthcare, financial_services, manufacturing, retail, technology, telecom, insurance, logistics, energy, government, professional_services, cx_operations, media, hospitality, pharma, education — 6 each
+- **New industries:** `utilities`, `diversified` — 6 each per category
+- **New horizontals:** `customer_ops`, `back_office`, `mortgages`, `collections` — 6 each per category
+
+Autocomplete on Slide 3 builds pool: `_common` + `industry-specific` + `horizontal-specific`
 
 ## Contact Segments (6)
 Added as a cross-cutting dimension orthogonal to channels, flowing through all slides:
@@ -78,7 +89,7 @@ const CONTACT_SEGMENTS = {
 - `currentScenario` — Conservative / Moderate / Aggressive (affects offshore %)
 
 ## Key Functions
-- `initPainBoard()` — typeahead autocomplete pulling from PAIN_POINT_LIBRARY
+- `initPainBoard()` — typeahead autocomplete pulling from PAIN_POINT_LIBRARY, filtered by `diagnosticContext.industry` + `diagnosticContext.horizontal`
 - `buildSolutionFramework()` — radar chart + recommendation cards from recommendation-engine.js
 - `computeAffinityScore()` — 5-factor model (language 35%, timezone 20%, cost 25%, culture 10%, channel 10%)
 - `calculateOffshoreImpact()` / `calculateFinancials()` — core financial calculations
@@ -90,7 +101,17 @@ const CONTACT_SEGMENTS = {
 - `collectDataContext()` — gathers all data for AI/recommendation context
 - `exportReport()` — 4-page print PDF (exec brief + destinations + financials + diagnostic)
 - `exportPPT()` — 8-slide CXO PowerPoint deck via PptxGenJS
+- `initTransformMap(impact)` — Slide 7 map with proximity-nudged markers, hair-thin flow lines, grouped flow summary cards
+- `getNudgedLatLng(code)` — detects nearby markers within 5° lat / 8° lng and offsets them radially
 - `initDigitalRain()` / `initGlobe()` / `initParticles()` — ambient visual animations
+
+## Slide 7 — Transform Map Details
+- **Markers:** 36px bubble dots (adaptive: 44-56px based on total location count), no language line, country name with dark bg label
+- **Proximity nudging:** Markers within 5° lat / 8° lng get radially offset (angles 0-300°, variable distance 2.5-5.5°)
+- **Flow lines:** Hair-thin dotted (`weight:1.2, opacity:0.7, dashArray:'3 5'`), animated via CSS `dash-flow` keyframes
+- **Color palette (bright for dark map):** `['#00d4ff', '#a78bfa', '#fbbf24', '#34d399', '#f87171', '#f472b6', '#22d3ee', '#a3e635']`
+- **FTE Flow summary:** Side-by-side cards grouped by source location (no mid-line labels), each card shows source name + color dot + destination flows sorted by FTE count
+- **Solution bullets (left/right columns):** Split by `→` arrows into bullet list items, each uppercase. Shows triggering pain point(s) in purple italic.
 
 ## Export System
 
@@ -107,47 +128,58 @@ Print CSS: All `.slide` elements hidden, only `.print-page` sections render. `@p
 ### PowerPoint Deck (8 slides, via PptxGenJS)
 | Slide | Title | Enhancements |
 |-------|-------|-------------|
-| 1 | Title | Compass logo (base64), gradient bg, decorative accent bars |
+| 1 | Title | Compass logo (base64), gradient bg, decorative accent bars (ROUNDED_RECTANGLE) |
 | 2 | Executive Summary | Shadow KPI cards, key findings bullets |
-| 3 | Current State | Locations table + segment donut chart with legend |
+| 3 | Current State | Locations table (no emoji flags) + segment donut chart with legend |
 | 4 | Proposed Transformation | Destinations table + segment strategy cards + top pairings |
 | 5 | Before/After Comparison | Side-by-side cards with arrow connector |
 | 6 | Financial Impact | Cost table + savings bar chart + shadow KPI cards |
 | 7 | Recommendations | Large numbered cards (01-06) with vertical dividers |
 | 8 | Implementation Roadmap | Timeline bar + 3 phase cards + next steps |
 
-Design system: Dark navy gradients, cyan/purple accents, Arial font, slide numbers, compass logo in footer.
+**PPT Design rules (avoid repair issues):**
+- Use `ROUNDED_RECTANGLE` (not `RECTANGLE`) when using `rectRadius`
+- No `charSpacing` property (causes repair triggers)
+- No emoji flags in table text (encoding issues)
+- Guard charts with `if(data.length > 0)` before `addChart()`
+- No `plotBgColor` on BAR charts
+- ASCII characters only (no Unicode ✓➔✖▶→)
+- Safeguard all financial values against NaN/undefined
+- Design system: Dark navy gradients (BG/BG2/BG3), cyan/purple accents, Arial font, shadows `{ type:'outer', blur:8, offset:2, color:'000000', opacity:0.3 }`
 
 ## Generated Artifacts
-- `/Users/saikiran/SOAR/Pathfinder_PainPoints_Library.csv` — 342 pain points as CSV (Category, Industry, Pain Point)
+- `/Users/saikiran/SOAR/Pathfinder_PainPoints_Library.csv` — pain points as CSV
 - `/Users/saikiran/SOAR/Pathfinder_BRD.docx` — Comprehensive BRD (11 sections, 43KB)
 
 ## Design System
 - Dark theme: `#0a1628` bg, `#1e293b` cards, `#334155` borders
 - Gradient alternates: `#0f1d32`, `#111e33` for PPT slides
 - Accents: Cyan `#00d4ff`, Purple `#7c5cfc`, Green `#10b981`, Amber `#f59e0b`, Red `#ef4444`
+- Map line palette (brighter): `#00d4ff`, `#a78bfa`, `#fbbf24`, `#34d399`, `#f87171`, `#f472b6`, `#22d3ee`, `#a3e635`
 - Fonts: Playfair Display (headings), Inter (body), Arial (PPT - universal)
 - Complexity badges: Simple (green), Medium (amber), Complex (red)
 - All animations via GSAP — professional, subtle (0.3-0.5s)
 - No brain/robot imagery — compass/geometric for AI overlays
 - Nav bar: `position:fixed; bottom:24px` with `z-index:100`, all slides have `padding-bottom:100px` to avoid overlap
+- Title CTA: Styled as pill button with cyan border, hover glow, `z-index:10`, click navigates to Slide 2 via `addEventListener` (not inline onclick — IIFE scope issue)
 
 ## Conventions
 - Functions exposed globally via `window.functionName = ...` for onclick handlers
+- Click handlers on HTML elements inside the IIFE must use `addEventListener` in `bindEvents()`, NOT inline `onclick` attributes (function scope issue)
 - All code inside single IIFE in `index.html`
 - Chart.js instances tracked in `chartInstances` and destroyed before recreation
 - GSAP used for all slide transitions and element reveals
 - CSS variables for theming in `:root`
 - PptxGenJS CDN must load BEFORE `recommendation-engine.js` (UMD module.exports conflict)
-- Deployment: `cp SOAR/index.html Pathfinder/index.html` then `git add && commit && push`
+- Deployment: `cp SOAR/{index.html,painPointLibrary.js,recommendation-engine.js} Pathfinder/` then `git add && commit && push`
 - Browser cache aggressively caches GitHub Pages — always Cmd+Shift+R after deploy
 
 ## File Structure
 ```
 /Users/saikiran/SOAR/                    # Working copy
-  index.html                              # Main app (~5000+ lines)
-  painPointLibrary.js                     # 342 pain points
-  recommendation-engine.js                # 60+ recommendation templates
+  index.html                              # Main app (~5500+ lines)
+  painPointLibrary.js                     # 450 pain points (23 keys × 3 categories)
+  recommendation-engine.js                # 60+ templates + utilities/diversified vocab
   Pathfinder_PainPoints_Library.csv       # Generated spreadsheet
   Pathfinder_BRD.docx                     # Generated BRD
   CLAUDE.md                               # This file
@@ -165,6 +197,14 @@ Design system: Dark navy gradients, cyan/purple accents, Arial font, slide numbe
 4. **Nav Bar Overlap Fix** — `padding-bottom:100px` on all slides
 5. **PDF Export Overhaul** — Hide all live slides, @page rules, page numbers, new Financial Summary page (4 pages total)
 6. **PPT Export (PptxGenJS)** — 8-slide CXO deck with gradients, native charts, shadows, numbered recs, logos, Before/After slide
-7. **Industry Slim-down** — 4 industries (Healthcare, BFS, Retail, CMT) + 4 Horizontals (Customer Ops & CX, Back Office, Mortgages, Collections)
-8. **Title Slide Cleanup** — Removed "500 FTEs / 4 Channels / 2 Regions" meta pills
-9. **Assumptions Panel Restyle** — Gradient button, centered, full-width inside dashboard grid with hover glow
+7. **Industry Slim-down** — 4→6 industries (Healthcare, BFS, Retail, CMT, Utilities, Diversified) + 4 Horizontals
+8. **Title Slide Cleanup** — Removed meta pills, added clickable CTA pill button
+9. **Assumptions Panel Restyle** — Dark card with solid cyan border, positioned above segment chart
+10. **PPT Repair Fix** — Fixed `rectRadius` on RECTANGLE (→ROUNDED_RECTANGLE), removed charSpacing, stripped emoji flags, guarded empty charts, ASCII-only characters, NaN safeguards
+11. **Title CTA Click Fix** — Changed from inline onclick to addEventListener in bindEvents() (IIFE scope fix), styled as pill button
+12. **Slide 7 Map Declutter** — Removed mid-line FTE labels, added proximity-nudged markers, hair-thin dotted lines, flow summary cards grouped by source
+13. **Pain Point Library Expansion** — 342→450 entries: added utilities, diversified industries + customer_ops, back_office, mortgages, collections horizontals (108 new)
+14. **Filtered Autocomplete** — Slide 3 now filters by both industry AND horizontal from Slide 2
+15. **Recommendation Engine** — Added utilities & diversified vocabulary, Slide 7 solutions now show as bullet points (split by → arrows) with triggering pain points in purple italic
+16. **Brighter Map Flow Lines** — Palette shifted to lighter variants (#a78bfa, #fbbf24, etc.), weight 1.2, opacity 0.7 for visibility on dark map
+17. **FTE Flow Cards** — Redesigned from single scrollable list to side-by-side cards grouped by source location

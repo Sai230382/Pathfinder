@@ -2125,53 +2125,51 @@ window.handleAnalyze = async function() {
 
   // Immediate button feedback
   const analyzeBtn = document.getElementById('analyze-btn');
+  const origBtnHTML = analyzeBtn ? analyzeBtn.innerHTML : '';
   if(analyzeBtn) {
     analyzeBtn.disabled = true;
-    analyzeBtn.innerHTML = '<span class="btn-spinner"></span> Analyzing...';
+    analyzeBtn.innerHTML = '<span class="btn-spinner"></span> Generating Transformation Plan...';
     analyzeBtn.style.opacity = '0.7';
-    analyzeBtn.style.cursor = 'wait';
   }
 
-  // Rebuild CONFIG
-  rebuildConfig();
+  try {
+    // Rebuild CONFIG
+    rebuildConfig();
 
-  // Reset animation state
-  slide5Animated = false;
-  financialDashboardAnimated = false;
-  matrixBuilt = false;
-  if(currentStateMap){ currentStateMap.remove(); currentStateMap=null; }
-  if(transformMap){ transformMap.remove(); transformMap=null; }
+    // Reset animation state
+    slide5Animated = false;
+    financialDashboardAnimated = false;
+    matrixBuilt = false;
+    if(currentStateMap){ currentStateMap.remove(); currentStateMap=null; }
+    if(transformMap){ transformMap.remove(); transformMap=null; }
 
-  // Update title meta
-  const totalFTEs = formLocations.reduce((s,l)=>s+l.headcount,0);
-  document.getElementById('meta-ftes').textContent = totalFTEs+' FTEs';
-  document.getElementById('meta-regions').textContent = formLocations.length+' Region'+(formLocations.length>1?'s':'');
+    // Update title meta
+    const totalFTEs = formLocations.reduce((s,l)=>s+l.headcount,0);
+    document.getElementById('meta-ftes').textContent = totalFTEs+' FTEs';
+    document.getElementById('meta-regions').textContent = formLocations.length+' Region'+(formLocations.length>1?'s':'');
 
-  // Compute dynamic messages
-  const locationNames = formLocations.map(l=>COUNTRY_DB[l.country].name);
-  const offshoreNames = selectedOffshore.map(c=>COUNTRY_DB[c].name);
+    // Compute dynamic messages
+    const offshoreNames = selectedOffshore.map(c=>COUNTRY_DB[c].name);
+    const srcLangs = [...new Set(formLocations.flatMap(l=>(COUNTRY_DB[l.country]?.languages||['en']).map(lg=>LANG_NAMES[lg]||lg)))];
+    const messages = [
+      `Analyzing ${totalFTEs} FTEs across ${formLocations.length} location${formLocations.length>1?'s':''} (${srcLangs.join(', ')} markets)...`,
+      `Scoring language affinity and timezone overlap for ${offshoreNames.join(', ')}...`,
+      `Computing 5-factor affinity model: language, timezone, cost, culture, channel fit...`,
+      `Generating optimized transformation blueprint...`
+    ];
 
-  // AI Thinking overlay — reference affinity model
-  const srcLangs = [...new Set(formLocations.flatMap(l=>(COUNTRY_DB[l.country]?.languages||['en']).map(lg=>LANG_NAMES[lg]||lg)))];
-  const messages = [
-    `Analyzing ${totalFTEs} FTEs across ${formLocations.length} location${formLocations.length>1?'s':''} (${srcLangs.join(', ')} markets)...`,
-    `Scoring language affinity and timezone overlap for ${offshoreNames.join(', ')}...`,
-    `Computing 5-factor affinity model: language, timezone, cost, culture, channel fit...`,
-    `Generating optimized transformation blueprint...`
-  ];
-
-  await showAIThinking(messages, 3500);
-
-  // Restore button state
-  if(analyzeBtn) {
-    analyzeBtn.disabled = false;
-    analyzeBtn.innerHTML = '\u{1F680} Analyze & Generate Transformation Plan';
-    analyzeBtn.style.opacity = '1';
-    analyzeBtn.style.cursor = 'pointer';
+    await showAIThinking(messages, 3500);
+  } catch(e) {
+    console.error('Analyze error:', e);
+  } finally {
+    // Always restore button and navigate
+    if(analyzeBtn) {
+      analyzeBtn.disabled = false;
+      analyzeBtn.innerHTML = origBtnHTML;
+      analyzeBtn.style.opacity = '1';
+    }
+    navigateToSlide(5, 'forward');
   }
-
-  // Navigate to slide 5 (current state map)
-  navigateToSlide(5, 'forward');
 };
 
 function rebuildConfig() {

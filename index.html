@@ -139,6 +139,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .analyze-btn{grid-column:1/-1;padding:16px 32px;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font-body);background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628;transition:all .3s;letter-spacing:.5px}
 .analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.3)}
 .analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(10,22,40,.3);border-top-color:#0a1628;border-radius:50%;animation:btn-spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
 
 /* === SEGMENT INPUTS === */
 .segment-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -945,7 +947,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     <div class="fte-calculator" id="fte-calculator">
       <div class="fte-stat"><span class="fte-label">Selected for Offshore</span><span class="fte-value" id="selected-fte-count">0</span><span class="fte-unit">FTEs</span></div>
       <div class="fte-stat"><span class="fte-label">Est. Annual Savings</span><span class="fte-value" id="estimated-savings">$0</span></div>
-      <div class="fte-stat"><span class="fte-label">CSAT Impact</span><span class="fte-value" id="csat-impact" style="color:var(--accent-yellow)">0%</span></div>
       <button class="ai-insights-btn" id="ai-insights-btn-s4" onclick="openAIModal()" style="margin-left:auto;display:none"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button>
     </div>
     <div class="segment-strip" id="segment-strip"></div>
@@ -1279,9 +1280,9 @@ const COUNTRY_DB = {
     languageCapability:{en:55,de:5,fr:8,ja:2,zh:2}},
   ZA: {name:'South Africa',lat:-30.5,lng:22.9,defaultRate:13,flag:'\u{1F1FF}\u{1F1E6}',languages:['en','af'],timezone:2,culturalCluster:'anglo',
     languageCapability:{en:90,de:10,fr:15,ja:2,zh:2}},
-  CO: {name:'Colombia',lat:4.5,lng:-74.2,defaultRate:11,flag:'\u{1F1E8}\u{1F1F4}',languages:['es','en'],timezone:-5,culturalCluster:'latin-american',
+  CO: {name:'Colombia',lat:4.5,lng:-74.2,defaultRate:16,flag:'\u{1F1E8}\u{1F1F4}',languages:['es','en'],timezone:-5,culturalCluster:'latin-american',
     languageCapability:{en:45,de:3,fr:5,ja:1,zh:1}},
-  EG: {name:'Egypt',lat:26.8,lng:30.8,defaultRate:9,flag:'\u{1F1EA}\u{1F1EC}',languages:['ar','en'],timezone:2,culturalCluster:'arab',
+  EG: {name:'Egypt',lat:26.8,lng:30.8,defaultRate:14,flag:'\u{1F1EA}\u{1F1EC}',languages:['ar','en'],timezone:2,culturalCluster:'arab',
     languageCapability:{en:50,de:15,fr:35,ja:1,zh:1}},
   RO: {name:'Romania',lat:45.9,lng:24.9,defaultRate:16,flag:'\u{1F1F7}\u{1F1F4}',languages:['ro','en','de','fr'],timezone:2,culturalCluster:'eastern-european',
     languageCapability:{en:70,de:40,fr:55,ja:2,zh:2}}
@@ -2122,6 +2123,15 @@ window.handleAnalyze = async function() {
   const selectedOffshore = Object.keys(formOffshoreSelections).filter(k=>formOffshoreSelections[k]);
   if(selectedOffshore.length===0){ alert('Please select at least one offshore location'); return; }
 
+  // Immediate button feedback
+  const analyzeBtn = document.getElementById('analyze-btn');
+  if(analyzeBtn) {
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = '<span class="btn-spinner"></span> Analyzing...';
+    analyzeBtn.style.opacity = '0.7';
+    analyzeBtn.style.cursor = 'wait';
+  }
+
   // Rebuild CONFIG
   rebuildConfig();
 
@@ -2151,6 +2161,14 @@ window.handleAnalyze = async function() {
   ];
 
   await showAIThinking(messages, 3500);
+
+  // Restore button state
+  if(analyzeBtn) {
+    analyzeBtn.disabled = false;
+    analyzeBtn.innerHTML = '\u{1F680} Analyze & Generate Transformation Plan';
+    analyzeBtn.style.opacity = '1';
+    analyzeBtn.style.cursor = 'pointer';
+  }
 
   // Navigate to slide 5 (current state map)
   navigateToSlide(5, 'forward');
@@ -2574,13 +2592,6 @@ function updateMatrixCalculations() {
     onUpdate:function(){fteEl.textContent=Math.round(this.targets()[0].val);}
   });
   savEl.textContent = formatCurrency(fin.annualSavings);
-
-  const csatEl = document.getElementById('csat-impact');
-  const sliderEl = document.getElementById('offshore-slider');
-  const csatImpact = sliderEl ? -(Math.round(parseInt(sliderEl.value) / 10)) : (CONFIG.scenarios[currentScenario]?.csatImpact || -5);
-  csatEl.textContent = csatImpact+'%';
-  const absC = Math.abs(csatImpact);
-  csatEl.style.color = absC<=3?'var(--accent-green)':absC<=6?'var(--accent-yellow)':'var(--accent-red)';
 
   // Cache narrative for AI modal
   cacheNarrativeForModal(impact);

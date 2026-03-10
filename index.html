@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
 <script src="painPointLibrary.js"></script>
 <script src="recommendation-engine.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -138,10 +139,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .apt-enter{background:linear-gradient(135deg,#00d4ff,#0a8ab5);color:#0a1628}
 .villa-enter{background:linear-gradient(135deg,#7c5cfc,#a78bfa);color:#fff}
 .enter-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
-/* OR divider */
-.homes-or{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:120px;gap:12px;color:var(--text-muted);font-size:.85rem;user-select:none;opacity:.5;flex-shrink:0}
-.or-line{width:1px;height:50px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.2),transparent)}
-.or-text{font-style:italic}
+/* Globe divider */
+.homes-or{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:120px;gap:10px;flex-shrink:0;width:180px;position:relative;user-select:none}
+#globe-canvas{width:160px;height:160px;border-radius:50%;display:block;box-shadow:0 0 40px rgba(0,212,255,0.22),0 0 80px rgba(0,212,255,0.08),0 0 4px rgba(0,212,255,0.4);transition:box-shadow .4s}
+#globe-canvas:hover{box-shadow:0 0 55px rgba(0,212,255,0.35),0 0 110px rgba(0,212,255,0.12),0 0 4px rgba(0,212,255,0.5)}
+.globe-or-label{font-size:.68rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);opacity:.45;font-style:italic}
 /* Villa Coming Soon Overlay */
 .villa-soon-overlay{position:fixed;inset:0;background:rgba(5,8,20,.85);backdrop-filter:blur(12px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .4s;cursor:pointer}
 .villa-soon-overlay.active{opacity:1;visibility:visible}
@@ -899,11 +901,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         </div>
       </div>
 
-      <!-- OR divider -->
+      <!-- Globe divider -->
       <div class="homes-or">
-        <div class="or-line"></div>
-        <span class="or-text">or</span>
-        <div class="or-line"></div>
+        <canvas id="globe-canvas" width="160" height="160"></canvas>
+        <span class="globe-or-label">or</span>
       </div>
 
       <!-- VILLA — Pathfinder Full -->
@@ -1858,6 +1859,8 @@ function playTitleAnimation() {
 
   // Window flicker — random lights on/off
   initWindowFlicker();
+  // 3D globe
+  initGlobe3D();
 }
 
 function initWindowFlicker() {
@@ -1880,6 +1883,84 @@ function initWindowFlicker() {
       if(Math.random() > 0.8) w.classList.toggle('lit');
     }, 2000 + Math.random() * 3000);
   });
+}
+
+// ===== 3D GLOBE (Slide 1 divider) =====
+function initGlobe3D() {
+  const canvas = document.getElementById('globe-canvas');
+  if (!canvas || typeof THREE === 'undefined') return;
+
+  // Cleanup any previous instance
+  if (window._g3d) {
+    cancelAnimationFrame(window._g3d.raf);
+    try { window._g3d.renderer.dispose(); } catch(e) {}
+    window._g3d = null;
+  }
+
+  const W = 160, H = 160;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  } catch(e) { return; }
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0); // transparent bg
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.z = 2.75;
+
+  // --- Starfield ---
+  const starGeo = new THREE.BufferGeometry();
+  const sP = new Float32Array(1200 * 3);
+  for (let i = 0; i < sP.length; i++) sP[i] = (Math.random() - 0.5) * 70;
+  starGeo.setAttribute('position', new THREE.BufferAttribute(sP, 3));
+  scene.add(new THREE.Points(starGeo,
+    new THREE.PointsMaterial({ color: 0xffffff, size: 0.13, transparent: true, opacity: 0.65 })
+  ));
+
+  // --- Earth sphere ---
+  const loader = new THREE.TextureLoader();
+  const earthMat = new THREE.MeshPhongMaterial({
+    map: loader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r134/examples/textures/planets/earth_atmos_2048.jpg'),
+    shininess: 18,
+    specular: new THREE.Color(0x1a3a5c)
+  });
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), earthMat);
+  scene.add(earth);
+
+  // --- Atmosphere inner glow ---
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.055, 32, 16),
+    new THREE.MeshPhongMaterial({ color: 0x006699, transparent: true, opacity: 0.055, side: THREE.FrontSide, depthWrite: false })
+  ));
+
+  // --- Halo ring (outer, additive-like) ---
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.13, 32, 16),
+    new THREE.MeshPhongMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.038, side: THREE.BackSide, depthWrite: false })
+  ));
+
+  // --- Lighting ---
+  // Dark space ambient
+  scene.add(new THREE.AmbientLight(0x112255, 0.55));
+  // Warm directional sun (top-right-front)
+  const sun = new THREE.DirectionalLight(0xfff0dd, 1.35);
+  sun.position.set(4, 2.5, 3.5);
+  scene.add(sun);
+  // Cool dark-side fill
+  const fill = new THREE.DirectionalLight(0x001133, 0.25);
+  fill.position.set(-3, -1.5, -2);
+  scene.add(fill);
+
+  // --- Animate ---
+  const g3d = { renderer, raf: null };
+  window._g3d = g3d;
+  (function loop() {
+    g3d.raf = requestAnimationFrame(loop);
+    earth.rotation.y += 0.0014;
+    renderer.render(scene, camera);
+  })();
 }
 
 // ===== MODE SELECTION =====
@@ -1919,7 +2000,7 @@ function navigateToSlide(target, direction) {
   const targetEl = document.getElementById('slide-'+target);
 
   // Exit hooks
-  if (currentSlide===1) stopParticles();
+  if (currentSlide===1) { stopParticles(); if(window._g3d){cancelAnimationFrame(window._g3d.raf);try{window._g3d.renderer.dispose();}catch(e){}window._g3d=null;} }
   if (currentSlide===2) stopGlobe();
   if (currentSlide===3) stopDigitalRain('rain-canvas-board');
   if (currentSlide===10) stopDigitalRain('rain-canvas-summary');

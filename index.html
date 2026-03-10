@@ -88,6 +88,74 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .title-cta{font-size:.85rem;color:var(--accent-cyan);cursor:pointer;padding:12px 32px;border:1px solid rgba(0,212,255,.3);border-radius:24px;display:inline-block;transition:all .3s;position:relative;z-index:10;user-select:none}
 .title-cta:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);color:#fff;box-shadow:0 0 20px rgba(0,212,255,.15)}
 
+/* === SLIDE 1: HOME SELECTION === */
+.slide-home-select{background:linear-gradient(180deg,#050c18 0%,#0a1628 55%,#0d1e35 100%);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:32px;overflow:hidden;position:relative}
+.hs-header{text-align:center;z-index:2;margin-bottom:28px}
+.hs-logo{margin:0 auto 10px;animation:hs-spin 12s linear infinite}
+@keyframes hs-spin{to{transform:rotate(360deg)}}
+.hs-eyebrow{font-size:.75rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent-cyan);opacity:.8;margin-bottom:6px}
+.hs-title{font-family:var(--font-heading);font-size:2.8rem;background:linear-gradient(135deg,#00d4ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1}
+.hs-prompt{font-size:.95rem;color:var(--text-secondary);font-weight:300;letter-spacing:.5px}
+/* Scene */
+.homes-scene{display:flex;align-items:flex-end;justify-content:center;gap:0;z-index:2;width:100%;max-width:960px;padding-bottom:16px}
+/* Ground line */
+.homes-scene::after{content:'';position:absolute;bottom:96px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.15),rgba(124,92,252,.15),transparent)}
+/* Each home wrapper */
+.home-wrapper{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:0 32px;transition:transform .35s cubic-bezier(.34,1.56,.64,1);flex:1;max-width:400px}
+.home-wrapper:hover{transform:translateY(-10px)}
+/* Building wrap + glow */
+.home-building-wrap{position:relative;display:flex;align-items:flex-end;justify-content:center}
+.building-svg{position:relative;z-index:2;transition:filter .4s}
+.building-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:140%;height:60%;border-radius:50%;filter:blur(32px);opacity:0;transition:opacity .4s;z-index:1}
+.apt-glow{background:radial-gradient(ellipse,rgba(0,212,255,.25),transparent 70%)}
+.villa-glow{background:radial-gradient(ellipse,rgba(124,92,252,.3),transparent 70%)}
+.home-wrapper:hover .building-glow{opacity:1}
+/* Windows — apartment */
+.aw{fill:#0a2535;transition:fill .3s,filter .3s}
+.aw.lit{fill:#00d4ff}
+.home-wrapper#home-mvp:hover .aw.lit{filter:drop-shadow(0 0 5px rgba(0,212,255,.9));fill:#4de8ff}
+/* Windows — villa */
+.vw{fill:#120e30;transition:fill .3s,filter .3s}
+.vw.lit{fill:#7c5cfc}
+.home-wrapper#home-villa:hover .vw.lit{filter:drop-shadow(0 0 5px rgba(124,92,252,.9));fill:#a78bfa}
+/* Path glow */
+.home-path{width:4px;height:28px;margin:0 auto;border-radius:2px;opacity:0;transition:opacity .4s,height .4s}
+.apt-path{background:linear-gradient(to bottom,rgba(0,212,255,.8),transparent)}
+.villa-path{background:linear-gradient(to bottom,rgba(124,92,252,.8),transparent)}
+.home-wrapper:hover .home-path{opacity:1;height:36px}
+/* Cards */
+.home-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:18px 24px;text-align:center;margin-top:8px;width:100%;max-width:260px;transition:border-color .3s,background .3s}
+.apt-card{border-color:rgba(0,212,255,.15)}
+.villa-card{border-color:rgba(124,92,252,.15)}
+.home-wrapper:hover .apt-card{border-color:rgba(0,212,255,.45);background:rgba(0,212,255,.05)}
+.home-wrapper:hover .villa-card{border-color:rgba(124,92,252,.45);background:rgba(124,92,252,.05)}
+.home-tag{font-size:.62rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-cyan);background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:3px 10px;display:inline-block;margin-bottom:8px}
+.villa-tag{color:#a78bfa;background:rgba(124,92,252,.12);border-color:rgba(124,92,252,.25)}
+.home-name{font-family:var(--font-heading);font-size:1.25rem;color:#fff;margin-bottom:4px}
+.home-desc{font-size:.85rem;color:var(--text-secondary);margin-bottom:6px}
+.home-meta{font-size:.72rem;color:var(--text-muted);margin-bottom:14px;letter-spacing:.3px}
+.enter-btn{border:none;border-radius:20px;padding:9px 28px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--font-body);letter-spacing:.5px;transition:all .3s;width:100%}
+.apt-enter{background:linear-gradient(135deg,#00d4ff,#0a8ab5);color:#0a1628}
+.villa-enter{background:linear-gradient(135deg,#7c5cfc,#a78bfa);color:#fff}
+.enter-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+/* OR divider */
+.homes-or{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:120px;gap:12px;color:var(--text-muted);font-size:.85rem;user-select:none;opacity:.5;flex-shrink:0}
+.or-line{width:1px;height:50px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.2),transparent)}
+.or-text{font-style:italic}
+/* Villa Coming Soon Overlay */
+.villa-soon-overlay{position:fixed;inset:0;background:rgba(5,8,20,.85);backdrop-filter:blur(12px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .4s;cursor:pointer}
+.villa-soon-overlay.active{opacity:1;visibility:visible}
+.villa-soon-box{background:linear-gradient(135deg,#0f1535,#1a1e45);border:1px solid rgba(124,92,252,.35);border-radius:24px;padding:40px 48px;max-width:540px;width:90%;text-align:center;cursor:default;transform:translateY(20px);transition:transform .4s}
+.villa-soon-overlay.active .villa-soon-box{transform:translateY(0)}
+.vsb-icon{font-size:2.5rem;margin-bottom:12px}
+.vsb-title{font-family:var(--font-heading);font-size:1.8rem;color:#fff;margin-bottom:8px}
+.vsb-sub{color:var(--text-secondary);font-size:.9rem;margin-bottom:28px}
+.vsb-modules{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;text-align:left}
+.vsb-module{display:flex;align-items:center;gap:14px;background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.15);border-radius:10px;padding:10px 16px;font-size:.88rem;color:#e2e8f0}
+.vsb-num{font-size:.7rem;font-weight:700;color:#a78bfa;background:rgba(124,92,252,.2);border-radius:6px;padding:2px 7px;flex-shrink:0}
+.vsb-back{background:transparent;border:1px solid rgba(124,92,252,.4);color:#a78bfa;border-radius:20px;padding:10px 28px;font-size:.85rem;cursor:pointer;font-family:var(--font-body);transition:all .3s}
+.vsb-back:hover{background:rgba(124,92,252,.15);border-color:#a78bfa}
+
 /* === SLIDE 2: INPUT FORM === */
 .slide-input{padding-top:32px}
 .input-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;overflow-y:auto;padding-bottom:20px}
@@ -606,7 +674,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif;counter-reset:page-num}
   .slides-container{position:static!important;width:100%!important;height:auto!important;overflow:visible!important}
-  .slide,.cta-section,#slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg,#digital-rain-canvas{display:none!important}
+  .slide,.cta-section,#slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg,#digital-rain-canvas,.villa-soon-overlay,.homes-scene,.hs-header{display:none!important}
   .slide-heading{-webkit-text-fill-color:#1a1a1a;background:none;color:#1a1a1a}
   .dashboard-card,.phase-card,.detail-panel,.ba-card,.exec-ba-col,.exec-kpi{border:1px solid #ddd;background:#fafafa}
   .savings-amount{-webkit-text-fill-color:#10b981;background:none}
@@ -754,25 +822,192 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 <div class="slides-container" id="presentation">
 
-  <!-- SLIDE 1: TITLE -->
-  <section class="slide slide-title active" id="slide-1" data-slide="1">
+  <!-- SLIDE 1: HOME SELECTION -->
+  <section class="slide slide-home-select active" id="slide-1" data-slide="1">
     <canvas id="particles-canvas"></canvas>
-    <div class="title-content">
-      <div class="logo-mark">
-        <svg viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="28" stroke="url(#lg)" stroke-width="2" stroke-dasharray="4 4" opacity="0.4"/>
-          <circle cx="32" cy="32" r="18" stroke="url(#lg)" stroke-width="2.5" opacity="0.8"/>
-          <circle cx="32" cy="32" r="6" fill="url(#lg)"/>
-          <defs><linearGradient id="lg" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c5cfc"/></linearGradient></defs>
+
+    <!-- Header -->
+    <div class="hs-header">
+      <div class="hs-logo">
+        <svg viewBox="0 0 40 40" fill="none" width="36" height="36">
+          <circle cx="20" cy="20" r="17" stroke="url(#hslg)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/>
+          <circle cx="20" cy="20" r="10" stroke="url(#hslg)" stroke-width="2" opacity="0.9"/>
+          <circle cx="20" cy="20" r="4" fill="url(#hslg)"/>
+          <defs><linearGradient id="hslg" x1="0" y1="0" x2="40" y2="40"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c5cfc"/></linearGradient></defs>
         </svg>
       </div>
-      <div class="title-eyebrow">Intelligent Consulting</div>
-      <h1 class="title-main">Pathfinder</h1>
-      <div class="title-divider"></div>
-      <h2 class="title-sub">Strategic Transformation Assessment</h2>
-      <div class="title-meta" id="title-meta"></div>
-      <div class="title-cta">Click here or press &rarr; to begin</div>
+      <div class="hs-eyebrow">Intelligent Consulting</div>
+      <h1 class="hs-title">PATHFINDER</h1>
+      <p class="hs-prompt">Two experiences. Choose where you want to go.</p>
     </div>
+
+    <!-- Scene -->
+    <div class="homes-scene">
+
+      <!-- APARTMENT — Pathfinder MVP -->
+      <div class="home-wrapper" id="home-mvp" onclick="selectMode('mvp')">
+        <div class="home-building-wrap">
+          <svg class="building-svg apt-svg" viewBox="0 0 200 265" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="100" cy="259" rx="82" ry="6" fill="rgba(0,212,255,0.12)"/>
+            <rect x="72" y="250" width="56" height="6" fill="#0c1e30" rx="1"/>
+            <rect x="64" y="255" width="72" height="5" fill="#091828" rx="1"/>
+            <rect x="10" y="52" width="180" height="200" fill="#1e293b" rx="3"/>
+            <rect x="5" y="42" width="190" height="13" fill="#243348" rx="2"/>
+            <rect x="82" y="30" width="36" height="15" fill="#243348" rx="2"/>
+            <line x1="10" y1="96" x2="190" y2="96" stroke="#0a1628" stroke-width="2" opacity="0.6"/>
+            <line x1="10" y1="140" x2="190" y2="140" stroke="#0a1628" stroke-width="2" opacity="0.6"/>
+            <line x1="10" y1="184" x2="190" y2="184" stroke="#0a1628" stroke-width="2" opacity="0.6"/>
+            <!-- Row 1 -->
+            <rect class="aw" x="22" y="60" width="30" height="26" rx="2"/>
+            <rect class="aw" x="66" y="60" width="30" height="26" rx="2"/>
+            <rect class="aw" x="110" y="60" width="30" height="26" rx="2"/>
+            <rect class="aw" x="154" y="60" width="30" height="26" rx="2"/>
+            <!-- Row 2 -->
+            <rect class="aw" x="22" y="104" width="30" height="26" rx="2"/>
+            <rect class="aw" x="66" y="104" width="30" height="26" rx="2"/>
+            <rect class="aw" x="110" y="104" width="30" height="26" rx="2"/>
+            <rect class="aw" x="154" y="104" width="30" height="26" rx="2"/>
+            <!-- Row 3 -->
+            <rect class="aw" x="22" y="148" width="30" height="26" rx="2"/>
+            <rect class="aw" x="66" y="148" width="30" height="26" rx="2"/>
+            <rect class="aw" x="110" y="148" width="30" height="26" rx="2"/>
+            <rect class="aw" x="154" y="148" width="30" height="26" rx="2"/>
+            <!-- Ground floor -->
+            <rect x="10" y="192" width="180" height="60" fill="#162535" rx="0 0 3 3"/>
+            <rect x="16" y="198" width="52" height="38" fill="#0a2540" rx="2"/>
+            <line x1="42" y1="198" x2="42" y2="236" stroke="#0a1628" stroke-width="1.5"/>
+            <line x1="16" y1="217" x2="68" y2="217" stroke="#0a1628" stroke-width="1.5"/>
+            <rect x="132" y="198" width="52" height="38" fill="#0a2540" rx="2"/>
+            <line x1="158" y1="198" x2="158" y2="236" stroke="#0a1628" stroke-width="1.5"/>
+            <line x1="132" y1="217" x2="184" y2="217" stroke="#0a1628" stroke-width="1.5"/>
+            <!-- Door -->
+            <rect x="82" y="196" width="36" height="56" fill="#050f1c" rx="2 2 0 0"/>
+            <path d="M82,214 Q100,194 118,214" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.8"/>
+            <rect x="85" y="218" width="14" height="22" fill="#071c2e" rx="1"/>
+            <rect x="101" y="218" width="14" height="22" fill="#071c2e" rx="1"/>
+            <circle cx="97" cy="232" r="2.5" fill="#00d4ff" opacity="0.9"/>
+            <circle cx="103" cy="232" r="2.5" fill="#00d4ff" opacity="0.9"/>
+          </svg>
+          <div class="building-glow apt-glow"></div>
+        </div>
+        <div class="home-path apt-path"></div>
+        <div class="home-card apt-card">
+          <div class="home-tag">MVP</div>
+          <div class="home-name">Pathfinder MVP</div>
+          <div class="home-desc">Labour Arbitrage Model</div>
+          <div class="home-meta">10 slides &nbsp;·&nbsp; Financial Analysis &nbsp;·&nbsp; Live today</div>
+          <button class="enter-btn apt-enter">Enter &rarr;</button>
+        </div>
+      </div>
+
+      <!-- OR divider -->
+      <div class="homes-or">
+        <div class="or-line"></div>
+        <span class="or-text">or</span>
+        <div class="or-line"></div>
+      </div>
+
+      <!-- VILLA — Pathfinder Full -->
+      <div class="home-wrapper" id="home-villa" onclick="selectMode('full')">
+        <div class="home-building-wrap">
+          <svg class="building-svg villa-svg" viewBox="0 0 280 285" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="140" cy="278" rx="118" ry="8" fill="rgba(124,92,252,0.18)"/>
+            <rect x="95" y="268" width="90" height="6" fill="#180f35" rx="1"/>
+            <rect x="82" y="273" width="116" height="5" fill="#130c2c" rx="1"/>
+            <rect x="70" y="277" width="140" height="4" fill="#0f0a25" rx="1"/>
+            <!-- Wings -->
+            <rect x="0" y="118" width="62" height="155" fill="#191d3f" rx="2"/>
+            <rect class="vw" x="9" y="128" width="20" height="22" rx="2"/>
+            <rect class="vw" x="34" y="128" width="20" height="22" rx="2"/>
+            <rect class="vw" x="9" y="162" width="20" height="22" rx="2"/>
+            <rect class="vw" x="34" y="162" width="20" height="22" rx="2"/>
+            <rect class="vw" x="9" y="196" width="20" height="22" rx="2"/>
+            <rect class="vw" x="34" y="196" width="20" height="22" rx="2"/>
+            <rect x="218" y="118" width="62" height="155" fill="#191d3f" rx="2"/>
+            <rect class="vw" x="228" y="128" width="20" height="22" rx="2"/>
+            <rect class="vw" x="253" y="128" width="20" height="22" rx="2"/>
+            <rect class="vw" x="228" y="162" width="20" height="22" rx="2"/>
+            <rect class="vw" x="253" y="162" width="20" height="22" rx="2"/>
+            <rect class="vw" x="228" y="196" width="20" height="22" rx="2"/>
+            <rect class="vw" x="253" y="196" width="20" height="22" rx="2"/>
+            <!-- Main body -->
+            <rect x="52" y="38" width="176" height="235" fill="#1d2148" rx="3"/>
+            <!-- Pediment -->
+            <polygon points="44,40 140,3 236,40" fill="#111535"/>
+            <polyline points="44,40 140,3 236,40" fill="none" stroke="#7c5cfc" stroke-width="1.5" opacity="0.85"/>
+            <circle cx="140" cy="18" r="5" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.8"/>
+            <!-- Entablature -->
+            <rect x="52" y="136" width="176" height="9" fill="#111535"/>
+            <!-- Columns -->
+            <rect x="74" y="145" width="9" height="128" fill="#111535" rx="1"/>
+            <rect x="107" y="145" width="9" height="128" fill="#111535" rx="1"/>
+            <rect x="164" y="145" width="9" height="128" fill="#111535" rx="1"/>
+            <rect x="197" y="145" width="9" height="128" fill="#111535" rx="1"/>
+            <rect x="70" y="271" width="17" height="4" fill="#1a1d48" rx="1"/>
+            <rect x="103" y="271" width="17" height="4" fill="#1a1d48" rx="1"/>
+            <rect x="160" y="271" width="17" height="4" fill="#1a1d48" rx="1"/>
+            <rect x="193" y="271" width="17" height="4" fill="#1a1d48" rx="1"/>
+            <!-- Windows row 1 -->
+            <rect class="vw" x="62" y="48" width="28" height="30" rx="2"/>
+            <rect class="vw" x="100" y="48" width="28" height="30" rx="2"/>
+            <rect class="vw" x="138" y="48" width="28" height="30" rx="2"/>
+            <rect class="vw" x="176" y="48" width="28" height="30" rx="2"/>
+            <rect class="vw" x="214" y="48" width="28" height="30" rx="2"/>
+            <!-- Windows row 2 -->
+            <rect class="vw" x="62" y="92" width="28" height="30" rx="2"/>
+            <rect class="vw" x="100" y="92" width="28" height="30" rx="2"/>
+            <rect class="vw" x="138" y="92" width="28" height="30" rx="2"/>
+            <rect class="vw" x="176" y="92" width="28" height="30" rx="2"/>
+            <rect class="vw" x="214" y="92" width="28" height="30" rx="2"/>
+            <!-- Between columns windows -->
+            <rect class="vw" x="86" y="152" width="17" height="20" rx="2"/>
+            <rect class="vw" x="141" y="152" width="17" height="20" rx="2"/>
+            <rect class="vw" x="180" y="152" width="17" height="20" rx="2"/>
+            <!-- Grand door -->
+            <rect x="115" y="192" width="50" height="81" fill="#040814" rx="2 2 0 0"/>
+            <path d="M115,216 Q140,190 165,216" fill="none" stroke="#7c5cfc" stroke-width="2" opacity="0.9"/>
+            <path d="M115,216 Q140,190 165,216" fill="#080c28" opacity="0.6"/>
+            <rect x="118" y="220" width="20" height="36" fill="#0d1035" rx="1"/>
+            <rect x="142" y="220" width="20" height="36" fill="#0d1035" rx="1"/>
+            <circle cx="138" cy="240" r="3" fill="#a78bfa" opacity="0.9"/>
+            <circle cx="142" cy="240" r="3" fill="#a78bfa" opacity="0.9"/>
+            <rect x="120" y="195" width="40" height="17" fill="#0d1035" rx="1"/>
+            <line x1="140" y1="195" x2="140" y2="212" stroke="#7c5cfc" stroke-width="1" opacity="0.7"/>
+          </svg>
+          <div class="building-glow villa-glow"></div>
+        </div>
+        <div class="home-path villa-path"></div>
+        <div class="home-card villa-card">
+          <div class="home-tag villa-tag">COMING SOON</div>
+          <div class="home-name">Pathfinder</div>
+          <div class="home-desc">Transform &amp; Transition</div>
+          <div class="home-meta">14+ slides &nbsp;·&nbsp; Full Platform &nbsp;·&nbsp; Under construction</div>
+          <button class="enter-btn villa-enter">Preview &rarr;</button>
+        </div>
+      </div>
+
+    </div><!-- /homes-scene -->
+
+    <!-- Villa Coming Soon Overlay -->
+    <div id="villa-soon" class="villa-soon-overlay" onclick="document.getElementById('villa-soon').classList.remove('active')">
+      <div class="villa-soon-box" onclick="event.stopPropagation()">
+        <div class="vsb-top">
+          <div class="vsb-icon">🏰</div>
+          <h2 class="vsb-title">The Villa Is Being Built</h2>
+          <p class="vsb-sub">Pathfinder full platform — coming soon</p>
+        </div>
+        <div class="vsb-modules">
+          <div class="vsb-module"><span class="vsb-num">01</span><span>Transform &amp; Transition Financial Model</span></div>
+          <div class="vsb-module"><span class="vsb-num">02</span><span>Transformation Lever Knowledge Base</span></div>
+          <div class="vsb-module"><span class="vsb-num">03</span><span>AI-Powered Hiring Plan Generator</span></div>
+          <div class="vsb-module"><span class="vsb-num">04</span><span>Atomic Training Plan Builder</span></div>
+          <div class="vsb-module"><span class="vsb-num">05</span><span>End-to-End Transition Playbook</span></div>
+          <div class="vsb-module"><span class="vsb-num">06</span><span>Future State Operating Model Blueprint</span></div>
+        </div>
+        <button class="vsb-back" onclick="document.getElementById('villa-soon').classList.remove('active')">&larr; Back to selection</button>
+      </div>
+    </div>
+
   </section>
 
   <!-- SLIDE 2: INDUSTRY CONTEXT (PATHFINDER) -->
@@ -1608,17 +1843,63 @@ function initializeSelections() {
   }
 }
 
-// ===== GSAP TITLE ANIMATION (Slide 1) =====
+// ===== APP MODE =====
+let appMode = 'mvp'; // 'mvp' | 'full'
+
+// ===== HOME SCENE ANIMATION (Slide 1) =====
 function playTitleAnimation() {
+  // Animate header in
   const tl = gsap.timeline({defaults:{ease:'power3.out'}});
-  tl.from('.logo-mark', {scale:0, rotation:180, duration:1, ease:'back.out(1.7)'})
-    .from('.title-eyebrow', {y:20, opacity:0, duration:0.5}, '-=0.3')
-    .from('.title-main', {y:40, opacity:0, duration:0.8}, '-=0.2')
-    .to('.title-divider', {scaleX:1, duration:0.5, ease:'power2.inOut'}, '-=0.3')
-    .from('.title-sub', {y:30, opacity:0, duration:0.7}, '-=0.2')
-    .from('.title-cta', {opacity:0, duration:0.6}, '-=0.2')
-    .to('.title-cta', {opacity:0.5, duration:1, repeat:-1, yoyo:true, ease:'sine.inOut'});
+  tl.from('.hs-logo',   {scale:0, rotation:-180, duration:0.9, ease:'back.out(1.7)'})
+    .from('.hs-eyebrow',{y:16, opacity:0, duration:0.5}, '-=0.3')
+    .from('.hs-title',  {y:30, opacity:0, duration:0.7}, '-=0.2')
+    .from('.hs-prompt', {y:16, opacity:0, duration:0.5}, '-=0.3')
+    .from('#home-mvp',  {x:-60, opacity:0, duration:0.7, ease:'power2.out'}, '-=0.2')
+    .from('.homes-or',  {opacity:0, duration:0.4}, '-=0.4')
+    .from('#home-villa',{x:60, opacity:0, duration:0.7, ease:'power2.out'}, '-=0.5');
+
+  // Window flicker — random lights on/off
+  initWindowFlicker();
 }
+
+function initWindowFlicker() {
+  // Apartment windows — some lit cyan, some dark, random flicker
+  const aptWins = document.querySelectorAll('.aw');
+  aptWins.forEach((w, i) => {
+    // Initial state — roughly 60% lit
+    if(Math.random() > 0.4) w.classList.add('lit');
+    // Random flicker
+    setInterval(() => {
+      if(Math.random() > 0.85) w.classList.toggle('lit');
+    }, 1800 + Math.random() * 2400);
+  });
+
+  // Villa windows — some lit purple, some dark
+  const villaWins = document.querySelectorAll('.vw');
+  villaWins.forEach((w, i) => {
+    if(Math.random() > 0.35) w.classList.add('lit');
+    setInterval(() => {
+      if(Math.random() > 0.8) w.classList.toggle('lit');
+    }, 2000 + Math.random() * 3000);
+  });
+}
+
+// ===== MODE SELECTION =====
+window.selectMode = function(mode) {
+  appMode = mode;
+
+  if(mode === 'mvp') {
+    // Animate chosen building then navigate
+    gsap.to('#home-mvp', {scale:1.06, duration:0.18, ease:'power2.in', onComplete:() => {
+      gsap.to('#home-mvp', {scale:1, duration:0.12});
+      gsap.to('#home-villa', {opacity:0.3, duration:0.3});
+      setTimeout(() => navigateToSlide(2, 'forward'), 320);
+    }});
+  } else {
+    // Show coming soon overlay
+    document.getElementById('villa-soon').classList.add('active');
+  }
+};
 
 // ===== NAVIGATION =====
 function buildNavDots() {
@@ -1716,9 +1997,10 @@ function bindEvents() {
   });
   document.getElementById('prev-btn').addEventListener('click',()=>navigateToSlide(currentSlide-1,'backward'));
   document.getElementById('next-btn').addEventListener('click',()=>navigateToSlide(currentSlide+1,'forward'));
-  // Title CTA "click to begin"
-  const titleCta = document.querySelector('.title-cta');
-  if(titleCta) titleCta.addEventListener('click', function(e){ e.stopPropagation(); navigateToSlide(2,'forward'); });
+  // Keyboard shortcut: Escape closes villa coming soon overlay
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') document.getElementById('villa-soon')?.classList.remove('active');
+  });
 
   // Scenario slider — debounced live updates
   const offshoreSlider = document.getElementById('offshore-slider');

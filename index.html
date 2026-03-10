@@ -140,9 +140,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .villa-enter{background:linear-gradient(135deg,#7c5cfc,#a78bfa);color:#fff}
 .enter-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
 /* Globe divider */
-.homes-or{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:120px;gap:10px;flex-shrink:0;width:180px;position:relative;user-select:none}
-#globe-canvas{width:160px;height:160px;border-radius:50%;display:block;box-shadow:0 0 40px rgba(0,212,255,0.22),0 0 80px rgba(0,212,255,0.08),0 0 4px rgba(0,212,255,0.4);transition:box-shadow .4s}
-#globe-canvas:hover{box-shadow:0 0 55px rgba(0,212,255,0.35),0 0 110px rgba(0,212,255,0.12),0 0 4px rgba(0,212,255,0.5)}
+.homes-or{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:120px;gap:10px;flex-shrink:0;width:220px;position:relative;user-select:none}
+#globe-canvas{width:200px;height:200px;border-radius:50%;display:block;box-shadow:0 0 45px rgba(0,212,255,0.25),0 0 90px rgba(0,212,255,0.09),0 0 5px rgba(0,212,255,0.45);transition:box-shadow .4s}
+#globe-canvas:hover{box-shadow:0 0 60px rgba(0,212,255,0.38),0 0 120px rgba(0,212,255,0.14),0 0 5px rgba(0,212,255,0.55)}
 .globe-or-label{font-size:.68rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);opacity:.45;font-style:italic}
 /* Villa Coming Soon Overlay */
 .villa-soon-overlay{position:fixed;inset:0;background:rgba(5,8,20,.85);backdrop-filter:blur(12px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .4s;cursor:pointer}
@@ -903,7 +903,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
       <!-- Globe divider -->
       <div class="homes-or">
-        <canvas id="globe-canvas" width="160" height="160"></canvas>
+        <canvas id="globe-canvas" width="200" height="200"></canvas>
         <span class="globe-or-label">or</span>
       </div>
 
@@ -1897,7 +1897,7 @@ function initGlobe3D() {
     window._g3d = null;
   }
 
-  const W = 160, H = 160;
+  const W = 200, H = 200;
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -1907,8 +1907,8 @@ function initGlobe3D() {
   renderer.setClearColor(0x000000, 0); // transparent bg
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-  camera.position.z = 2.75;
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  camera.position.z = 2.8;
 
   // --- Starfield ---
   const starGeo = new THREE.BufferGeometry();
@@ -1920,38 +1920,45 @@ function initGlobe3D() {
   ));
 
   // --- Earth sphere ---
+  // Start with an ocean-blue fallback colour; swap in texture once loaded
   const loader = new THREE.TextureLoader();
   const earthMat = new THREE.MeshPhongMaterial({
-    map: loader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r134/examples/textures/planets/earth_atmos_2048.jpg'),
-    shininess: 18,
-    specular: new THREE.Color(0x1a3a5c)
+    color: 0x1a4a7a,   // deep ocean blue shows while texture is fetching
+    shininess: 8,      // low shininess — no specular hotspot
+    specular: new THREE.Color(0x0a1e33)
   });
+  loader.load(
+    'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r134/examples/textures/planets/earth_atmos_2048.jpg',
+    (tex) => { earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; },
+    undefined,
+    () => { /* fallback: keep ocean blue */ }
+  );
   const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), earthMat);
   scene.add(earth);
 
   // --- Atmosphere inner glow ---
   scene.add(new THREE.Mesh(
     new THREE.SphereGeometry(1.055, 32, 16),
-    new THREE.MeshPhongMaterial({ color: 0x006699, transparent: true, opacity: 0.055, side: THREE.FrontSide, depthWrite: false })
+    new THREE.MeshPhongMaterial({ color: 0x0077bb, transparent: true, opacity: 0.065, side: THREE.FrontSide, depthWrite: false })
   ));
 
-  // --- Halo ring (outer, additive-like) ---
+  // --- Halo ring (outer cyan limb) ---
   scene.add(new THREE.Mesh(
     new THREE.SphereGeometry(1.13, 32, 16),
-    new THREE.MeshPhongMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.038, side: THREE.BackSide, depthWrite: false })
+    new THREE.MeshPhongMaterial({ color: 0x00aaff, transparent: true, opacity: 0.042, side: THREE.BackSide, depthWrite: false })
   ));
 
   // --- Lighting ---
-  // Dark space ambient
-  scene.add(new THREE.AmbientLight(0x112255, 0.55));
-  // Warm directional sun (top-right-front)
-  const sun = new THREE.DirectionalLight(0xfff0dd, 1.35);
-  sun.position.set(4, 2.5, 3.5);
+  // Strong ambient: both day AND night sides show the texture clearly
+  scene.add(new THREE.AmbientLight(0x334466, 1.6));
+  // Sun from the SIDE (top-right, slightly behind globe) — not front-facing — no torch effect
+  const sun = new THREE.DirectionalLight(0xfff5e0, 0.85);
+  sun.position.set(5, 3, -0.8);  // far right, above, slightly behind — natural side lighting
   scene.add(sun);
-  // Cool dark-side fill
-  const fill = new THREE.DirectionalLight(0x001133, 0.25);
-  fill.position.set(-3, -1.5, -2);
-  scene.add(fill);
+  // Soft blue rim from the back-left (limb atmosphere glow)
+  const rim = new THREE.DirectionalLight(0x0044aa, 0.3);
+  rim.position.set(-4, 0, -3);
+  scene.add(rim);
 
   // --- Animate ---
   const g3d = { renderer, raf: null };

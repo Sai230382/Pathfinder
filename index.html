@@ -605,6 +605,47 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .size-badge.active,.region-badge.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.1);color:var(--accent-cyan);font-weight:600}
 .size-desc{font-size:.7rem;color:var(--text-muted);font-weight:400}
 
+/* === SLIDE 2: REDESIGNED LAYOUT === */
+.slide2-context-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;position:relative;z-index:1;margin-bottom:14px}
+.slide2-meta-bar{display:grid;grid-template-columns:1fr 1fr;gap:16px;position:relative;z-index:1;margin-bottom:20px}
+/* Model Selector */
+.model-selector-section{position:relative;z-index:1;margin-bottom:20px}
+.model-selector-hdr{margin-bottom:14px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.model-selector-hdr h3{font-family:var(--font-heading);font-size:1.2rem;color:var(--text-primary)}
+.model-selector-hdr p{font-size:.8rem;color:var(--text-muted)}
+.model-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.model-card{background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:14px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;user-select:none}
+.model-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .25s}
+.model-card[data-model="liftShift"]::before{background:var(--accent-green)}
+.model-card[data-model="transformOffshore"]::before{background:var(--accent-cyan)}
+.model-card[data-model="transformOnsite"]::before{background:var(--accent-purple)}
+.model-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.model-card[data-model="liftShift"]:hover{border-color:var(--accent-green)}
+.model-card[data-model="transformOffshore"]:hover{border-color:var(--accent-cyan)}
+.model-card[data-model="transformOnsite"]:hover{border-color:var(--accent-purple)}
+.model-card:hover::before,.model-card.active::before{opacity:1}
+.model-card[data-model="liftShift"].active{border-color:var(--accent-green);background:rgba(16,185,129,.06)}
+.model-card[data-model="transformOffshore"].active{border-color:var(--accent-cyan);background:rgba(0,212,255,.06)}
+.model-card[data-model="transformOnsite"].active{border-color:var(--accent-purple);background:rgba(124,92,252,.06)}
+.model-card-select{position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;border:2px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;transition:all .25s;color:transparent;font-size:.75rem;font-weight:700}
+.model-card[data-model="liftShift"].active .model-card-select{background:var(--accent-green);border-color:var(--accent-green);color:#0a1628}
+.model-card[data-model="transformOffshore"].active .model-card-select{background:var(--accent-cyan);border-color:var(--accent-cyan);color:#0a1628}
+.model-card[data-model="transformOnsite"].active .model-card-select{background:var(--accent-purple);border-color:var(--accent-purple);color:#fff}
+.model-card-tag{display:inline-flex;align-items:center;font-size:.68rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:11px}
+.model-card-tag.fast{background:rgba(16,185,129,.15);color:var(--accent-green);border:1px solid rgba(16,185,129,.3)}
+.model-card-tag.rec{background:rgba(0,212,255,.15);color:var(--accent-cyan);border:1px solid rgba(0,212,255,.3)}
+.model-card-tag.onsite{background:rgba(124,92,252,.15);color:var(--accent-purple);border:1px solid rgba(124,92,252,.3)}
+.model-card-name{font-family:var(--font-heading);font-size:1.05rem;color:var(--text-primary);margin-bottom:6px;line-height:1.25;padding-right:28px}
+.model-card-sub{font-size:.75rem;font-weight:600;margin-bottom:9px;opacity:.85}
+.model-card[data-model="liftShift"] .model-card-sub{color:var(--accent-green)}
+.model-card[data-model="transformOffshore"] .model-card-sub{color:var(--accent-cyan)}
+.model-card[data-model="transformOnsite"] .model-card-sub{color:var(--accent-purple)}
+.model-card-desc{font-size:.78rem;color:var(--text-muted);line-height:1.55;margin-bottom:12px}
+.model-card-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px}
+.model-metric{display:flex;flex-direction:column;gap:3px}
+.model-metric-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600}
+.model-metric-val{font-size:.75rem;font-weight:600;color:var(--text-secondary)}
+
 /* === SLIDE 3: PAIN BOARD === */
 .slide-painboard{padding-top:32px}
 .digital-rain-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.25}
@@ -1016,15 +1057,17 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     <div class="globe-bg"></div>
     <h2 class="slide-heading">Client Profile</h2>
     <p class="slide-subtitle">Set the context — this shapes the analysis and recommendations</p>
-    <div class="context-form">
+
+    <!-- Row 1: Industry | Horizontal | Client Name -->
+    <div class="slide2-context-bar">
       <div class="form-card">
         <h3><span class="card-icon">🏢</span> Industry</h3>
         <select id="ctx-industry" class="ctx-select" onchange="updateDiagnosticContext()">
           <option value="">Select industry...</option>
           <option value="healthcare">Healthcare</option>
-          <option value="financial_services">Banking & Financial Services</option>
+          <option value="financial_services">Banking &amp; Financial Services</option>
           <option value="retail">Retail</option>
-          <option value="telecom">Communications, Media & Technology</option>
+          <option value="telecom">Communications, Media &amp; Technology</option>
           <option value="utilities">Utilities</option>
           <option value="diversified">Diversified</option>
         </select>
@@ -1033,7 +1076,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <h3><span class="card-icon">📐</span> Horizontal</h3>
         <select id="ctx-horizontal" class="ctx-select" onchange="updateDiagnosticContext()">
           <option value="">Select horizontal...</option>
-          <option value="customer_ops">Customer Ops & CX</option>
+          <option value="customer_ops">Customer Ops &amp; CX</option>
           <option value="back_office">Back Office</option>
           <option value="mortgages">Mortgages</option>
           <option value="collections">Collections</option>
@@ -1041,10 +1084,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <div id="horiz-filter-hint" class="horiz-hint" style="display:none"></div>
       </div>
       <div class="form-card">
+        <h3><span class="card-icon">👤</span> Client Name <span style="font-size:.7rem;color:var(--text-muted);font-weight:400">(optional)</span></h3>
+        <input type="text" id="ctx-client-name" class="ctx-input" placeholder="Client / Organization name" onchange="updateDiagnosticContext()">
+      </div>
+    </div>
+
+    <!-- Row 2: Company Size | Region -->
+    <div class="slide2-meta-bar">
+      <div class="form-card">
         <h3><span class="card-icon">📏</span> Company Size</h3>
         <div class="size-badges">
           <button class="size-badge" data-size="smb" onclick="selectSize(this)">SMB<span class="size-desc">&lt; 500 employees</span></button>
-          <button class="size-badge active" data-size="mid" onclick="selectSize(this)">Mid-Market<span class="size-desc">500 - 5,000</span></button>
+          <button class="size-badge active" data-size="mid" onclick="selectSize(this)">Mid-Market<span class="size-desc">500 – 5,000</span></button>
           <button class="size-badge" data-size="enterprise" onclick="selectSize(this)">Enterprise<span class="size-desc">5,000+</span></button>
         </div>
       </div>
@@ -1057,12 +1108,65 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
           <button class="region-badge" data-region="global" onclick="selectRegion(this)">Global</button>
         </div>
       </div>
-      <div class="form-card">
-        <h3><span class="card-icon">👤</span> Client Details <span style="font-size:.7rem;color:var(--text-muted);font-weight:400">(optional)</span></h3>
-        <input type="text" id="ctx-client-name" class="ctx-input" placeholder="Client / Organization name" onchange="updateDiagnosticContext()">
-      </div>
-      <button class="analyze-btn" style="grid-column:1/-1" onclick="navigateToSlide(3,'forward')">Begin Diagnostic →</button>
     </div>
+
+    <!-- Row 3: Transformation Model Selector -->
+    <div class="model-selector-section">
+      <div class="model-selector-hdr">
+        <h3>Choose Transformation Model</h3>
+        <p>Determines the analytical framework, financial engine and recommendations</p>
+      </div>
+      <div class="model-cards-grid">
+
+        <!-- Model 1: Lift & Shift -->
+        <div class="model-card" data-model="liftShift" onclick="selectTransformationModel('liftShift')">
+          <div class="model-card-select">✓</div>
+          <div class="model-card-tag fast">01 — Fastest to Value</div>
+          <div class="model-card-name">Lift &amp; Shift</div>
+          <div class="model-card-sub">Pure Offshore Arbitrage</div>
+          <div class="model-card-desc">Move work to lower-cost locations with minimal process change. Fastest route to cost reduction through labour arbitrage.</div>
+          <div class="model-card-metrics">
+            <div class="model-metric"><span class="model-metric-lbl">Speed</span><span class="model-metric-val">Fast</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">ROI</span><span class="model-metric-val">Moderate</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Risk</span><span class="model-metric-val">Low</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Investment</span><span class="model-metric-val">Low</span></div>
+          </div>
+        </div>
+
+        <!-- Model 2: Transform & Offshore -->
+        <div class="model-card active" data-model="transformOffshore" onclick="selectTransformationModel('transformOffshore')">
+          <div class="model-card-select">✓</div>
+          <div class="model-card-tag rec">02 — Recommended</div>
+          <div class="model-card-name">Transform &amp; Offshore</div>
+          <div class="model-card-sub">Automate Onsite + Offshore Human Work</div>
+          <div class="model-card-desc">Automate high-amenability processes at source (e.g. order management). Offshore human-intensive work (e.g. complaints). Strongest commercial model.</div>
+          <div class="model-card-metrics">
+            <div class="model-metric"><span class="model-metric-lbl">Speed</span><span class="model-metric-val">Medium</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">ROI</span><span class="model-metric-val">High</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Risk</span><span class="model-metric-val">Medium</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Investment</span><span class="model-metric-val">Medium</span></div>
+          </div>
+        </div>
+
+        <!-- Model 3: Transform Onsite -->
+        <div class="model-card" data-model="transformOnsite" onclick="selectTransformationModel('transformOnsite')">
+          <div class="model-card-select">✓</div>
+          <div class="model-card-tag onsite">03 — No Offshore</div>
+          <div class="model-card-name">Transform Onsite</div>
+          <div class="model-card-sub">Pure Transformation — No Offshoring</div>
+          <div class="model-card-desc">Reimagine and optimise the operation at the current location. Ideal where regulation, client preference or culture prevents offshoring.</div>
+          <div class="model-card-metrics">
+            <div class="model-metric"><span class="model-metric-lbl">Speed</span><span class="model-metric-val">Slow</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">ROI</span><span class="model-metric-val">Med-High</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Risk</span><span class="model-metric-val">Low-Med</span></div>
+            <div class="model-metric"><span class="model-metric-lbl">Investment</span><span class="model-metric-val">High</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="analyze-btn" onclick="navigateToSlide(3,'forward')">Begin Diagnostic →</button>
   </section>
 
   <!-- SLIDE 3: PAIN POINT BOARD (PATHFINDER) -->
@@ -1847,6 +1951,7 @@ let formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:1
 let diagnosticContext = { industry: '', horizontal: '', companySize: 'mid', region: 'americas', clientName: '' };
 let selectedPainPoints = { people: [], process: [], technology: [] };
 let clientNotes = '';
+let transformationModel = 'transformOffshore'; // 'liftShift' | 'transformOffshore' | 'transformOnsite'
 
 // ===== INIT =====
 function init() {
@@ -4720,6 +4825,13 @@ window.selectRegion = function(el) {
   document.querySelectorAll('.region-badge').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   diagnosticContext.region = el.dataset.region;
+};
+
+window.selectTransformationModel = function(model) {
+  transformationModel = model;
+  document.querySelectorAll('.model-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.model === model);
+  });
 };
 
 // ===== SLIDE 3: PAIN POINT BOARD =====

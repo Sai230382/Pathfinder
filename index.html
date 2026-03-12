@@ -215,7 +215,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 @keyframes btn-spin{to{transform:rotate(360deg)}}
 
 /* === SEGMENT INPUTS === */
-.segment-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.segment-inputs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .segment-input-group{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.02);padding:14px;border-radius:8px;border:1px solid rgba(255,255,255,.04);transition:border-color .2s}
 .segment-input-group:hover{border-color:rgba(0,212,255,.2)}
 .segment-header{display:flex;align-items:center;gap:6px}
@@ -869,8 +869,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .lever-panel-title{font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
 .lever-panel-meta{font-size:.72rem;color:var(--text-muted)}
-.lever-cards-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-@media(max-width:1100px){.lever-cards-row{grid-template-columns:repeat(3,1fr)}}
+.lever-cards-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
 .lever-card{display:flex;flex-direction:column;gap:5px;padding:10px 12px 8px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:10px;cursor:pointer;transition:all .2s;position:relative;user-select:none}
 .lever-card:hover{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.04)}
 .lever-card.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.07)}
@@ -882,8 +881,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-bucket-tag.augment{background:rgba(124,92,252,.15);color:#7c5cfc}
 .lever-bucket-tag.offshore{background:rgba(0,212,255,.15);color:#00d4ff}
 .lever-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:3px}
-.lever-score{font-size:.62rem;font-weight:700;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text-secondary);white-space:nowrap;flex-shrink:0}
-.lever-score.high{background:rgba(0,212,255,.12);color:var(--accent-cyan)}
+.lever-fit{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
+.lever-fit.strong{background:rgba(0,212,255,.15);color:var(--accent-cyan)}
+.lever-fit.good{background:rgba(16,185,129,.15);color:#10b981}
+.lever-fit.fair{background:rgba(255,255,255,.07);color:var(--text-muted)}
+.lever-desc{font-size:.65rem;color:var(--text-secondary);line-height:1.35;margin-bottom:2px}
+/* Slide 7 lever cards */
+.ts-lever-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.ts-lever-fte{font-size:.62rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:1px 6px;border-radius:3px}
+.ts-lever-stack{font-size:.62rem;color:var(--text-muted);margin-top:4px;border-top:1px solid rgba(255,255,255,.05);padding-top:4px;font-style:italic}
 .lever-name{font-size:.78rem;font-weight:600;color:var(--text-primary);line-height:1.2}
 .lever-fte{font-size:.67rem;color:var(--text-muted)}
 .lever-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
@@ -1932,12 +1938,13 @@ const ICONS = {Phone:'\u{1F4DE}',Email:'\u{1F4E7}',Chat:'\u{1F4AC}',Social:'\u{1
 
 // ===== CONTACT SEGMENTS =====
 const CONTACT_SEGMENTS = {
-  billing:        { name:'Billing & Payments',  icon:'\u{1F4B3}', complexity:'Simple',         offshoreAffinity:0.90, automationPotential:0.70 },
-  techSupport:    { name:'Technical Support',   icon:'\u{1F527}', complexity:'Medium-Complex',  offshoreAffinity:0.60, automationPotential:0.45 },
-  accountMgmt:    { name:'Account Management',  icon:'\u{1F4C1}', complexity:'Medium',          offshoreAffinity:0.80, automationPotential:0.55 },
-  salesRetention: { name:'Sales & Retention',   icon:'\u{1F4C8}', complexity:'Complex',         offshoreAffinity:0.40, automationPotential:0.30 },
-  orderMgmt:      { name:'Order Management',    icon:'\u{1F4E6}', complexity:'Simple-Medium',   offshoreAffinity:0.85, automationPotential:0.75 },
-  generalInquiry: { name:'General Inquiries',   icon:'\u{2753}',  complexity:'Simple',          offshoreAffinity:0.95, automationPotential:0.85 }
+  billing:        { name:'Billing & Payments',    icon:'\u{1F4B3}', complexity:'Simple',         offshoreAffinity:0.90, automationPotential:0.70 },
+  techSupport:    { name:'Technical Support',     icon:'\u{1F527}', complexity:'Medium-Complex',  offshoreAffinity:0.60, automationPotential:0.45 },
+  accountMgmt:    { name:'Account Management',    icon:'\u{1F4C1}', complexity:'Medium',          offshoreAffinity:0.80, automationPotential:0.55 },
+  salesRetention: { name:'Sales & Retention',     icon:'\u{1F4C8}', complexity:'Complex',         offshoreAffinity:0.40, automationPotential:0.30 },
+  orderMgmt:      { name:'Order Management',      icon:'\u{1F4E6}', complexity:'Simple-Medium',   offshoreAffinity:0.85, automationPotential:0.75 },
+  generalInquiry: { name:'General Inquiries',     icon:'\u{2753}',  complexity:'Simple',          offshoreAffinity:0.95, automationPotential:0.85 },
+  complaints:     { name:'Complaints & Disputes', icon:'\u26A0',    complexity:'Complex',         offshoreAffinity:0.30, automationPotential:0.20 }
 };
 
 // ===== INDUSTRY ↔ HORIZONTAL VALIDITY MAP =====
@@ -2017,7 +2024,7 @@ let formLocations = [
 let formTiers = {L1:50,L2:30,L3:20};
 let formRates = {};
 let formOffshoreSelections = {IN:true,PH:true};
-let formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10};
+let formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10, complaints:0};
 
 // Diagnostic context state (Pathfinder)
 let diagnosticContext = { industry: '', horizontal: '', companySize: 'mid', region: 'americas', clientName: '' };
@@ -2645,7 +2652,8 @@ function getSegmentDescription(key) {
     accountMgmt:'Account changes, upgrades, closures',
     salesRetention:'Upsell, renewals, churn prevention',
     orderMgmt:'Order status, shipping, returns',
-    generalInquiry:'FAQs, info requests, routing'
+    generalInquiry:'FAQs, info requests, routing',
+    complaints:'Formal complaints, disputes, escalations'
   };
   return descs[key]||'';
 }
@@ -4424,7 +4432,7 @@ function updateBeforeAfterPanel(impact) {
     <div class="ba-column after"><h4>Proposed State</h4><div class="ba-cards">${afterCards}</div></div>`;
 }
 
-// ===== SOLUTION COLUMNS ON SLIDE 7 =====
+// ===== SOLUTION COLUMNS ON SLIDE 7 — powered by Transformation KB =====
 function renderTransformSolutions() {
   const leftCol = document.getElementById('transform-solutions-left');
   const rightCol = document.getElementById('transform-solutions-right');
@@ -4436,93 +4444,108 @@ function renderTransformSolutions() {
     ...selectedPainPoints.technology
   ];
 
-  if (allPainPoints.length === 0) {
-    leftCol.innerHTML = '<div class="ts-empty">Add pain points on the Diagnostic board to see solution recommendations here.</div>';
-    // Keep the before-after panel in right col
-    const baPanel = rightCol.querySelector('.before-after-panel');
+  const scenario  = (typeof currentScenario !== 'undefined' ? currentScenario : 'Moderate').toLowerCase();
+  const scenKey   = scenario === 'aggressive' ? 'aggressive' : scenario === 'conservative' ? 'conservative' : 'moderate';
+  const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
+  const painText  = allPainPoints.join(' ').toLowerCase();
+
+  // ── Segment badges (top 3 by volume) ──────────────────────────────────
+  let segBadgesHTML = '';
+  if (CONFIG && CONFIG.segments) {
+    const topSegs = Object.entries(CONFIG.segments).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]).slice(0,3);
+    if (topSegs.length > 0) {
+      segBadgesHTML = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'
+        + topSegs.map(([key, pct]) => {
+          const seg = CONTACT_SEGMENTS[key] || {};
+          return `<span class="segment-badge">${seg.icon || ''} ${seg.name || key} ${pct}%</span>`;
+        }).join('') + '</div>';
+    }
+  }
+
+  // ── Decide which levers to show ────────────────────────────────────────
+  // Priority: consultant-activated on Slide 6 > top recommended > empty
+  const hasKB      = typeof TRANSFORMATION_KB !== 'undefined' && typeof LEVER_BUCKETS !== 'undefined';
+  const hasRec     = typeof getRecommendedLevers === 'function';
+  const hasActived = typeof activatedLevers !== 'undefined' && activatedLevers.size > 0;
+
+  let leversToShow = [];
+  if (hasActived && hasKB) {
+    leversToShow = TRANSFORMATION_KB
+      .filter(l => activatedLevers.has(l.id))
+      .map(l => ({ ...l, _painMatches: (l.painTriggers || []).filter(t => painText.includes(t.toLowerCase())).length }));
+  } else if (hasRec && allPainPoints.length > 0) {
+    leversToShow = getRecommendedLevers(allPainPoints, diagnosticContext.industry, diagnosticContext.horizontal, transformationModel, segConfig, 6);
+  }
+
+  // ── Inject segment risk callouts as synthetic levers ───────────────────
+  if (CONFIG && CONFIG.segments) {
+    Object.entries(CONFIG.segments)
+      .filter(([k, v]) => v >= 15 && CONTACT_SEGMENTS[k] && getEffSeg(k).offshoreAffinity < 0.5)
+      .forEach(([key, pct]) => {
+        const seg = CONTACT_SEGMENTS[key] || {};
+        const aff = Math.round(getEffSeg(key).offshoreAffinity * 100);
+        leversToShow.push({
+          _synthetic: true, bucket: 'optimise',
+          name: (seg.name || key) + ' — Retain Onshore',
+          description: seg.name + ' (' + pct + '% of volume, ' + aff + '% offshore fit) has high regulatory and cultural sensitivity — optimise onshore with quality coaching and agent assist before any offshore consideration.',
+          fteImpact: null, stackLayers: null, _painMatches: 0
+        });
+      });
+  }
+
+  // ── Empty state ────────────────────────────────────────────────────────
+  const baPanel = rightCol.querySelector('.before-after-panel');
+  if (leversToShow.length === 0) {
+    leftCol.innerHTML = segBadgesHTML + '<div class="ts-empty">Add pain points on Slide 3 and activate levers on Slide 6 to generate a personalised solution blueprint.</div>';
     rightCol.innerHTML = '';
     if (baPanel) rightCol.appendChild(baPanel);
     return;
   }
 
-  // Classify & generate recommendations
-  const classified = (typeof classifyPainPointsForSolutions === 'function')
-    ? classifyPainPointsForSolutions(allPainPoints)
-    : { process: [], automation: [], tech: [] };
+  // ── Group levers: left = Optimise + Automate | right = Augment + Offshore ──
+  const leftLevers  = leversToShow.filter(l => l.bucket === 'optimise' || l.bucket === 'automate');
+  const rightLevers = leversToShow.filter(l => l.bucket === 'augment'  || l.bucket === 'offshore');
 
-  const dataCtx = collectDataContext();
-
-  let recs = { process: [], automation: [], tech: [] };
-  if (typeof buildDataDrivenRecommendations === 'function') {
-    try { recs = buildDataDrivenRecommendations(classified, dataCtx); }
-    catch (e) { console.warn('Rec builder error:', e); }
+  // ── Build a lever card ─────────────────────────────────────────────────
+  function buildLeverCard(lever) {
+    const bucket      = (hasKB ? LEVER_BUCKETS[lever.bucket] : null) || { label: lever.bucket };
+    const fte         = lever.fteImpact ? ((lever.fteImpact[scenKey] || lever.fteImpact.moderate) || '') : '';
+    const fteTag      = fte   ? `<span class="ts-lever-fte">${fte} FTE reduction</span>` : '';
+    const triggerTxt  = lever._painMatches > 0 ? `<div class="ts-trigger">${lever._painMatches} pain trigger${lever._painMatches > 1 ? 's' : ''} matched</div>` : '';
+    const stackLine   = lever.stackLayers && lever.stackLayers.length > 0 ? `<div class="ts-lever-stack">${lever.stackLayers[0]}</div>` : '';
+    return `<div class="ts-bullet">
+      <div class="ts-lever-header">
+        <span class="lever-bucket-tag ${lever.bucket}">${bucket.label}</span>
+        ${fteTag}
+      </div>
+      <div class="ts-bullet-title">${lever.name}</div>
+      ${triggerTxt}
+      <div class="ts-bullet-body">${lever.description}</div>
+      ${stackLine}
+    </div>`;
   }
 
-  // Build HTML — Process + Automation in left col, Tech in right col
-  function buildGroupHTML(label, icon, items) {
-    let html = '<div class="ts-group-label"><span class="ts-icon">' + icon + '</span>' + label + '</div>';
-    if (items.length === 0) {
-      html += '<div class="ts-empty">No matching recommendations</div>';
-    } else {
-      for (const r of items) {
-        // Split insight into bullet points by → arrows or sentences
-        const parts = r.insight.includes('\u2192')
-          ? r.insight.split(/\s*\u2192\s*/).filter(s => s.trim().length > 3)
-          : r.insight.split(/(?<=\.)\s+/).filter(s => s.trim().length > 5);
-        let bodyHTML = '';
-        if (parts.length > 1) {
-          bodyHTML = '<ul class="ts-bullet-list">' + parts.map(s => { const t = s.trim(); return '<li>' + t.charAt(0).toUpperCase() + t.slice(1) + '</li>'; }).join('') + '</ul>';
-        } else {
-          bodyHTML = '<div class="ts-bullet-body">' + r.insight + '</div>';
-        }
-        // Show triggering pain points if available
-        const triggers = r.matchedPainTexts || [];
-        const triggerHTML = triggers.length > 0 ? '<div class="ts-trigger">' + triggers.slice(0,2).join(' · ') + '</div>' : '';
-        html += '<div class="ts-bullet"><div class="ts-bullet-title">' + r.title + '</div>' + triggerHTML + bodyHTML + '</div>';
-      }
-    }
-    return html;
+  // ── Column header ──────────────────────────────────────────────────────
+  function colHdr(label, icon) {
+    return `<div class="ts-group-label"><span class="ts-icon">${icon}</span>${label}</div>`;
   }
 
-  // Build segment insight badges
-  let segBadgesHTML = '';
-  if (CONFIG.segments) {
-    const topSegs = Object.entries(CONFIG.segments)
-      .filter(([k, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
-    if (topSegs.length > 0) {
-      segBadgesHTML = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'
-        + topSegs.map(([key, pct]) => {
-          const seg = CONTACT_SEGMENTS[key];
-          return `<span class="segment-badge">${seg.icon} ${seg.name} ${pct}%</span>`;
-        }).join('') + '</div>';
-    }
-    // Add risk callouts for low-affinity high-volume segments
-    const riskSegs = Object.entries(CONFIG.segments)
-      .filter(([k, v]) => v >= 15 && CONTACT_SEGMENTS[k] && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
-    for (const [key, pct] of riskSegs) {
-      const seg = CONTACT_SEGMENTS[key];
-      recs.process.push({
-        title: seg.name + ' — Retain Onshore',
-        insight: seg.name + ' (' + pct + '% of volume) requires cultural nuance — retain onshore with specialized training'
-      });
-    }
-  }
+  // ── Source note ────────────────────────────────────────────────────────
+  const sourceNote = hasActived
+    ? `<div style="font-size:.66rem;color:var(--accent-cyan);font-weight:600;margin-bottom:6px">&#9654; ${activatedLevers.size} lever${activatedLevers.size > 1 ? 's' : ''} activated on Slide 6</div>`
+    : `<div style="font-size:.66rem;color:var(--text-muted);margin-bottom:6px">Top recommended — activate specific levers on Slide 6 to customise</div>`;
 
-  leftCol.innerHTML = segBadgesHTML
-                    + buildGroupHTML('Process', '\uD83D\uDCCB', recs.process)
-                    + buildGroupHTML('Automation', '\uD83E\uDD16', recs.automation);
+  // ── Populate columns ───────────────────────────────────────────────────
+  leftCol.innerHTML  = segBadgesHTML + sourceNote
+    + (leftLevers.length  > 0 ? colHdr('Process & Automation', '\u2699\uFE0F') + leftLevers.map(buildLeverCard).join('')  : '<div class="ts-empty">No process or automation levers selected</div>');
 
-  // Preserve the before-after panel reference
-  const baPanel = rightCol.querySelector('.before-after-panel');
-  rightCol.innerHTML = buildGroupHTML('Technology', '\uD83D\uDD27', recs.tech);
+  rightCol.innerHTML = rightLevers.length > 0
+    ? colHdr('Augment & Offshore', '\uD83E\uDDE0') + rightLevers.map(buildLeverCard).join('')
+    : '<div class="ts-empty">No augment or offshore levers selected</div>';
   if (baPanel) rightCol.appendChild(baPanel);
 
-  // Animate bullets in
-  gsap.from('.transform-solution-col .ts-bullet', {
-    y: 12, opacity: 0, duration: 0.3, stagger: 0.08, ease: 'power2.out', delay: 0.5
-  });
+  // ── Animate in ────────────────────────────────────────────────────────
+  gsap.from('.transform-solution-col .ts-bullet', { y: 12, opacity: 0, duration: 0.3, stagger: 0.08, ease: 'power2.out', delay: 0.5 });
 }
 
 // ===== AI THINKING OVERLAY =====
@@ -5005,14 +5028,17 @@ function renderLeverPanel() {
         const isActive = activatedLevers.has(lever.id);
         const fte      = (lever.fteImpact || {})[scenKey] || (lever.fteImpact || {}).moderate || '—';
         const score    = lever._score || 0;
-        const scoreHigh = score >= 30;
+        const fitLabel = score >= 35 ? 'Strong Fit' : score >= 20 ? 'Good Fit' : 'Fair Fit';
+        const fitClass = score >= 35 ? 'strong'     : score >= 20 ? 'good'     : 'fair';
+        const desc     = (lever.description || '').slice(0, 72) + ((lever.description || '').length > 72 ? '…' : '');
         return `<div class="lever-card ${isActive ? 'active' : ''}" onclick="toggleLever('${lever.id}')">
           <span class="lever-card-check">✓ ON</span>
           <div class="lever-card-top">
             <span class="lever-bucket-tag ${lever.bucket}">${bucket.label || lever.bucket}</span>
-            <span class="lever-score ${scoreHigh ? 'high' : ''}">Score ${score}</span>
+            <span class="lever-fit ${fitClass}">${fitLabel}</span>
           </div>
           <div class="lever-name">${lever.shortName || lever.name}</div>
+          <div class="lever-desc">${desc}</div>
           <div class="lever-fte">${fte} FTE reduction</div>
           <div class="lever-tags">
             ${lever._painMatches > 0 ? `<span class="lever-triggered">${lever._painMatches} trigger${lever._painMatches > 1 ? 's' : ''}</span>` : ''}

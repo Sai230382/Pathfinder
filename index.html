@@ -596,6 +596,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .globe-bg canvas{display:block}
 .context-form{display:grid;grid-template-columns:1fr 1fr;gap:20px;position:relative;z-index:1;padding-bottom:80px}
 .ctx-select{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.9rem;cursor:pointer}
+.horiz-hint{margin-top:7px;font-size:.75rem;color:var(--accent-yellow);opacity:.85;display:flex;align-items:center;gap:5px;letter-spacing:.2px}
+.horiz-hint::before{content:'⚠';font-size:.8rem}
 .ctx-input{width:100%;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-family:var(--font-body);font-size:.9rem}
 .size-badges,.region-badges{display:flex;gap:8px;flex-wrap:wrap}
 .size-badge,.region-badge{padding:10px 18px;border:1px solid var(--border-subtle);border-radius:8px;background:rgba(255,255,255,.02);color:var(--text-secondary);cursor:pointer;font-family:var(--font-body);font-size:.85rem;font-weight:500;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -1036,6 +1038,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
           <option value="mortgages">Mortgages</option>
           <option value="collections">Collections</option>
         </select>
+        <div id="horiz-filter-hint" class="horiz-hint" style="display:none"></div>
       </div>
       <div class="form-card">
         <h3><span class="card-icon">📏</span> Company Size</h3>
@@ -1761,6 +1764,26 @@ const CONTACT_SEGMENTS = {
   generalInquiry: { name:'General Inquiries',   icon:'\u{2753}',  complexity:'Simple',          offshoreAffinity:0.95, automationPotential:0.85 }
 };
 
+// ===== INDUSTRY ↔ HORIZONTAL VALIDITY MAP =====
+// Defines which horizontals are relevant for each industry.
+// Mortgages is a financial services concept — not applicable to Healthcare, Retail, CMT, Utilities.
+const INDUSTRY_HORIZONTAL_MAP = {
+  healthcare:         ['customer_ops', 'back_office', 'collections'],
+  financial_services: ['customer_ops', 'back_office', 'mortgages', 'collections'],
+  retail:             ['customer_ops', 'back_office', 'collections'],
+  telecom:            ['customer_ops', 'back_office', 'collections'],
+  utilities:          ['customer_ops', 'back_office', 'collections'],
+  diversified:        ['customer_ops', 'back_office', 'mortgages', 'collections']
+};
+
+// Human-readable names for hint messages
+const HORIZONTAL_LABELS = {
+  customer_ops: 'Customer Ops & CX',
+  back_office:  'Back Office',
+  mortgages:    'Mortgages',
+  collections:  'Collections'
+};
+
 // ===== CONFIG (rebuilt from form) =====
 let CONFIG = {
   locations: {
@@ -2052,7 +2075,7 @@ function navigateToSlide(target, direction) {
   try {
   switch(target) {
     case 1: initParticles(); playTitleAnimation(); break;
-    case 2: initGlobe(); break;
+    case 2: initGlobe(); filterHorizontalsByIndustry(diagnosticContext.industry); break;
     case 3: initPainBoard(); break;
     case 5: initCurrentStateMap(); buildPainSummaryPanel(); break;
     case 6: buildMatrix(); break;
@@ -4637,10 +4660,51 @@ function buildExecutiveSummary() {
 }
 
 // ===== SLIDE 2: CONTEXT FUNCTIONS =====
+
+// Filters the horizontal dropdown to only show options valid for the selected industry.
+// Clears the selection if the current horizontal becomes invalid.
+function filterHorizontalsByIndustry(industry) {
+  const horizSel  = document.getElementById('ctx-horizontal');
+  const hintEl    = document.getElementById('horiz-filter-hint');
+  if (!horizSel) return;
+
+  const validList = INDUSTRY_HORIZONTAL_MAP[industry] || null;
+  const currentVal = horizSel.value;
+
+  Array.from(horizSel.options).forEach(opt => {
+    if (!opt.value) return; // keep the placeholder
+    const isValid = !validList || validList.includes(opt.value);
+    opt.disabled = !isValid;
+    opt.style.display = isValid ? '' : 'none';
+    // If the currently selected horizontal is no longer valid, reset it
+    if (!isValid && opt.value === currentVal) {
+      horizSel.value = '';
+      diagnosticContext.horizontal = '';
+    }
+  });
+
+  // Show a soft hint explaining what was filtered and why
+  if (hintEl) {
+    if (validList && validList.length < 4 && industry) {
+      const allKeys = ['customer_ops', 'back_office', 'mortgages', 'collections'];
+      const removed = allKeys.filter(k => !validList.includes(k));
+      const removedNames = removed.map(k => HORIZONTAL_LABELS[k]).join(', ');
+      hintEl.textContent = removedNames + ' not applicable for this industry';
+      hintEl.style.display = 'block';
+    } else {
+      hintEl.style.display = 'none';
+    }
+  }
+}
+
 window.updateDiagnosticContext = function() {
   const sel = document.getElementById('ctx-industry');
   if (!sel) return;
   diagnosticContext.industry = sel.value;
+
+  // Re-filter horizontals whenever industry changes
+  filterHorizontalsByIndustry(sel.value);
+
   const horizSel = document.getElementById('ctx-horizontal');
   if (horizSel) diagnosticContext.horizontal = horizSel.value;
   diagnosticContext.clientName = document.getElementById('ctx-client-name')?.value || '';

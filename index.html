@@ -869,8 +869,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .lever-panel-title{font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
 .lever-panel-meta{font-size:.72rem;color:var(--text-muted)}
-.lever-cards-row{display:flex;gap:8px;flex-wrap:wrap}
-.lever-card{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:10px;cursor:pointer;transition:all .2s;flex:1;min-width:160px;max-width:240px;position:relative;user-select:none}
+.lever-cards-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media(max-width:1100px){.lever-cards-row{grid-template-columns:repeat(3,1fr)}}
+.lever-card{display:flex;flex-direction:column;gap:5px;padding:10px 12px 8px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:10px;cursor:pointer;transition:all .2s;position:relative;user-select:none}
 .lever-card:hover{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.04)}
 .lever-card.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.07)}
 .lever-card-check{position:absolute;top:6px;right:8px;font-size:.65rem;font-weight:700;color:var(--accent-cyan);opacity:0;transition:opacity .2s}
@@ -880,9 +881,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-bucket-tag.automate{background:rgba(245,158,11,.15);color:#f59e0b}
 .lever-bucket-tag.augment{background:rgba(124,92,252,.15);color:#7c5cfc}
 .lever-bucket-tag.offshore{background:rgba(0,212,255,.15);color:#00d4ff}
-.lever-name{font-size:.78rem;font-weight:600;color:var(--text-primary);line-height:1.2;margin-bottom:3px}
-.lever-fte{font-size:.68rem;color:var(--text-muted)}
-.lever-triggered{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(124,92,252,.15);color:var(--accent-purple);font-weight:600;margin-top:3px}
+.lever-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:3px}
+.lever-score{font-size:.62rem;font-weight:700;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text-secondary);white-space:nowrap;flex-shrink:0}
+.lever-score.high{background:rgba(0,212,255,.12);color:var(--accent-cyan)}
+.lever-name{font-size:.78rem;font-weight:600;color:var(--text-primary);line-height:1.2}
+.lever-fte{font-size:.67rem;color:var(--text-muted)}
+.lever-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+.lever-triggered{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(124,92,252,.15);color:var(--accent-purple);font-weight:600}
+.lever-tv{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.05);color:var(--text-muted);font-weight:500}
 .lever-empty{font-size:.78rem;color:var(--text-muted);padding:10px 0}
 </style>
 </head>
@@ -4994,17 +5000,23 @@ function renderLeverPanel() {
       <span class="lever-panel-meta">${topLevers.length} levers scored for this context — click to activate</span>
     </div>
     <div class="lever-cards-row">
-      ${topLevers.map(lever => {
+      ${topLevers.map((lever, idx) => {
         const bucket   = LEVER_BUCKETS[lever.bucket] || {};
         const isActive = activatedLevers.has(lever.id);
         const fte      = (lever.fteImpact || {})[scenKey] || (lever.fteImpact || {}).moderate || '—';
+        const score    = lever._score || 0;
+        const scoreHigh = score >= 30;
         return `<div class="lever-card ${isActive ? 'active' : ''}" onclick="toggleLever('${lever.id}')">
           <span class="lever-card-check">✓ ON</span>
-          <div>
+          <div class="lever-card-top">
             <span class="lever-bucket-tag ${lever.bucket}">${bucket.label || lever.bucket}</span>
-            <div class="lever-name">${lever.shortName || lever.name}</div>
-            <div class="lever-fte">${fte} FTE reduction</div>
-            ${lever._painMatches > 0 ? `<span class="lever-triggered">${lever._painMatches} pain trigger${lever._painMatches > 1 ? 's' : ''}</span>` : ''}
+            <span class="lever-score ${scoreHigh ? 'high' : ''}">Score ${score}</span>
+          </div>
+          <div class="lever-name">${lever.shortName || lever.name}</div>
+          <div class="lever-fte">${fte} FTE reduction</div>
+          <div class="lever-tags">
+            ${lever._painMatches > 0 ? `<span class="lever-triggered">${lever._painMatches} trigger${lever._painMatches > 1 ? 's' : ''}</span>` : ''}
+            <span class="lever-tv">${lever.timeToValue || ''}</span>
           </div>
         </div>`;
       }).join('')}

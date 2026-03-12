@@ -646,6 +646,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .model-metric-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600}
 .model-metric-val{font-size:.75rem;font-weight:600;color:var(--text-secondary)}
 
+/* === LANGUAGE COMPATIBILITY WARNINGS === */
+.lang-warn-container{margin-top:12px;display:none}
+.lang-warn-header{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:var(--accent-yellow);margin-bottom:8px;text-transform:uppercase;letter-spacing:.9px}
+.lang-warn-count{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:700}
+.lang-warn-item{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-left:3px solid var(--accent-yellow);border-radius:8px;padding:9px 13px;margin-bottom:6px;font-size:.78rem;color:var(--text-secondary);line-height:1.55}
+.lang-warn-item:last-child{margin-bottom:0}
+.lang-warn-score{font-weight:700;padding:1px 6px;border-radius:4px;font-size:.74rem}
+.lang-warn-score.low{background:rgba(239,68,68,.15);color:var(--accent-red)}
+.lang-warn-score.mid{background:rgba(245,158,11,.15);color:var(--accent-yellow)}
+.lang-warn-sugg{color:var(--accent-cyan);font-weight:500}
+/* Language warning modal */
+.lang-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.lang-modal{background:#0c1829;border:1px solid rgba(245,158,11,.3);border-radius:16px;width:480px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lang-modal-header{display:flex;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.07)}
+.lang-modal-icon{font-size:1.3rem}
+.lang-modal-title{font-family:var(--font-heading);font-size:1.1rem;color:var(--accent-yellow)}
+.lang-modal-body{padding:18px 22px;max-height:260px;overflow-y:auto}
+.lang-modal-intro{font-size:.81rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5}
+.lang-modal-footer{display:flex;gap:10px;padding:16px 22px;border-top:1px solid rgba(255,255,255,.07);justify-content:flex-end}
+.lang-modal-proceed{background:var(--accent-yellow);color:#0a1628;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:var(--font-body);transition:opacity .2s}
+.lang-modal-proceed:hover{opacity:.85}
+.lang-modal-review{background:transparent;color:var(--text-secondary);border:1px solid var(--border-subtle);padding:10px 22px;border-radius:8px;font-weight:500;font-size:.88rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.lang-modal-review:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+
 /* === SLIDE 3: PAIN BOARD === */
 .slide-painboard{padding-top:32px}
 .digital-rain-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.25}
@@ -2343,6 +2367,7 @@ function renderForm() {
     <div class="form-card full-width">
       <h3><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
       <div class="offshore-grid" id="offshore-grid"></div>
+      <div id="lang-warn-container" class="lang-warn-container"></div>
     </div>
 
     <!-- Analyze Button -->
@@ -2500,6 +2525,7 @@ window.updateLocationCountry = function(i, code) {
   renderSourceLocations();
   renderChannelMix();
   renderRateCards();
+  renderLanguageWarnings();
 };
 
 window.updateLocationHeadcount = function(i, val) {
@@ -2596,6 +2622,7 @@ window.toggleOffshoreCheck = function(code, checked) {
   formOffshoreSelections[code] = checked;
   renderOffshoreGrid();
   renderRateCards();
+  renderLanguageWarnings();
 };
 
 // ===== ANALYZE HANDLER =====
@@ -2618,6 +2645,13 @@ window.handleAnalyze = async function() {
 
   const selectedOffshore = Object.keys(formOffshoreSelections).filter(k=>formOffshoreSelections[k]);
   if(selectedOffshore.length===0){ alert('Please select at least one offshore location'); return; }
+
+  // Language compatibility gate — warn, but let consultant decide
+  const langWarnings = checkLanguageCompatibility();
+  if (langWarnings.length > 0) {
+    const proceed = await showLanguageWarningModal(langWarnings);
+    if (!proceed) return; // consultant chose to review destinations
+  }
 
   // Immediate button feedback
   const analyzeBtn = document.getElementById('analyze-btn');
@@ -4833,6 +4867,126 @@ window.selectTransformationModel = function(model) {
     card.classList.toggle('active', card.dataset.model === model);
   });
 };
+
+// ===== LANGUAGE COMPATIBILITY CHECK =====
+const LANG_COMPAT_THRESHOLD = 50; // below this % = flag as incompatible
+
+function checkLanguageCompatibility() {
+  const warnings = [];
+  const selectedOffshore = Object.keys(formOffshoreSelections).filter(k => formOffshoreSelections[k]);
+  if (selectedOffshore.length === 0) return warnings;
+
+  formLocations.forEach(loc => {
+    const src = COUNTRY_DB[loc.country];
+    if (!src) return;
+
+    (src.languages || ['en']).forEach(lang => {
+      selectedOffshore.forEach(dstCode => {
+        const dst = COUNTRY_DB[dstCode];
+        if (!dst) return;
+        const cap = (dst.languageCapability || {})[lang] || 0;
+
+        if (cap < LANG_COMPAT_THRESHOLD) {
+          const key = `${loc.country}:${lang}:${dstCode}`;
+          if (!warnings.find(w => w.key === key)) {
+            // Suggest offshore destinations with sufficient capability for this language
+            const suggestions = OFFSHORE_COUNTRIES
+              .filter(c => c !== dstCode && ((COUNTRY_DB[c].languageCapability || {})[lang] || 0) >= LANG_COMPAT_THRESHOLD)
+              .map(c => COUNTRY_DB[c].name);
+
+            warnings.push({
+              key,
+              sourceCode: loc.country,
+              sourceName: src.name,
+              lang,
+              langName: LANG_NAMES[lang] || lang,
+              destCode: dstCode,
+              destName: dst.name,
+              capability: cap,
+              severity: cap < 25 ? 'low' : 'mid',
+              suggestions
+            });
+          }
+        }
+      });
+    });
+  });
+
+  return warnings;
+}
+
+function renderLanguageWarnings() {
+  const container = document.getElementById('lang-warn-container');
+  if (!container) return;
+
+  const warnings = checkLanguageCompatibility();
+  if (warnings.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+  container.innerHTML = `
+    <div class="lang-warn-header">
+      <span>⚠</span>
+      <span>Language Compatibility</span>
+      <span class="lang-warn-count">${warnings.length} alert${warnings.length > 1 ? 's' : ''}</span>
+    </div>
+    ${warnings.map(w => `
+      <div class="lang-warn-item">
+        <strong>${w.sourceName}</strong> requires <strong>${w.langName}</strong> capability —
+        <strong>${w.destName}</strong> scores only <span class="lang-warn-score ${w.severity}">${w.capability}%</span>.
+        ${w.suggestions.length > 0
+          ? `Consider instead: <span class="lang-warn-sugg">${w.suggestions.join(', ')}</span>.`
+          : `No strong ${w.langName}-capable offshore options are currently selected.`
+        }
+      </div>
+    `).join('')}
+  `;
+}
+
+function showLanguageWarningModal(warnings) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'lang-modal-overlay';
+    overlay.innerHTML = `
+      <div class="lang-modal">
+        <div class="lang-modal-header">
+          <span class="lang-modal-icon">⚠️</span>
+          <span class="lang-modal-title">Language Compatibility Alerts</span>
+        </div>
+        <div class="lang-modal-body">
+          <p class="lang-modal-intro">
+            The selected destinations may have limited capability to support the source operations' required language(s).
+            You can proceed — the consultant can account for this in the assessment.
+          </p>
+          ${warnings.map(w => `
+            <div class="lang-warn-item">
+              <strong>${w.sourceName}</strong> → <strong>${w.destName}</strong>:
+              ${w.langName} capability <span class="lang-warn-score ${w.severity}">${w.capability}%</span>
+              ${w.suggestions.length > 0 ? `— consider <span class="lang-warn-sugg">${w.suggestions.join(', ')}</span>` : '— no strong alternatives in current selection'}
+            </div>
+          `).join('')}
+        </div>
+        <div class="lang-modal-footer">
+          <button class="lang-modal-review" id="_lm_review">Review Destinations</button>
+          <button class="lang-modal-proceed" id="_lm_proceed">Proceed Anyway</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#_lm_proceed').addEventListener('click', () => {
+      document.body.removeChild(overlay);
+      resolve(true);
+    });
+    overlay.querySelector('#_lm_review').addEventListener('click', () => {
+      document.body.removeChild(overlay);
+      resolve(false);
+    });
+  });
+}
 
 // ===== SLIDE 3: PAIN POINT BOARD =====
 function initPainBoard() {

@@ -761,7 +761,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   body{background:white!important;color:#1a1a1a;overflow:visible;font-family:'Inter',-apple-system,sans-serif;counter-reset:page-num}
   .slides-container{position:static!important;width:100%!important;height:auto!important;overflow:visible!important}
-  .slide,.cta-section,#slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg,#digital-rain-canvas,.villa-soon-overlay,.homes-scene,.hs-header{display:none!important}
+  .slide,.cta-section,#slide-nav,#scenario-toggle,#export-btn,#settings-btn,.ai-overlay,.ai-modal-overlay,.settings-overlay,.lever-modal-overlay,.title-cta,#particles-canvas,.ai-insights-btn,.digital-rain-canvas,.globe-bg,#digital-rain-canvas,.villa-soon-overlay,.homes-scene,.hs-header{display:none!important}
   .slide-heading{-webkit-text-fill-color:#1a1a1a;background:none;color:#1a1a1a}
   .dashboard-card,.phase-card,.detail-panel,.ba-card,.exec-ba-col,.exec-kpi{border:1px solid #ddd;background:#fafafa}
   .savings-amount{-webkit-text-fill-color:#10b981;background:none}
@@ -896,13 +896,119 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-triggered{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(124,92,252,.15);color:var(--accent-purple);font-weight:600}
 .lever-tv{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.05);color:var(--text-muted);font-weight:500}
 .lever-empty{font-size:.78rem;color:var(--text-muted);padding:10px 0}
+.ts-detail-btn{margin-top:6px;background:none;border:1px solid rgba(0,212,255,.25);color:var(--accent-cyan);padding:5px 12px;border-radius:6px;font-size:.68rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.ts-detail-btn:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan)}
+
+/* === SLIDE 6: TRANSFORMATION STRATEGY BRIEF === */
+.slide-strategy{padding-top:28px}
+.strategy-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px}
+.strategy-title-block .slide-heading{margin-bottom:4px}
+.strategy-title-block .slide-subtitle{margin-bottom:0}
+.strategy-model-badge{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:8px 14px;flex-shrink:0;text-align:right}
+.smb-label{display:block;font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.smb-value{font-size:.82rem;font-weight:700;color:var(--accent-cyan)}
+.strategy-body{display:grid;grid-template-columns:1fr 420px;gap:20px;flex:1;min-height:0;margin-top:12px}
+.strategy-left{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
+.strategy-bench-strip{display:flex;gap:10px;flex-wrap:wrap;padding:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:8px}
+.bench-item{display:flex;flex-direction:column;gap:2px;min-width:80px}
+.bench-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.bench-value{font-size:.85rem;font-weight:700;color:var(--text-primary)}
+.bench-value.positive{color:#10b981}
+.bench-value.neutral{color:var(--accent-cyan)}
+.strategy-levers-header{display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0}
+.strategy-levers-title{font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
+.strategy-levers-meta{font-size:.72rem;color:var(--text-muted)}
+.strategy-lever-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.slg-card{display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:10px;cursor:pointer;transition:all .2s;position:relative}
+.slg-card:hover{border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.03)}
+.slg-card.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.06)}
+.slg-card .slg-check{position:absolute;top:8px;right:10px;font-size:.65rem;font-weight:700;color:var(--accent-cyan);opacity:0;transition:opacity .2s}
+.slg-card.active .slg-check{opacity:1}
+.slg-top{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.slg-name{font-size:.82rem;font-weight:700;color:var(--text-primary);line-height:1.2}
+.slg-desc{font-size:.68rem;color:var(--text-secondary);line-height:1.4}
+.slg-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+.slg-fte{font-size:.65rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:1px 6px;border-radius:3px}
+.slg-ttv{font-size:.62rem;color:var(--text-muted);background:rgba(255,255,255,.04);padding:1px 6px;border-radius:3px}
+.slg-btn{margin-top:4px;background:none;border:1px solid var(--border-subtle);color:var(--text-muted);padding:5px 10px;border-radius:6px;font-size:.68rem;cursor:pointer;font-family:var(--font-body);transition:all .2s;text-align:left}
+.slg-card.active .slg-btn{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);color:var(--accent-cyan)}
+.slg-card:hover .slg-btn{border-color:rgba(0,212,255,.3);color:var(--text-secondary)}
+.strategy-cta-row{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-top:4px}
+.strategy-selected-summary{font-size:.78rem;color:var(--text-muted);flex:1}
+.strategy-confirm-btn{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));color:#0a1628;border:none;border-radius:10px;padding:10px 22px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all .3s;white-space:nowrap}
+.strategy-confirm-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,.3)}
+/* 2×2 Segment Matrix */
+.strategy-right{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
+.strategy-matrix-header{flex-shrink:0}
+.strategy-matrix-title{display:block;font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.strategy-matrix-sub{font-size:.72rem;color:var(--text-muted)}
+.strategy-2x2-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.s2x2-y-label{font-size:.62rem;color:var(--text-muted);transform:rotate(-90deg);position:absolute;left:-10px;white-space:nowrap;letter-spacing:.05em}
+.s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;aspect-ratio:1.4/1;margin:0 20px;min-height:180px;max-height:220px}
+.s2x2-quadrant{position:relative;border-radius:8px;padding:8px 10px;display:flex;align-items:flex-start}
+.s2x2-quadrant.q1{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15)}
+.s2x2-quadrant.q2{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.12)}
+.s2x2-quadrant.q3{background:rgba(124,92,252,.05);border:1px solid rgba(124,92,252,.12)}
+.s2x2-quadrant.q4{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12)}
+.s2x2-q-label{font-size:.62rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
+.s2x2-quadrant.q1 .s2x2-q-label{color:rgba(0,212,255,.6)}
+.s2x2-quadrant.q2 .s2x2-q-label{color:rgba(245,158,11,.6)}
+.s2x2-quadrant.q3 .s2x2-q-label{color:rgba(124,92,252,.6)}
+.s2x2-quadrant.q4 .s2x2-q-label{color:rgba(16,185,129,.6)}
+.s2x2-axis-x-low{position:absolute;bottom:-18px;left:0;font-size:.58rem;color:var(--text-muted)}
+.s2x2-axis-x-high{position:absolute;bottom:-18px;right:0;font-size:.58rem;color:var(--text-muted)}
+.s2x2-x-label{font-size:.62rem;color:var(--text-muted);letter-spacing:.05em;margin-top:20px}
+.s2x2-arrow{opacity:.5}
+.s2x2-dot{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--bg-card);border:2px solid rgba(0,212,255,.6);display:flex;align-items:center;justify-content:center;cursor:default;z-index:10;transform:translate(-50%,-50%);transition:all .2s;font-size:.62rem;font-weight:700;color:var(--text-primary)}
+.s2x2-dot:hover{transform:translate(-50%,-50%) scale(1.15);z-index:20;border-color:var(--accent-cyan)}
+.s2x2-dot-tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0c1829;border:1px solid var(--border-subtle);border-radius:6px;padding:5px 8px;font-size:.62rem;color:var(--text-primary);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:30}
+.s2x2-dot:hover .s2x2-dot-tooltip{opacity:1}
+.strategy-segment-treatments{display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.sst-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(255,255,255,.025);border-radius:7px;border-left:3px solid}
+.sst-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.sst-name{font-size:.72rem;font-weight:600;color:var(--text-primary);margin-bottom:2px}
+.sst-treatment{font-size:.65rem;color:var(--text-secondary);line-height:1.3}
+.sst-pct{font-size:.6rem;color:var(--text-muted);margin-top:2px}
+
+/* === LEVER DETAIL MODAL === */
+.lever-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:32px;overflow-y:auto}
+.lever-modal-overlay.visible{display:flex}
+.lever-modal{background:#0c1829;border:1px solid var(--border-subtle);border-radius:16px;width:100%;max-width:760px;box-shadow:0 24px 64px rgba(0,0,0,.6);margin:auto}
+.lever-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:22px 24px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.lever-modal-title{font-family:var(--font-heading);font-size:1.3rem;color:var(--text-primary);margin-bottom:4px}
+.lever-modal-bucket{font-size:.75rem;padding:3px 10px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.lever-modal-close{background:none;border:1px solid rgba(255,255,255,.1);color:var(--text-muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.lever-modal-close:hover{border-color:var(--accent-red);color:var(--accent-red)}
+.lever-modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:18px}
+.lm-section-title{font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:4px}
+.lm-desc{font-size:.88rem;color:var(--text-secondary);line-height:1.6}
+.lm-how-steps{display:flex;flex-direction:column;gap:6px}
+.lm-step{display:flex;align-items:flex-start;gap:10px;padding:7px 10px;background:rgba(255,255,255,.03);border-radius:7px}
+.lm-step-num{width:22px;height:22px;border-radius:50%;background:rgba(0,212,255,.15);color:var(--accent-cyan);font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.lm-step-text{font-size:.78rem;color:var(--text-secondary);line-height:1.4}
+.lm-fte-table{width:100%;border-collapse:collapse}
+.lm-fte-table th,.lm-fte-table td{padding:8px 12px;text-align:left;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.lm-fte-table th{color:var(--text-muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.lm-fte-table td{color:var(--text-primary)}
+.lm-fte-table tr:last-child td{border-bottom:none}
+.lm-fte-table td:last-child{color:var(--accent-cyan);font-weight:700}
+.lm-stack-list{display:flex;flex-direction:column;gap:5px}
+.lm-stack-item{font-size:.78rem;color:var(--text-secondary);padding:6px 10px;background:rgba(255,255,255,.03);border-radius:6px;line-height:1.3}
+.lm-risks-list{display:flex;flex-direction:column;gap:5px}
+.lm-risk-item{font-size:.78rem;color:var(--text-secondary);padding:6px 10px;background:rgba(239,68,68,.04);border-left:3px solid rgba(239,68,68,.4);border-radius:4px;line-height:1.3}
+.lm-pain-tags{display:flex;flex-wrap:wrap;gap:5px}
+.lm-pain-tag{font-size:.68rem;padding:3px 9px;border-radius:10px;background:rgba(124,92,252,.1);color:var(--accent-purple);border:1px solid rgba(124,92,252,.2)}
+.lm-meta-row{display:flex;gap:16px;flex-wrap:wrap}
+.lm-meta-item{display:flex;flex-direction:column;gap:2px}
+.lm-meta-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.lm-meta-value{font-size:.82rem;font-weight:600;color:var(--text-primary)}
 </style>
 </head>
 <body>
 
 <nav id="slide-nav">
   <div class="nav-dots" id="nav-dots"></div>
-  <div class="slide-counter" id="slide-counter">1 / 10</div>
+  <div class="slide-counter" id="slide-counter">1 / 11</div>
   <div class="nav-arrows">
     <button id="prev-btn" aria-label="Previous slide">&#8592;</button>
     <button id="next-btn" aria-label="Next slide">&#8594;</button>
@@ -928,6 +1034,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   </div>
   <div class="ai-typing-text" id="ai-typing-text"></div>
   <div class="ai-progress-bar"><div class="ai-progress-fill" id="ai-progress-fill"></div></div>
+</div>
+
+<!-- Lever Detail Modal -->
+<div class="lever-modal-overlay" id="lever-modal-overlay" onclick="if(event.target===this)closeLeverModal()">
+  <!-- Content injected by openLeverModal() -->
 </div>
 
 <div class="ai-modal-overlay" id="ai-modal-overlay" onclick="if(event.target===this)closeAIModal()">
@@ -1357,18 +1468,86 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 6: ANALYSIS MATRIX -->
-  <section class="slide slide-matrix" id="slide-6" data-slide="6">
+  <!-- SLIDE 6: TRANSFORMATION STRATEGY BRIEF -->
+  <section class="slide slide-strategy" id="slide-6" data-slide="6">
+    <div class="strategy-header">
+      <div class="strategy-title-block">
+        <h2 class="slide-heading">Transformation Strategy Brief</h2>
+        <p class="slide-subtitle">Select the transformation levers to activate — your choices drive the blueprint on the next slides</p>
+      </div>
+      <div class="strategy-model-badge" id="strategy-model-badge">
+        <span class="smb-label">Model</span>
+        <span class="smb-value" id="smb-model-value">Offshore Optimisation</span>
+      </div>
+    </div>
+    <div id="reg-banner-6s" class="reg-banner"></div>
+
+    <div class="strategy-body">
+      <!-- LEFT: Industry context + Lever cards -->
+      <div class="strategy-left">
+        <div class="strategy-bench-strip" id="strategy-bench-strip">
+          <!-- Populated by buildStrategyBrief() -->
+        </div>
+        <div class="strategy-levers-header">
+          <span class="strategy-levers-title">Transformation Levers</span>
+          <span class="strategy-levers-meta" id="strategy-levers-meta">Select levers to include in your plan</span>
+        </div>
+        <div class="strategy-lever-grid" id="strategy-lever-grid">
+          <!-- Populated by buildStrategyBrief() -->
+        </div>
+        <div class="strategy-cta-row">
+          <div class="strategy-selected-summary" id="strategy-selected-summary">No levers selected yet</div>
+          <button class="strategy-confirm-btn" onclick="navigateToSlide(7,'forward')">Confirm Strategy &rarr; Build Channel Plan</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: 2×2 Segment Strategy Matrix -->
+      <div class="strategy-right">
+        <div class="strategy-matrix-header">
+          <span class="strategy-matrix-title">Segment Strategy Matrix</span>
+          <span class="strategy-matrix-sub">Positioned by complexity &amp; offshore affinity</span>
+        </div>
+        <div class="strategy-2x2-wrap">
+          <div class="s2x2-y-label">Automation Potential <span class="s2x2-arrow">↑ High</span></div>
+          <div class="s2x2-grid-area">
+            <div class="s2x2-quadrant q2">
+              <span class="s2x2-q-label">Automate Onsite</span>
+            </div>
+            <div class="s2x2-quadrant q1">
+              <span class="s2x2-q-label">Automate &amp; Offshore</span>
+            </div>
+            <div class="s2x2-quadrant q3">
+              <span class="s2x2-q-label">Retain &amp; Specialise</span>
+            </div>
+            <div class="s2x2-quadrant q4">
+              <span class="s2x2-q-label">Offshore Direct</span>
+            </div>
+            <!-- Segment dots injected by buildSegment2x2() -->
+            <div id="s2x2-dots-container"></div>
+            <!-- Axis labels -->
+            <div class="s2x2-axis-x-low">Low</div>
+            <div class="s2x2-axis-x-high">High</div>
+          </div>
+          <div class="s2x2-x-label">Offshore Affinity <span class="s2x2-arrow">→</span></div>
+        </div>
+        <div class="strategy-segment-treatments" id="strategy-segment-treatments">
+          <!-- Treatment list populated by buildSegment2x2() -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: ANALYSIS MATRIX -->
+  <section class="slide slide-matrix" id="slide-7" data-slide="7">
     <h2 class="slide-heading">Channel & Tier Analysis</h2>
     <p class="slide-subtitle">Toggle work packages for offshore transition — numbers update in real-time</p>
-    <div id="reg-banner-6" class="reg-banner"></div>
+    <div id="reg-banner-7" class="reg-banner"></div>
     <div class="fte-calculator" id="fte-calculator">
       <div class="fte-stat"><span class="fte-label">Selected for Offshore</span><span class="fte-value" id="selected-fte-count">0</span><span class="fte-unit">FTEs</span></div>
       <div class="fte-stat"><span class="fte-label">Est. Annual Savings</span><span class="fte-value" id="estimated-savings">$0</span></div>
       <button class="ai-insights-btn" id="ai-insights-btn-s4" onclick="openAIModal()" style="margin-left:auto;display:none"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button>
     </div>
     <div class="segment-strip" id="segment-strip"></div>
-    <div id="lever-panel" class="lever-panel"></div>
     <div class="matrix-container">
       <table class="analysis-table">
         <thead id="matrix-thead"><tr><th>Channel</th><th>Tier</th><th>Total FTEs</th><th>Offshore</th><th>Confidence</th><th>Destination</th><th>Rationale</th></tr></thead>
@@ -1377,8 +1556,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 7: TRANSFORMATION -->
-  <section class="slide slide-transform" id="slide-7" data-slide="7">
+  <!-- SLIDE 8: TRANSFORMATION -->
+  <section class="slide slide-transform" id="slide-8" data-slide="8">
     <h2 class="slide-heading">Proposed Transformation</h2>
     <p class="slide-subtitle" style="display:flex;align-items:center;gap:12px">Optimized workforce redistribution based on affinity scoring <button class="ai-insights-btn" onclick="openAIModal()"><span class="btn-pulse"></span><span class="btn-icon">🧠</span> View Analysis</button></p>
     <div class="transform-content">
@@ -1395,8 +1574,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 8: FINANCIAL -->
-  <section class="slide slide-financial" id="slide-8" data-slide="8">
+  <!-- SLIDE 9: FINANCIAL -->
+  <section class="slide slide-financial" id="slide-9" data-slide="9">
     <h2 class="slide-heading">Financial Impact Analysis</h2>
     <p class="slide-subtitle">Dynamic cost modeling based on selected offshore work packages</p>
 
@@ -1465,8 +1644,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 9: ROADMAP -->
-  <section class="slide slide-roadmap" id="slide-9" data-slide="9">
+  <!-- SLIDE 10: ROADMAP -->
+  <section class="slide slide-roadmap" id="slide-10" data-slide="10">
     <h2 class="slide-heading">Implementation Roadmap</h2>
     <p class="slide-subtitle">Phased approach to minimize risk and ensure quality</p>
     <div class="timeline-container">
@@ -1601,8 +1780,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
   </section>
 
-  <!-- SLIDE 10: EXECUTIVE SUMMARY (Before/After) -->
-  <section class="slide slide-summary" id="slide-10" data-slide="10">
+  <!-- SLIDE 11: EXECUTIVE SUMMARY (Before/After) -->
+  <section class="slide slide-summary" id="slide-11" data-slide="11">
     <canvas class="digital-rain-canvas" id="rain-canvas-summary"></canvas>
     <h2 class="slide-heading">Executive Summary</h2>
     <p class="slide-subtitle">Current state vs. proposed future operating model</p>
@@ -2004,7 +2183,7 @@ let CONFIG = {
 };
 
 // ===== STATE =====
-const TOTAL_SLIDES = 10;
+const TOTAL_SLIDES = 11;
 let currentSlide = 1;
 let currentScenario = 'Moderate';
 let offshoreSelections = {};
@@ -2222,7 +2401,7 @@ function navigateToSlide(target, direction) {
   if (currentSlide===1) { stopParticles(); if(window._g3d){cancelAnimationFrame(window._g3d.raf);try{window._g3d.renderer.dispose();}catch(e){}window._g3d=null;} }
   if (currentSlide===2) stopGlobe();
   if (currentSlide===3) stopDigitalRain('rain-canvas-board');
-  if (currentSlide===10) stopDigitalRain('rain-canvas-summary');
+  if (currentSlide===11) stopDigitalRain('rain-canvas-summary');
 
   // GSAP slide out
   gsap.to(currentEl, {
@@ -2247,15 +2426,15 @@ function navigateToSlide(target, direction) {
   document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i+1===target));
   document.getElementById('slide-counter').textContent = target+' / '+TOTAL_SLIDES;
 
-  // Scenario toggle visible on slides 6-8 (matrix, transform, financial)
+  // Scenario toggle visible on slides 7-9 (matrix, transform, financial)
   const toggle = document.getElementById('scenario-toggle');
-  if (target>=6&&target<=8) toggle.classList.add('visible');
+  if (target>=7&&target<=9) toggle.classList.add('visible');
   else toggle.classList.remove('visible');
 
-  // Export + Settings buttons visible only on slide 10
+  // Export + Settings buttons visible only on slide 11
   const exportBtn = document.getElementById('export-btn');
   const settingsBtn = document.getElementById('settings-btn');
-  if (target===10) { exportBtn.classList.add('visible'); settingsBtn.classList.add('visible'); }
+  if (target===11) { exportBtn.classList.add('visible'); settingsBtn.classList.add('visible'); }
   else { exportBtn.classList.remove('visible'); settingsBtn.classList.remove('visible'); }
 
   currentSlide = target;
@@ -2267,19 +2446,21 @@ function navigateToSlide(target, direction) {
     case 2: initGlobe(); filterHorizontalsByIndustry(diagnosticContext.industry); break;
     case 3: initPainBoard(); break;
     case 5: initCurrentStateMap(); buildPainSummaryPanel(); renderRegulatoryBanner('reg-banner-5'); break;
-    case 6: buildMatrix(); renderRegulatoryBanner('reg-banner-6'); renderLeverPanel(); break;
-    case 7: triggerSlide5(); break;
-    case 8: buildFinancialDashboard(); break;
-    case 9: animateRoadmap(); break;
-    case 10: buildExecutiveSummary(); break;
+    case 6: buildStrategyBrief(); renderRegulatoryBanner('reg-banner-6s'); break;
+    case 7: buildMatrix(); renderRegulatoryBanner('reg-banner-7'); break;
+    case 8: triggerSlide5(); break;
+    case 9: buildFinancialDashboard(); break;
+    case 10: animateRoadmap(); break;
+    case 11: buildExecutiveSummary(); break;
   }
   } catch(err) { console.error('[PATHFINDER] Error in slide', target, 'init:', err); }
 }
 
 function bindEvents() {
   document.addEventListener('keydown',(e)=>{
-    if(e.key==='Escape'){ closeAIModal(); return; }
+    if(e.key==='Escape'){ closeLeverModal(); closeAIModal(); return; }
     if(document.getElementById('ai-modal-overlay').classList.contains('visible')) return;
+    if(document.getElementById('lever-modal-overlay')?.classList.contains('visible')) return;
     // Pain board keyboard shortcuts (Ctrl+1/2/3 to jump columns)
     if(currentSlide===3 && e.ctrlKey && ['1','2','3'].includes(e.key)){
       e.preventDefault();
@@ -4138,9 +4319,9 @@ function calculateFinancials(impact) {
 
 function updateAllCalculations(){
   if(matrixBuilt) updateMatrixCalculations();
-  if(currentSlide===7) updateTransformView();
-  if(currentSlide===8) buildFinancialDashboard();
-  if(currentSlide===10) buildExecutiveSummary();
+  if(currentSlide===8) updateTransformView();
+  if(currentSlide===9) buildFinancialDashboard();
+  if(currentSlide===11) buildExecutiveSummary();
 }
 
 // ===== SLIDE 5: TRANSFORMATION =====
@@ -4496,7 +4677,7 @@ function renderTransformSolutions() {
   // ── Empty state ────────────────────────────────────────────────────────
   const baPanel = rightCol.querySelector('.before-after-panel');
   if (leversToShow.length === 0) {
-    leftCol.innerHTML = segBadgesHTML + '<div class="ts-empty">Add pain points on Slide 3 and activate levers on Slide 6 to generate a personalised solution blueprint.</div>';
+    leftCol.innerHTML = segBadgesHTML + '<div class="ts-empty">Add pain points on Slide 3 and select levers on Slide 6 (Strategy Brief) to generate a personalised solution blueprint.</div>';
     rightCol.innerHTML = '';
     if (baPanel) rightCol.appendChild(baPanel);
     return;
@@ -4513,6 +4694,7 @@ function renderTransformSolutions() {
     const fteTag      = fte   ? `<span class="ts-lever-fte">${fte} FTE reduction</span>` : '';
     const triggerTxt  = lever._painMatches > 0 ? `<div class="ts-trigger">${lever._painMatches} pain trigger${lever._painMatches > 1 ? 's' : ''} matched</div>` : '';
     const stackLine   = lever.stackLayers && lever.stackLayers.length > 0 ? `<div class="ts-lever-stack">${lever.stackLayers[0]}</div>` : '';
+    const detailBtn = lever._synthetic ? '' : `<button class="ts-detail-btn" onclick="openLeverModal('${lever.id}')">View Full Detail →</button>`;
     return `<div class="ts-bullet">
       <div class="ts-lever-header">
         <span class="lever-bucket-tag ${lever.bucket}">${bucket.label}</span>
@@ -4522,6 +4704,7 @@ function renderTransformSolutions() {
       ${triggerTxt}
       <div class="ts-bullet-body">${lever.description}</div>
       ${stackLine}
+      ${detailBtn}
     </div>`;
   }
 
@@ -4532,8 +4715,8 @@ function renderTransformSolutions() {
 
   // ── Source note ────────────────────────────────────────────────────────
   const sourceNote = hasActived
-    ? `<div style="font-size:.66rem;color:var(--accent-cyan);font-weight:600;margin-bottom:6px">&#9654; ${activatedLevers.size} lever${activatedLevers.size > 1 ? 's' : ''} activated on Slide 6</div>`
-    : `<div style="font-size:.66rem;color:var(--text-muted);margin-bottom:6px">Top recommended — activate specific levers on Slide 6 to customise</div>`;
+    ? `<div style="font-size:.66rem;color:var(--accent-cyan);font-weight:600;margin-bottom:6px">&#9654; ${activatedLevers.size} lever${activatedLevers.size > 1 ? 's' : ''} activated from Strategy Brief</div>`
+    : `<div style="font-size:.66rem;color:var(--text-muted);margin-bottom:6px">Top recommended — go back to Strategy Brief to select specific levers</div>`;
 
   // ── Populate columns ───────────────────────────────────────────────────
   leftCol.innerHTML  = segBadgesHTML + sourceNote
@@ -5065,6 +5248,319 @@ window.toggleLever = function(id) {
       card.classList.toggle('active', activatedLevers.has(id));
     }
   });
+};
+
+// ===== SLIDE 6: TRANSFORMATION STRATEGY BRIEF =====
+function buildStrategyBrief() {
+  const hasKB  = typeof TRANSFORMATION_KB !== 'undefined' && typeof LEVER_BUCKETS !== 'undefined';
+  const hasRec = typeof getRecommendedLevers === 'function';
+  if (!hasKB || !hasRec) return;
+
+  const allPainPoints = [
+    ...(selectedPainPoints.people    || []),
+    ...(selectedPainPoints.process   || []),
+    ...(selectedPainPoints.technology|| [])
+  ];
+  const segConfig  = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
+  const scenario   = (typeof currentScenario !== 'undefined' ? currentScenario : 'Moderate').toLowerCase();
+  const scenKey    = scenario === 'aggressive' ? 'aggressive' : scenario === 'conservative' ? 'conservative' : 'moderate';
+  const painText   = allPainPoints.join(' ').toLowerCase();
+
+  // Model badge
+  const mbv = document.getElementById('smb-model-value');
+  if (mbv) {
+    const mKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
+    const modelNames = { liftShift:'Lift & Shift', transformOffshore:'Offshore Optimisation', transformOnsite:'Onsite Transformation' };
+    mbv.textContent = modelNames[mKey] || mKey;
+  }
+
+  // Benchmark strip
+  const bench = document.getElementById('strategy-bench-strip');
+  if (bench) {
+    const ind  = diagnosticContext.industry  || '—';
+    const horiz= diagnosticContext.horizontal|| '—';
+    const co   = diagnosticContext.companySize||'—';
+    const totalFTEs = (CONFIG && CONFIG.locations) ? Object.values(CONFIG.locations).reduce((s,l)=>s+l.headcount,0) : 0;
+    const destCount = (CONFIG && CONFIG.offshoreLocations) ? Object.keys(CONFIG.offshoreLocations).length : 0;
+    const segCount  = Object.values(segConfig).filter(v=>v>0).length;
+    bench.innerHTML = [
+      { label:'Industry',    value: ind,        cls:'' },
+      { label:'Horizontal',  value: horiz,      cls:'' },
+      { label:'Company Size',value: co,         cls:'' },
+      { label:'Total FTEs',  value: totalFTEs||'—', cls:'neutral' },
+      { label:'Destinations',value: destCount||'—', cls:'neutral' },
+      { label:'Segments',    value: segCount ?  segCount+' active' : '—', cls: segCount?'positive':'' }
+    ].map(b=>`<div class="bench-item"><span class="bench-label">${b.label}</span><span class="bench-value ${b.cls}">${b.value}</span></div>`).join('');
+  }
+
+  // Get top 6 recommended levers (scored)
+  const topLevers = getRecommendedLevers(allPainPoints, diagnosticContext.industry, diagnosticContext.horizontal, typeof transformationModel !== 'undefined' ? transformationModel : null, segConfig, 6);
+
+  const grid = document.getElementById('strategy-lever-grid');
+  const metaEl = document.getElementById('strategy-levers-meta');
+  if (!grid) return;
+
+  if (topLevers.length === 0) {
+    grid.innerHTML = '<div class="lever-empty" style="grid-column:1/-1">Complete Slides 2–4 first to surface recommended levers.</div>';
+    if (metaEl) metaEl.textContent = 'Complete earlier slides to see recommendations';
+    return;
+  }
+
+  if (metaEl) metaEl.textContent = topLevers.length + ' levers recommended for this context';
+
+  grid.innerHTML = topLevers.map(lever => {
+    const bucket   = (typeof LEVER_BUCKETS !== 'undefined' ? LEVER_BUCKETS[lever.bucket] : {}) || {};
+    const isActive = activatedLevers.has(lever.id);
+    const fte      = (lever.fteImpact || {})[scenKey] || (lever.fteImpact || {}).moderate || '—';
+    const score    = lever._score || 0;
+    const fitLabel = score >= 35 ? 'Strong Fit' : score >= 20 ? 'Good Fit' : 'Fair Fit';
+    const fitClass = score >= 35 ? 'strong'     : score >= 20 ? 'good'     : 'fair';
+    const painMatches = (lever.painTriggers || []).filter(t => painText.includes(t.toLowerCase())).length;
+    return `<div class="slg-card ${isActive?'active':''}" onclick="toggleStrategyLever('${lever.id}')">
+      <span class="slg-check">✓ Selected</span>
+      <div class="slg-top">
+        <span class="lever-bucket-tag ${lever.bucket}">${bucket.label || lever.bucket}</span>
+        <span class="lever-fit ${fitClass}">${fitLabel}</span>
+      </div>
+      <div class="slg-name">${lever.shortName || lever.name}</div>
+      <div class="slg-desc">${(lever.description||'').slice(0,100)}${(lever.description||'').length>100?'…':''}</div>
+      <div class="slg-meta">
+        <span class="slg-fte">${fte} FTE reduction</span>
+        <span class="slg-ttv">${lever.timeToValue||''}</span>
+        ${painMatches>0?`<span class="lever-triggered">${painMatches} trigger${painMatches>1?'s':''}</span>`:''}
+      </div>
+      <button class="slg-btn">${isActive?'✓ Added to Plan':'+ Add to Plan'}</button>
+    </div>`;
+  }).join('');
+
+  // Animate cards in
+  gsap.from('.slg-card', { y: 12, opacity: 0, duration: 0.35, stagger: 0.07, ease: 'power2.out' });
+
+  // Build 2×2 matrix
+  buildSegment2x2();
+  updateStrategySelectedSummary();
+}
+
+function buildSegment2x2() {
+  const dotsContainer = document.getElementById('s2x2-dots-container');
+  const treatmentList = document.getElementById('strategy-segment-treatments');
+  if (!dotsContainer || !treatmentList) return;
+
+  const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
+  const activeSegs = Object.entries(CONTACT_SEGMENTS)
+    .filter(([k]) => (segConfig[k]||0) > 0)
+    .sort((a,b) => (segConfig[b[0]]||0) - (segConfig[a[0]]||0));
+
+  if (activeSegs.length === 0) {
+    dotsContainer.innerHTML = '';
+    treatmentList.innerHTML = '<div style="font-size:.72rem;color:var(--text-muted);padding:8px">Configure segments on Slide 4 to see strategy matrix.</div>';
+    return;
+  }
+
+  // Quadrant colors for dot borders
+  const qColors = {
+    q1:'rgba(0,212,255,.7)',    // Automate & Offshore (top-right)
+    q2:'rgba(245,158,11,.7)',   // Automate Onsite (top-left)
+    q3:'rgba(124,92,252,.7)',   // Retain & Specialise (bottom-left)
+    q4:'rgba(16,185,129,.7)'    // Offshore Direct (bottom-right)
+  };
+
+  const dots = activeSegs.map(([key, seg]) => {
+    const eff = (typeof getEffSeg === 'function') ? getEffSeg(key) : seg;
+    const x = (eff.offshoreAffinity   || 0);  // 0→1 → 0→100% from left
+    const y = (eff.automationPotential|| 0);  // 0→1 → 100→0% from top (high = top)
+    const pct = segConfig[key] || 0;
+    // Determine quadrant
+    let qColor;
+    if (x >= 0.5 && y >= 0.5)      qColor = qColors.q1; // top-right: A&O
+    else if (x < 0.5 && y >= 0.5)  qColor = qColors.q2; // top-left: Auto Onsite
+    else if (x < 0.5 && y < 0.5)   qColor = qColors.q3; // bottom-left: Retain
+    else                             qColor = qColors.q4; // bottom-right: Offshore
+
+    // Position as % of grid area
+    const leftPct = (x * 100).toFixed(1) + '%';
+    const topPct  = ((1 - y) * 100).toFixed(1) + '%';
+
+    return `<div class="s2x2-dot" style="left:${leftPct};top:${topPct};border-color:${qColor};" title="${seg.name}: ${pct}%">
+      <div class="s2x2-dot-tooltip">${seg.name} — ${pct}%</div>
+      ${pct}%
+    </div>`;
+  }).join('');
+  dotsContainer.innerHTML = dots;
+
+  // Treatment list
+  const treatments = activeSegs.map(([key, seg]) => {
+    const eff = (typeof getEffSeg === 'function') ? getEffSeg(key) : seg;
+    const x = eff.offshoreAffinity   || 0;
+    const y = eff.automationPotential|| 0;
+    const pct = segConfig[key] || 0;
+    let treatment, borderColor;
+    if (x >= 0.5 && y >= 0.5) {
+      treatment = 'Automate first, then offshore residual — strong cost reduction potential';
+      borderColor = '#00d4ff';
+    } else if (x < 0.5 && y >= 0.5) {
+      treatment = 'Automate onsite — keep for relationship/compliance; reduce headcount via AI';
+      borderColor = '#f59e0b';
+    } else if (x < 0.5 && y < 0.5) {
+      treatment = 'Retain onsite — complex, relationship-intensive; focus on quality & upskilling';
+      borderColor = '#7c5cfc';
+    } else {
+      treatment = 'Offshore directly — simple work, high affinity; maximise arbitrage savings';
+      borderColor = '#10b981';
+    }
+    return `<div class="sst-item" style="border-left-color:${borderColor}">
+      <span class="sst-icon">${seg.icon||'●'}</span>
+      <div>
+        <div class="sst-name">${seg.name}</div>
+        <div class="sst-treatment">${treatment}</div>
+        <div class="sst-pct">${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.offshoreAffinity||0)*100)}% offshore fit</div>
+      </div>
+    </div>`;
+  }).join('');
+  treatmentList.innerHTML = treatments;
+}
+
+function updateStrategySelectedSummary() {
+  const el = document.getElementById('strategy-selected-summary');
+  if (!el) return;
+  const count = activatedLevers.size;
+  if (count === 0) {
+    el.textContent = 'No levers selected yet — select levers above to build your plan';
+  } else {
+    const names = Array.from(activatedLevers).slice(0,3).map(id => {
+      const l = typeof TRANSFORMATION_KB !== 'undefined' ? TRANSFORMATION_KB.find(x=>x.id===id) : null;
+      return l ? (l.shortName || l.name) : id;
+    });
+    el.textContent = count + ' lever' + (count>1?'s':'') + ' selected: ' + names.join(', ') + (count>3?', …':'');
+  }
+}
+
+window.toggleStrategyLever = function(id) {
+  if (activatedLevers.has(id)) {
+    activatedLevers.delete(id);
+  } else {
+    activatedLevers.add(id);
+  }
+  // Update card visuals
+  document.querySelectorAll('.slg-card').forEach(card => {
+    const onclick = card.getAttribute('onclick') || '';
+    const match   = onclick.match(/toggleStrategyLever\('([^']+)'\)/);
+    if (match && match[1] === id) {
+      card.classList.toggle('active', activatedLevers.has(id));
+      const btn = card.querySelector('.slg-btn');
+      if (btn) btn.textContent = activatedLevers.has(id) ? '✓ Added to Plan' : '+ Add to Plan';
+    }
+  });
+  // Also sync old lever-panel cards (Slide 6 matrix)
+  document.querySelectorAll('.lever-card').forEach(card => {
+    const onclick = card.getAttribute('onclick') || '';
+    const match   = onclick.match(/toggleLever\('([^']+)'\)/);
+    if (match && match[1] === id) {
+      card.classList.toggle('active', activatedLevers.has(id));
+    }
+  });
+  updateStrategySelectedSummary();
+};
+
+// ===== LEVER DETAIL MODAL =====
+window.openLeverModal = function(id) {
+  const hasKB = typeof TRANSFORMATION_KB !== 'undefined' && typeof LEVER_BUCKETS !== 'undefined';
+  if (!hasKB) return;
+  const lever = TRANSFORMATION_KB.find(l => l.id === id);
+  if (!lever) return;
+
+  const overlay = document.getElementById('lever-modal-overlay');
+  if (!overlay) return;
+
+  const bucket    = LEVER_BUCKETS[lever.bucket] || {};
+  const scenario  = (typeof currentScenario !== 'undefined' ? currentScenario : 'Moderate').toLowerCase();
+  const scenKey   = scenario === 'aggressive' ? 'aggressive' : scenario === 'conservative' ? 'conservative' : 'moderate';
+  const allPainPoints = [...(selectedPainPoints.people||[]),...(selectedPainPoints.process||[]),...(selectedPainPoints.technology||[])];
+  const painText  = allPainPoints.join(' ').toLowerCase();
+  const matchedPains = allPainPoints.filter(p => (lever.painTriggers||[]).some(t => p.toLowerCase().includes(t.toLowerCase()))).slice(0,8);
+
+  const bucketColors = {
+    optimise:'#10b981', automate:'#f59e0b', augment:'#7c5cfc', offshore:'#00d4ff'
+  };
+  const bColor = bucketColors[lever.bucket] || '#94a3b8';
+
+  const fteImpact = lever.fteImpact || {};
+  // howItWorks can be string or array
+  const rawHIW = lever.howItWorks || '';
+  const howItWorks = Array.isArray(rawHIW) ? rawHIW : (rawHIW ? rawHIW.split(/\.\s+/).filter(s=>s.length>10).map(s=>s.trim()) : []);
+  const stackLayers = lever.stackLayers || [];
+  const risks = Array.isArray(lever.risks) ? lever.risks : (lever.risks ? lever.risks.split(/[.;]\s+/).filter(s=>s.length>5) : []);
+
+  overlay.innerHTML = `
+    <div class="lever-modal">
+      <div class="lever-modal-header">
+        <div>
+          <div class="lever-modal-title">${lever.name}</div>
+          <span class="lever-modal-bucket" style="background:${bColor}22;color:${bColor};border:1px solid ${bColor}44">${bucket.label||lever.bucket}</span>
+        </div>
+        <button class="lever-modal-close" onclick="closeLeverModal()">✕</button>
+      </div>
+      <div class="lever-modal-body">
+
+        <div>
+          <div class="lm-section-title">Overview</div>
+          <div class="lm-desc">${lever.description || 'No description available.'}</div>
+          <div class="lm-meta-row" style="margin-top:10px">
+            <div class="lm-meta-item"><span class="lm-meta-label">Time to Value</span><span class="lm-meta-value">${lever.timeToValue||'—'}</span></div>
+            <div class="lm-meta-item"><span class="lm-meta-label">Investment</span><span class="lm-meta-value">${lever.investmentLevel||'—'}</span></div>
+            <div class="lm-meta-item"><span class="lm-meta-label">FTE Impact (${currentScenario||'Moderate'})</span><span class="lm-meta-value" style="color:#00d4ff">${fteImpact[scenKey]||fteImpact.moderate||'—'}</span></div>
+          </div>
+        </div>
+
+        ${howItWorks.length > 0 ? `<div>
+          <div class="lm-section-title">How It Works</div>
+          <div class="lm-how-steps">
+            ${howItWorks.map((step,i) => `<div class="lm-step"><span class="lm-step-num">${i+1}</span><span class="lm-step-text">${step}</span></div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <div>
+          <div class="lm-section-title">FTE Reduction Scenarios</div>
+          <table class="lm-fte-table">
+            <thead><tr><th>Scenario</th><th>Offshore %</th><th>FTE Reduction Range</th></tr></thead>
+            <tbody>
+              <tr><td>Conservative</td><td>~40%</td><td>${fteImpact.conservative||'—'}</td></tr>
+              <tr><td>Moderate</td><td>~60%</td><td>${fteImpact.moderate||'—'}</td></tr>
+              <tr><td>Aggressive</td><td>~80%</td><td>${fteImpact.aggressive||'—'}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        ${stackLayers.length > 0 ? `<div>
+          <div class="lm-section-title">Technology Stack Examples</div>
+          <div class="lm-stack-list">
+            ${stackLayers.map(s=>`<div class="lm-stack-item">${s}</div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        ${risks.length > 0 ? `<div>
+          <div class="lm-section-title">Key Risks &amp; Mitigations</div>
+          <div class="lm-risks-list">
+            ${risks.map(r=>`<div class="lm-risk-item">${r}</div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        ${matchedPains.length > 0 ? `<div>
+          <div class="lm-section-title">Triggered by Your Diagnostics (${matchedPains.length})</div>
+          <div class="lm-pain-tags">
+            ${matchedPains.map(p=>`<span class="lm-pain-tag">${p.length>60?p.slice(0,60)+'…':p}</span>`).join('')}
+          </div>
+        </div>` : ''}
+
+      </div>
+    </div>`;
+
+  overlay.classList.add('visible');
+};
+
+window.closeLeverModal = function() {
+  const overlay = document.getElementById('lever-modal-overlay');
+  if (overlay) overlay.classList.remove('visible');
 };
 
 // ===== LANGUAGE COMPATIBILITY CHECK =====

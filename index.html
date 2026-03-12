@@ -908,29 +908,33 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .smb-label{display:block;font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
 .smb-value{font-size:.82rem;font-weight:700;color:var(--accent-cyan)}
 .strategy-body{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;margin-top:12px}
-.strategy-left{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
-.strategy-bench-strip{display:flex;gap:10px;flex-wrap:wrap;padding:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:8px}
-.bench-item{display:flex;flex-direction:column;gap:2px;min-width:80px}
-.bench-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
-.bench-value{font-size:.85rem;font-weight:700;color:var(--text-primary)}
+.strategy-left{display:flex;flex-direction:column;gap:7px;min-height:0;overflow-y:auto}
+/* Compact reg-flags inside strategy brief so they don't crowd the lever grid */
+.slide-strategy .reg-flag{padding:5px 10px;min-width:160px;max-width:400px}
+.slide-strategy .reg-flag-desc,.slide-strategy .reg-flag-prompt{display:none}
+.slide-strategy .reg-flag-name{font-size:.72rem}
+.strategy-bench-strip{display:flex;gap:12px;flex-wrap:wrap;padding:6px 10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:8px;align-items:center}
+.bench-item{display:flex;align-items:center;gap:5px;min-width:0}
+.bench-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.bench-value{font-size:.78rem;font-weight:700;color:var(--text-primary);white-space:nowrap}
 .bench-value.positive{color:#10b981}
 .bench-value.neutral{color:var(--accent-cyan)}
 .strategy-levers-header{display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0}
 .strategy-levers-title{font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
 .strategy-levers-meta{font-size:.72rem;color:var(--text-muted)}
-.strategy-lever-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.slg-card{display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:10px;cursor:pointer;transition:all .2s;position:relative}
-.slg-card:hover{border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.03)}
+.strategy-lever-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.slg-card{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:var(--bg-card);border:2px solid var(--border-subtle);border-radius:9px;cursor:pointer;transition:all .2s;position:relative}
+.slg-card:hover{border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.03)}
 .slg-card.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.06)}
-.slg-card .slg-check{position:absolute;top:8px;right:10px;font-size:.65rem;font-weight:700;color:var(--accent-cyan);opacity:0;transition:opacity .2s}
+.slg-card .slg-check{position:absolute;top:5px;right:8px;font-size:.58rem;font-weight:700;color:var(--accent-cyan);opacity:0;transition:opacity .2s}
 .slg-card.active .slg-check{opacity:1}
-.slg-top{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-.slg-name{font-size:.82rem;font-weight:700;color:var(--text-primary);line-height:1.2}
-.slg-desc{font-size:.68rem;color:var(--text-secondary);line-height:1.4}
-.slg-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
-.slg-fte{font-size:.65rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:1px 6px;border-radius:3px}
-.slg-ttv{font-size:.62rem;color:var(--text-muted);background:rgba(255,255,255,.04);padding:1px 6px;border-radius:3px}
-.slg-btn{margin-top:4px;background:none;border:1px solid var(--border-subtle);color:var(--text-muted);padding:5px 10px;border-radius:6px;font-size:.68rem;cursor:pointer;font-family:var(--font-body);transition:all .2s;text-align:left}
+.slg-top{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.slg-name{font-size:.78rem;font-weight:700;color:var(--text-primary);line-height:1.2}
+.slg-desc{display:none}
+.slg-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.slg-fte{font-size:.6rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:1px 5px;border-radius:3px;white-space:nowrap}
+.slg-ttv{font-size:.58rem;color:var(--text-muted);background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px;white-space:nowrap}
+.slg-btn{background:none;border:1px solid var(--border-subtle);color:var(--text-muted);padding:4px 8px;border-radius:5px;font-size:.63rem;cursor:pointer;font-family:var(--font-body);transition:all .2s;text-align:left;width:100%}
 .slg-card.active .slg-btn{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);color:var(--accent-cyan)}
 .slg-card:hover .slg-btn{border-color:rgba(0,212,255,.3);color:var(--text-secondary)}
 .strategy-cta-row{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-top:4px}
@@ -941,10 +945,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .strategy-right{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
 .strategy-matrix-header{flex-shrink:0}
 .strategy-matrix-title{display:block;font-size:.82rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
-.strategy-matrix-sub{font-size:.72rem;color:var(--text-muted)}
-.strategy-2x2-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-.s2x2-y-label{font-size:.62rem;color:var(--text-muted);transform:rotate(-90deg);position:absolute;left:-10px;white-space:nowrap;letter-spacing:.05em}
-.s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;aspect-ratio:1.2/1;margin:0 20px;min-height:220px;max-height:300px}
+.strategy-matrix-sub{font-size:.68rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
+.strategy-2x2-wrap{display:flex;flex-direction:row;align-items:stretch;gap:6px;flex-shrink:0}
+.s2x2-y-axis-wrap{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 0;width:28px;flex-shrink:0}
+.s2x2-y-high,.s2x2-y-low{font-size:.6rem;color:var(--text-muted);white-space:nowrap}
+.s2x2-y-label-text{font-size:.6rem;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em;white-space:nowrap}
+.s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;flex:1;min-height:200px;max-height:270px}
 .s2x2-quadrant{position:relative;border-radius:8px;padding:8px 10px;display:flex;align-items:flex-start}
 .s2x2-quadrant.q1{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15)}
 .s2x2-quadrant.q2{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.12)}
@@ -955,14 +961,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .s2x2-quadrant.q2 .s2x2-q-label{color:rgba(245,158,11,.6)}
 .s2x2-quadrant.q3 .s2x2-q-label{color:rgba(124,92,252,.6)}
 .s2x2-quadrant.q4 .s2x2-q-label{color:rgba(16,185,129,.6)}
-.s2x2-axis-x-low{position:absolute;bottom:-18px;left:0;font-size:.58rem;color:var(--text-muted)}
-.s2x2-axis-x-high{position:absolute;bottom:-18px;right:0;font-size:.58rem;color:var(--text-muted)}
-.s2x2-x-label{font-size:.62rem;color:var(--text-muted);letter-spacing:.05em;margin-top:20px}
+.s2x2-axis-x-low{position:absolute;bottom:-16px;left:0;font-size:.58rem;color:var(--text-muted);pointer-events:none}
+.s2x2-axis-x-high{position:absolute;bottom:-16px;right:0;font-size:.58rem;color:var(--text-muted);pointer-events:none}
+.s2x2-x-axis-wrap{display:flex;justify-content:center;padding-left:34px;margin-top:2px}
+.s2x2-x-label-text{font-size:.6rem;color:var(--text-muted);letter-spacing:.04em}
+.s2x2-legend-hint{font-size:.6rem;color:var(--text-muted);font-style:italic;white-space:nowrap}
 .s2x2-arrow{opacity:.5}
-.s2x2-dot{position:absolute;width:34px;height:34px;border-radius:50%;background:var(--bg-card);border:2px solid rgba(0,212,255,.6);display:flex;align-items:center;justify-content:center;cursor:default;z-index:10;transform:translate(-50%,-50%);transition:all .2s;font-size:.65rem;font-weight:700;color:var(--text-primary)}
+.s2x2-dot{position:absolute;border-radius:50%;background:var(--bg-card);border:2px solid rgba(0,212,255,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:default;z-index:10;transform:translate(-50%,-50%);transition:all .2s;font-weight:700;color:var(--text-primary);text-align:center}
 .s2x2-dot:hover{transform:translate(-50%,-50%) scale(1.15);z-index:20;border-color:var(--accent-cyan)}
-.s2x2-dot-tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0c1829;border:1px solid var(--border-subtle);border-radius:6px;padding:5px 8px;font-size:.62rem;color:var(--text-primary);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:30}
+.s2x2-dot-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0c1829;border:1px solid var(--border-subtle);border-radius:8px;padding:7px 10px;font-size:.68rem;color:var(--text-secondary);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:30;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.s2x2-dot-tooltip strong{color:var(--text-primary);font-size:.72rem}
 .s2x2-dot:hover .s2x2-dot-tooltip{opacity:1}
+.s2x2-dot:hover{transform:translate(-50%,-50%) scale(1.12);z-index:20}
 .strategy-segment-treatments{display:flex;flex-direction:column;gap:6px;overflow-y:auto}
 .sst-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(255,255,255,.025);border-radius:7px;border-left:3px solid}
 .sst-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
@@ -1504,11 +1514,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <!-- RIGHT: 2×2 Segment Strategy Matrix -->
       <div class="strategy-right">
         <div class="strategy-matrix-header">
-          <span class="strategy-matrix-title">Segment Strategy Matrix</span>
-          <span class="strategy-matrix-sub">Positioned by complexity &amp; offshore affinity</span>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+            <span class="strategy-matrix-title">Segment Strategy Matrix</span>
+            <span class="s2x2-legend-hint">● each circle = a contact segment, sized by % volume</span>
+          </div>
+          <span class="strategy-matrix-sub">X-axis: how suitable for offshore &nbsp;|&nbsp; Y-axis: automation potential &nbsp;|&nbsp; % = contact volume share</span>
         </div>
         <div class="strategy-2x2-wrap">
-          <div class="s2x2-y-label">Automation Potential <span class="s2x2-arrow">↑ High</span></div>
+          <div class="s2x2-y-axis-wrap">
+            <span class="s2x2-y-high">High ↑</span>
+            <span class="s2x2-y-label-text">Automation Potential</span>
+            <span class="s2x2-y-low">Low</span>
+          </div>
           <div class="s2x2-grid-area">
             <div class="s2x2-quadrant q2">
               <span class="s2x2-q-label">Automate Onsite</span>
@@ -1525,10 +1542,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             <!-- Segment dots injected by buildSegment2x2() -->
             <div id="s2x2-dots-container"></div>
             <!-- Axis labels -->
-            <div class="s2x2-axis-x-low">Low</div>
-            <div class="s2x2-axis-x-high">High</div>
+            <div class="s2x2-axis-x-low">← Low</div>
+            <div class="s2x2-axis-x-high">High →</div>
           </div>
-          <div class="s2x2-x-label">Offshore Affinity <span class="s2x2-arrow">→</span></div>
+        </div>
+        <div class="s2x2-x-axis-wrap">
+          <span class="s2x2-x-label-text">Offshore Affinity</span>
         </div>
         <div class="strategy-segment-treatments" id="strategy-segment-treatments">
           <!-- Treatment list populated by buildSegment2x2() -->
@@ -5381,9 +5400,13 @@ function buildSegment2x2() {
     const leftPct = (x * 100).toFixed(1) + '%';
     const topPct  = ((1 - y) * 100).toFixed(1) + '%';
 
-    return `<div class="s2x2-dot" style="left:${leftPct};top:${topPct};border-color:${qColor};" title="${seg.name}: ${pct}%">
-      <div class="s2x2-dot-tooltip">${seg.name} — ${pct}%</div>
-      ${pct}%
+    // Size dot proportionally to volume (min 28px, max 48px)
+    const dotSize = Math.max(28, Math.min(48, 28 + pct * 0.5));
+    // Short label for inside the dot
+    const shortName = seg.name.split(' ')[0]; // first word e.g. "Billing", "Technical"
+    return `<div class="s2x2-dot" style="left:${leftPct};top:${topPct};border-color:${qColor};width:${dotSize}px;height:${dotSize}px;font-size:${dotSize>38?'.58rem':'.52rem'}">
+      <div class="s2x2-dot-tooltip">${seg.icon||''} <strong>${seg.name}</strong><br>${pct}% of volume &nbsp;·&nbsp; ${Math.round(x*100)}% offshore fit<br>Automation potential: ${Math.round(y*100)}%</div>
+      <span style="text-align:center;line-height:1.1">${shortName}<br><span style="font-size:.7em;opacity:.8">${pct}%</span></span>
     </div>`;
   }).join('');
   dotsContainer.innerHTML = dots;

@@ -181,8 +181,8 @@ const TRANSFORMATION_KB = [
   {
     id: 'rpa',
     bucket: 'automate',
-    name: 'Robotic Process Automation (RPA)',
-    shortName: 'RPA',
+    name: 'Process Automation & RPA',
+    shortName: 'Process Automation',
     description: 'Deploy software robots to automate high-volume, rule-based back-office tasks — data entry, system transfers, reconciliation, report generation.',
     howItWorks: 'Identify top 5 processes by volume × handling time with < 10% exception rate. Build attended bots first. Progress to unattended bots as confidence grows. Target 90%+ straight-through processing.',
     painTriggers: ['manual', 'data entry', 'copy paste', 'repetitive', 'back office', 'reconciliation', 'processing', 'spreadsheet', 'swivel chair', 'keying', 'rekeying', 'manual update'],
@@ -343,6 +343,25 @@ const TRANSFORMATION_KB = [
     stackLayers: ['Cogito (emotion AI)', 'Medallia Speech, Qualtrics (CX analytics)', 'AWS Contact Lens, Google CCAI Insights (real-time)'],
     risks: ['Alert fatigue if thresholds not tuned', 'Accent/language variation affects accuracy'],
     tags: ['real-time', 'cx-quality', 'retention']
+  },
+
+  {
+    id: 'agentic_ai',
+    bucket: 'augment',
+    name: 'Agentic AI — End-to-End Autonomous Resolution',
+    shortName: 'Agentic AI',
+    description: 'Deploy AI agents that autonomously handle multi-step customer interactions end-to-end — no human in the loop for scoped, structured workflows.',
+    howItWorks: 'Identify contained, high-volume workflows (e.g. refund processing, policy lookup + update, appointment scheduling). Build AI agents with tool-use (CRM read/write, order systems, KB access). Agent handles end-to-end resolution autonomously with human escalation only for exceptions. Target 60–80% autonomous resolution rate on scoped intents.',
+    painTriggers: ['agentic', 'autonomous', 'end to end', 'resolution', 'multi-step', 'workflow', 'AI', 'LLM', 'generative', 'automate resolution', 'handle without agent', 'no human', 'fully automated'],
+    segmentApplicability: ['billing', 'orderMgmt', 'generalInquiry', 'accountMgmt'],
+    industryBoost: { retail: 1.3, telecom: 1.2, utilities: 1.2, financial_services: 1.1, customer_ops: 1.25 },
+    fteImpact: { conservative: '20–30%', moderate: '30–45%', aggressive: '45–65%' },
+    timeToValue: '3–6 months',
+    investmentLevel: 'Medium-High',
+    dependencies: ['CRM + back-end system API access', 'Well-scoped intents with < 15% exception rate', 'Robust escalation path to human agent'],
+    stackLayers: ['Anthropic Claude API + tool use (enterprise-grade agentic)', 'OpenAI GPT-4o with function calling', 'Salesforce Agentforce, ServiceNow AI Agent (CRM-native agentic)'],
+    risks: ['Hallucination risk on ambiguous intents — strict scope required', 'Customer trust risk if agent fails ungracefully', 'Regulatory scrutiny for financial/health decisions without human oversight'],
+    tags: ['agentic', 'genai', 'high-roi', 'strategic', 'buzz']
   },
 
   // ══════════════════════════════════════════════════════════════

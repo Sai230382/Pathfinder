@@ -934,8 +934,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slg-card.active .slg-check{opacity:1}
 .slg-top{display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0}
 .slg-name{font-size:.82rem;font-weight:700;color:#e2e8f0;line-height:1.2;flex-shrink:0}
-/* Description back — flex:1 fills card height cleanly */
-.slg-desc{font-size:.7rem;color:#94a3b8;line-height:1.45;flex:1}
+/* Description fills card height — overflow hidden so long text doesn't break grid rows */
+.slg-desc{font-size:.7rem;color:#94a3b8;line-height:1.45;flex:1;overflow:hidden}
 .slg-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0}
 .slg-fte{font-size:.62rem;font-weight:600;color:#00d4ff;background:rgba(0,212,255,.12);padding:2px 6px;border-radius:3px;white-space:nowrap}
 .slg-ttv{font-size:.6rem;color:#64748b;background:rgba(255,255,255,.05);padding:2px 5px;border-radius:3px;white-space:nowrap}
@@ -5339,7 +5339,7 @@ function buildStrategyBrief() {
         <span class="lever-fit ${fitClass}">${fitLabel}</span>
       </div>
       <div class="slg-name">${lever.shortName || lever.name}</div>
-      <div class="slg-desc">${(lever.description||'').slice(0,100)}${(lever.description||'').length>100?'…':''}</div>
+      <div class="slg-desc">${lever.description||''}</div>
       <div class="slg-meta">
         <span class="slg-fte">${fte} FTE reduction</span>
         <span class="slg-ttv">${lever.timeToValue||''}</span>

@@ -921,10 +921,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .bench-value{font-size:.76rem;font-weight:700;color:var(--text-primary);white-space:nowrap}
 .bench-value.positive{color:#10b981}
 .bench-value.neutral{color:var(--accent-cyan)}
+.bench-value.caution{color:#f59e0b}
+.bench-value.negative{color:#ef4444}
 .strategy-levers-header{display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0}
 .strategy-levers-title{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em}
 .strategy-levers-meta{font-size:.7rem;color:var(--text-muted)}
-/* Grid: 2 cols, 3 rows — height:0+flex:1 fills remaining height reliably */
+/* Grid: 2 cols × 3 rows — fixed 6-card layout, height:0+flex:1 fills remaining height */
 .strategy-lever-grid{flex:1;height:0;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr);gap:7px}
 /* Cards: solid visible background, stretch to fill their row */
 .slg-card{display:flex;flex-direction:column;gap:5px;padding:10px 12px;background:#16243a;border:1.5px solid #2a3f5a;border-radius:9px;cursor:pointer;transition:all .2s;position:relative}
@@ -939,6 +941,16 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slg-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0}
 .slg-fte{font-size:.62rem;font-weight:600;color:#00d4ff;background:rgba(0,212,255,.12);padding:2px 6px;border-radius:3px;white-space:nowrap}
 .slg-ttv{font-size:.6rem;color:#64748b;background:rgba(255,255,255,.05);padding:2px 5px;border-radius:3px;white-space:nowrap}
+/* P·P·T Solution Category tag — appears on each lever card */
+.slg-ppt{font-size:.55rem;font-weight:700;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.slg-ppt.people{background:rgba(244,114,182,.15);color:#f472b6}
+.slg-ppt.process{background:rgba(52,211,153,.15);color:#34d399}
+.slg-ppt.technology{background:rgba(245,158,11,.15);color:#f59e0b}
+/* Best-locations badge */
+.slg-locations{display:flex;align-items:center;gap:3px;flex-wrap:wrap;flex-shrink:0;margin-top:2px}
+.slg-loc-label{font-size:.55rem;color:#64748b;white-space:nowrap}
+.slg-loc-chip{font-size:.55rem;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(0,212,255,.1);color:#7dd3ea;white-space:nowrap}
+/* Button */
 .slg-btn{background:rgba(255,255,255,.04);border:1px solid #2a3f5a;color:#64748b;padding:4px 10px;border-radius:5px;font-size:.65rem;cursor:pointer;font-family:var(--font-body);transition:all .2s;text-align:center;width:100%;flex-shrink:0}
 .slg-card.active .slg-btn{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.4);color:#00d4ff}
 .slg-card:hover .slg-btn{border-color:rgba(0,212,255,.3);color:#94a3b8}
@@ -1893,22 +1905,41 @@ const COUNTRY_DB = {
   JP: {name:'Japan',lat:36.2,lng:138.2,defaultRate:36,flag:'\u{1F1EF}\u{1F1F5}',languages:['ja'],timezone:9,culturalCluster:'confucian'},
   SG: {name:'Singapore',lat:1.35,lng:103.8,defaultRate:34,flag:'\u{1F1F8}\u{1F1EC}',languages:['en','zh'],timezone:8,culturalCluster:'confucian'},
   // --- Offshore (low-cost) countries ---
+  // talentDepth: 0-1 overall CX/BPO talent pool depth
+  // domainStrength: segment/horizontal strength by key (0-1 scale)
+  // attritionRate: typical annual voluntary attrition % in BPO sector
   IN: {name:'India',lat:20.5,lng:78.9,defaultRate:12,flag:'\u{1F1EE}\u{1F1F3}',languages:['en','hi'],timezone:5.5,culturalCluster:'south-asian',
-    languageCapability:{en:95,de:15,fr:20,ja:5,zh:10}},
+    languageCapability:{en:95,de:15,fr:20,ja:5,zh:10},
+    talentDepth:0.95, attritionRate:35,
+    domainStrength:{cx:0.95,back_office:0.95,tech_support:0.90,finance:0.85,healthcare:0.80,collections:0.85,mortgages:0.80}},
   PH: {name:'Philippines',lat:12.8,lng:121.7,defaultRate:10,flag:'\u{1F1F5}\u{1F1ED}',languages:['en','tl'],timezone:8,culturalCluster:'south-asian',
-    languageCapability:{en:92,de:3,fr:3,ja:25,zh:8}},
+    languageCapability:{en:92,de:3,fr:3,ja:25,zh:8},
+    talentDepth:0.90, attritionRate:45,
+    domainStrength:{cx:0.95,back_office:0.80,tech_support:0.72,finance:0.75,healthcare:0.88,collections:0.70,mortgages:0.68}},
   PL: {name:'Poland',lat:51.9,lng:19.1,defaultRate:18,flag:'\u{1F1F5}\u{1F1F1}',languages:['pl','de','en'],timezone:1,culturalCluster:'eastern-european',
-    languageCapability:{en:75,de:60,fr:25,ja:2,zh:2}},
+    languageCapability:{en:75,de:60,fr:25,ja:2,zh:2},
+    talentDepth:0.70, attritionRate:20,
+    domainStrength:{cx:0.65,back_office:0.78,tech_support:0.88,finance:0.82,healthcare:0.60,collections:0.65,mortgages:0.72}},
   MX: {name:'Mexico',lat:23.6,lng:-102.5,defaultRate:14,flag:'\u{1F1F2}\u{1F1FD}',languages:['es','en'],timezone:-6,culturalCluster:'latin-american',
-    languageCapability:{en:55,de:5,fr:8,ja:2,zh:2}},
+    languageCapability:{en:55,de:5,fr:8,ja:2,zh:2},
+    talentDepth:0.75, attritionRate:30,
+    domainStrength:{cx:0.78,back_office:0.65,tech_support:0.62,finance:0.60,healthcare:0.58,collections:0.72,mortgages:0.55}},
   ZA: {name:'South Africa',lat:-30.5,lng:22.9,defaultRate:13,flag:'\u{1F1FF}\u{1F1E6}',languages:['en','af'],timezone:2,culturalCluster:'anglo',
-    languageCapability:{en:90,de:10,fr:15,ja:2,zh:2}},
+    languageCapability:{en:90,de:10,fr:15,ja:2,zh:2},
+    talentDepth:0.65, attritionRate:25,
+    domainStrength:{cx:0.82,back_office:0.65,tech_support:0.60,finance:0.68,healthcare:0.58,collections:0.75,mortgages:0.55}},
   CO: {name:'Colombia',lat:4.5,lng:-74.2,defaultRate:16,flag:'\u{1F1E8}\u{1F1F4}',languages:['es','en'],timezone:-5,culturalCluster:'latin-american',
-    languageCapability:{en:45,de:3,fr:5,ja:1,zh:1}},
+    languageCapability:{en:45,de:3,fr:5,ja:1,zh:1},
+    talentDepth:0.60, attritionRate:28,
+    domainStrength:{cx:0.68,back_office:0.55,tech_support:0.52,finance:0.58,healthcare:0.48,collections:0.65,mortgages:0.50}},
   EG: {name:'Egypt',lat:26.8,lng:30.8,defaultRate:14,flag:'\u{1F1EA}\u{1F1EC}',languages:['ar','en'],timezone:2,culturalCluster:'arab',
-    languageCapability:{en:50,de:15,fr:35,ja:1,zh:1}},
+    languageCapability:{en:50,de:15,fr:35,ja:1,zh:1},
+    talentDepth:0.55, attritionRate:22,
+    domainStrength:{cx:0.62,back_office:0.55,tech_support:0.55,finance:0.52,healthcare:0.48,collections:0.58,mortgages:0.45}},
   RO: {name:'Romania',lat:45.9,lng:24.9,defaultRate:16,flag:'\u{1F1F7}\u{1F1F4}',languages:['ro','en','de','fr'],timezone:2,culturalCluster:'eastern-european',
-    languageCapability:{en:70,de:40,fr:55,ja:2,zh:2}}
+    languageCapability:{en:70,de:40,fr:55,ja:2,zh:2},
+    talentDepth:0.65, attritionRate:18,
+    domainStrength:{cx:0.62,back_office:0.72,tech_support:0.82,finance:0.78,healthcare:0.52,collections:0.60,mortgages:0.68}}
 };
 
 // Source-eligible countries (high-cost)
@@ -5297,20 +5328,30 @@ function buildStrategyBrief() {
     const horiz= diagnosticContext.horizontal|| '—';
     const co   = diagnosticContext.companySize||'—';
     const totalFTEs = (CONFIG && CONFIG.locations) ? Object.values(CONFIG.locations).reduce((s,l)=>s+l.headcount,0) : 0;
-    const destCount = (CONFIG && CONFIG.offshoreLocations) ? Object.keys(CONFIG.offshoreLocations).length : 0;
+    const offshoreKeys = (CONFIG && CONFIG.offshoreLocations) ? Object.keys(CONFIG.offshoreLocations) : [];
+    const destCount = offshoreKeys.length;
     const segCount  = Object.values(segConfig).filter(v=>v>0).length;
+    // Attrition insight: avg attrition across selected offshore destinations
+    const attrRates = offshoreKeys.map(k => COUNTRY_DB[k] && COUNTRY_DB[k].attritionRate ? COUNTRY_DB[k].attritionRate : null).filter(v=>v!==null);
+    const avgAttr = attrRates.length > 0 ? Math.round(attrRates.reduce((s,v)=>s+v,0)/attrRates.length) : null;
+    const attrVal = avgAttr !== null ? avgAttr+'% p.a.' : '—';
+    const attrCls = avgAttr !== null ? (avgAttr >= 35 ? 'negative' : avgAttr >= 25 ? 'caution' : 'positive') : '';
     bench.innerHTML = [
       { label:'Industry',    value: ind,        cls:'' },
       { label:'Horizontal',  value: horiz,      cls:'' },
       { label:'Company Size',value: co,         cls:'' },
       { label:'Total FTEs',  value: totalFTEs||'—', cls:'neutral' },
       { label:'Destinations',value: destCount||'—', cls:'neutral' },
-      { label:'Segments',    value: segCount ?  segCount+' active' : '—', cls: segCount?'positive':'' }
-    ].map(b=>`<div class="bench-item"><span class="bench-label">${b.label}</span><span class="bench-value ${b.cls}">${b.value}</span></div>`).join('');
+      { label:'Segments',    value: segCount ?  segCount+' active' : '—', cls: segCount?'positive':'' },
+      { label:'Dest. Attrition', value: attrVal, cls: attrCls, title: avgAttr !== null ? 'Avg annual agent attrition at selected offshore destinations. High attrition = training investment required.' : '' }
+    ].map(b=>`<div class="bench-item" ${b.title?`title="${b.title}"`:''}>
+        <span class="bench-label">${b.label}</span>
+        <span class="bench-value ${b.cls}">${b.value}</span>
+      </div>`).join('');
   }
 
-  // Get top 6 recommended levers (scored)
-  const topLevers = getRecommendedLevers(allPainPoints, diagnosticContext.industry, diagnosticContext.horizontal, typeof transformationModel !== 'undefined' ? transformationModel : null, segConfig, 6);
+  // Get top levers — dynamic count (score-threshold based, 3–8 levers)
+  const topLevers = getRecommendedLevers(allPainPoints, diagnosticContext.industry, diagnosticContext.horizontal, typeof transformationModel !== 'undefined' ? transformationModel : null, segConfig, 0);
 
   const grid = document.getElementById('strategy-lever-grid');
   const metaEl = document.getElementById('strategy-levers-meta');
@@ -5322,7 +5363,17 @@ function buildStrategyBrief() {
     return;
   }
 
-  if (metaEl) metaEl.textContent = topLevers.length + ' levers recommended for this context';
+  // Count by solutionCategory for meta label
+  const catCounts = { people: 0, process: 0, technology: 0 };
+  topLevers.forEach(l => { if (catCounts[l.solutionCategory] !== undefined) catCounts[l.solutionCategory]++; });
+  const catParts = [];
+  if (catCounts.people > 0)     catParts.push(`${catCounts.people} People`);
+  if (catCounts.process > 0)    catParts.push(`${catCounts.process} Process`);
+  if (catCounts.technology > 0) catParts.push(`${catCounts.technology} Technology`);
+  if (metaEl) metaEl.textContent = topLevers.length + ' levers — ' + catParts.join(' · ');
+
+  // Lookup solution category meta (P·P·T colours)
+  const catMeta = (typeof SOLUTION_CATEGORY_META !== 'undefined') ? SOLUTION_CATEGORY_META : {};
 
   grid.innerHTML = topLevers.map(lever => {
     const bucket   = (typeof LEVER_BUCKETS !== 'undefined' ? LEVER_BUCKETS[lever.bucket] : {}) || {};
@@ -5332,20 +5383,30 @@ function buildStrategyBrief() {
     const fitLabel = score >= 35 ? 'Strong Fit' : score >= 20 ? 'Good Fit' : 'Fair Fit';
     const fitClass = score >= 35 ? 'strong'     : score >= 20 ? 'good'     : 'fair';
     const painMatches = (lever.painTriggers || []).filter(t => painText.includes(t.toLowerCase())).length;
+    const cat = lever.solutionCategory || 'process';
+    // Best locations badge (only show if lever has specific locations)
+    const bestLocs = lever.bestLocations || [];
+    const SHORT_NAMES = {IN:'India',PH:'Philippines',PL:'Poland',MX:'Mexico',ZA:'S.Africa',CO:'Colombia',EG:'Egypt',RO:'Romania'};
+    const locNames = bestLocs.map(code => SHORT_NAMES[code] || (COUNTRY_DB && COUNTRY_DB[code] ? COUNTRY_DB[code].name : code));
+    const locHtml = locNames.length > 0
+      ? `<div class="slg-locations"><span class="slg-loc-label">Best from:</span>${locNames.map(n=>`<span class="slg-loc-chip">${n}</span>`).join('')}</div>`
+      : '';
     return `<div class="slg-card ${isActive?'active':''}" onclick="toggleStrategyLever('${lever.id}')">
-      <span class="slg-check">✓ Selected</span>
+      <span class="slg-check">+ Added</span>
       <div class="slg-top">
         <span class="lever-bucket-tag ${lever.bucket}">${bucket.label || lever.bucket}</span>
+        <span class="slg-ppt ${cat}">${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
         <span class="lever-fit ${fitClass}">${fitLabel}</span>
       </div>
       <div class="slg-name">${lever.shortName || lever.name}</div>
       <div class="slg-desc">${lever.description||''}</div>
+      ${locHtml}
       <div class="slg-meta">
-        <span class="slg-fte">${fte} FTE reduction</span>
+        <span class="slg-fte">${fte} FTE</span>
         <span class="slg-ttv">${lever.timeToValue||''}</span>
-        ${painMatches>0?`<span class="lever-triggered">${painMatches} trigger${painMatches>1?'s':''}</span>`:''}
+        ${painMatches>0?`<span class="lever-triggered">${painMatches} pain match${painMatches>1?'es':''}</span>`:''}
       </div>
-      <button class="slg-btn">${isActive?'✓ Added to Plan':'+ Add to Plan'}</button>
+      <button class="slg-btn">${isActive?'+ Added to Plan':'+ Add to Plan'}</button>
     </div>`;
   }).join('');
 
@@ -5503,6 +5564,10 @@ window.openLeverModal = function(id) {
     optimise:'#10b981', automate:'#f59e0b', augment:'#7c5cfc', offshore:'#00d4ff'
   };
   const bColor = bucketColors[lever.bucket] || '#94a3b8';
+  const catMeta = { people:{label:'People',color:'#f472b6'}, process:{label:'Process',color:'#34d399'}, technology:{label:'Technology',color:'#f59e0b'} };
+  const cat = catMeta[lever.solutionCategory] || catMeta.technology;
+  const SHORT_NAMES_M = {IN:'India',PH:'Philippines',PL:'Poland',MX:'Mexico',ZA:'S. Africa',CO:'Colombia',EG:'Egypt',RO:'Romania'};
+  const bestLocNames = (lever.bestLocations||[]).map(c => SHORT_NAMES_M[c]||c);
 
   const fteImpact = lever.fteImpact || {};
   // howItWorks can be string or array
@@ -5516,7 +5581,11 @@ window.openLeverModal = function(id) {
       <div class="lever-modal-header">
         <div>
           <div class="lever-modal-title">${lever.name}</div>
-          <span class="lever-modal-bucket" style="background:${bColor}22;color:${bColor};border:1px solid ${bColor}44">${bucket.label||lever.bucket}</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <span class="lever-modal-bucket" style="background:${bColor}22;color:${bColor};border:1px solid ${bColor}44">${bucket.label||lever.bucket}</span>
+            <span style="font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;background:${cat.color}1a;color:${cat.color};border:1px solid ${cat.color}33">${cat.label}</span>
+            ${bestLocNames.length > 0 ? `<span style="font-size:.65rem;color:#7dd3ea">Best from: ${bestLocNames.join(' · ')}</span>` : ''}
+          </div>
         </div>
         <button class="lever-modal-close" onclick="closeLeverModal()">✕</button>
       </div>
@@ -5530,6 +5599,7 @@ window.openLeverModal = function(id) {
             <div class="lm-meta-item"><span class="lm-meta-label">Investment</span><span class="lm-meta-value">${lever.investmentLevel||'—'}</span></div>
             <div class="lm-meta-item"><span class="lm-meta-label">FTE Impact (${currentScenario||'Moderate'})</span><span class="lm-meta-value" style="color:#00d4ff">${fteImpact[scenKey]||fteImpact.moderate||'—'}</span></div>
           </div>
+          ${(lever.notSuitableFor||[]).length > 0 ? `<div style="margin-top:8px;font-size:.7rem;color:#ef4444"><span style="opacity:.7">Not recommended for:</span> ${(lever.notSuitableFor||[]).map(k=>(typeof CONTACT_SEGMENTS!=='undefined'&&CONTACT_SEGMENTS[k]?CONTACT_SEGMENTS[k].name:k)).join(', ')}</div>` : ''}
         </div>
 
         ${howItWorks.length > 0 ? `<div>

@@ -21,7 +21,7 @@ html,body{height:100%;overflow:hidden}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0a1628;color:#f1f5f9;-webkit-font-smoothing:antialiased}
 :root{
   --bg-primary:#0a1628;--bg-secondary:#111827;--bg-card:#1e293b;--bg-card-hover:#263548;
-  --border-subtle:#334155;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --border-subtle:#334155;--text-primary:#f1f5f9;--text-secondary:#a8bccf;--text-muted:#8599ac;
   --accent-cyan:#00d4ff;--accent-purple:#7c5cfc;--accent-blue:#3b82f6;--accent-green:#10b981;
   --accent-yellow:#f59e0b;--accent-red:#ef4444;--accent-orange:#f97316;
   --font-heading:'Playfair Display',Georgia,serif;--font-body:'Inter',-apple-system,sans-serif;
@@ -246,7 +246,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .segment-strip-name{font-size:.72rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .segment-strip-meta{display:flex;align-items:center;gap:6px}
 .segment-strip-pct{font-size:.85rem;font-weight:700;color:var(--text-primary)}
-.segment-strip-affinity{font-size:.6rem;color:var(--text-muted)}
+.segment-strip-affinity{font-size:.68rem;color:var(--text-muted)}
 .segment-strip-affinity.high{color:#10b981}
 .segment-strip-affinity.medium{color:#f59e0b}
 .segment-strip-affinity.low{color:#ef4444}
@@ -279,7 +279,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .flow-summary-card{background:rgba(10,22,40,.88);border:1px solid var(--border-subtle);border-radius:8px;padding:6px 10px;backdrop-filter:blur(8px);flex:1;min-width:100px;max-width:200px;pointer-events:all}
 .flow-summary-card .fs-source{font-size:.6rem;font-weight:700;color:var(--text-primary);margin-bottom:3px;font-family:var(--font-body);display:flex;align-items:center;gap:4px}
 .flow-summary-card .fs-source .fs-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.flow-summary-row{display:flex;align-items:center;gap:4px;padding:1px 0;font-size:.55rem;font-family:var(--font-body);color:var(--text-secondary)}
+.flow-summary-row{display:flex;align-items:center;gap:4px;padding:2px 0;font-size:.66rem;font-family:var(--font-body);color:var(--text-secondary)}
 .flow-summary-row .fs-dest{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:11px}
 .flow-summary-row .fs-ftes{color:var(--accent-cyan);font-weight:700;flex-shrink:0}
 /* Location selector tabs on slide 3 */
@@ -440,7 +440,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slide-financial{padding-top:24px}
 .dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
 .dashboard-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:20px;display:flex;flex-direction:column}
-.dashboard-card h4{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600}
+.dashboard-card h4{font-size:.82rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600}
 .dashboard-card .chart-area{flex:1;position:relative;min-height:0}
 .dashboard-card canvas{width:100%!important}
 .savings-card{display:flex;flex-direction:column;justify-content:center}
@@ -498,30 +498,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
 /* === DEAL COMMERCIALS + 3-YEAR P&L === */
 .comm-assumptions-bar{background:var(--bg-card);border:1px solid rgba(0,212,255,.2);border-radius:var(--card-radius);padding:11px 18px;margin-bottom:10px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.comm-asn-title{font-size:.65rem;font-weight:700;color:var(--accent-cyan);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;min-width:110px}
-.comm-asn-fields{display:flex;flex-wrap:wrap;gap:10px;flex:1}
-.comm-asn-field{display:flex;align-items:center;gap:5px}
-.comm-asn-label{font-size:.63rem;color:var(--text-muted);white-space:nowrap}
-.comm-asn-input{width:60px;padding:4px 7px;background:rgba(255,255,255,.05);border:1px solid var(--border-subtle);border-radius:5px;color:var(--text-primary);font-size:.8rem;font-family:var(--font-body);text-align:right;transition:border-color .2s}
+.comm-asn-title{font-size:.78rem;font-weight:700;color:var(--accent-cyan);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;min-width:110px}
+.comm-asn-fields{display:flex;flex-wrap:wrap;gap:12px;flex:1}
+.comm-asn-field{display:flex;align-items:center;gap:6px}
+.comm-asn-label{font-size:.78rem;color:#b8cad8;white-space:nowrap;font-weight:500}
+.comm-asn-input{width:64px;padding:4px 7px;background:rgba(255,255,255,.07);border:1px solid var(--border-subtle);border-radius:5px;color:var(--text-primary);font-size:.84rem;font-family:var(--font-body);text-align:right;transition:border-color .2s}
 .comm-asn-input:focus{outline:none;border-color:var(--accent-cyan);background:rgba(0,212,255,.04)}
-.comm-asn-unit{font-size:.67rem;color:var(--text-muted)}
+.comm-asn-unit{font-size:.78rem;color:#8faabb;font-weight:500}
 .pnl-kpi-strip{display:flex;gap:10px;margin-bottom:10px}
 .pnl-kpi{flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--card-radius);padding:12px 14px;text-align:center}
-.pnl-kpi-value{font-size:1.45rem;font-weight:700;line-height:1;margin-bottom:3px}
+.pnl-kpi-value{font-size:1.45rem;font-weight:700;line-height:1;margin-bottom:4px}
 .pnl-kpi-value.amber{color:var(--accent-yellow)}
 .pnl-kpi-value.cyan{color:var(--accent-cyan)}
 .pnl-kpi-value.green{color:var(--accent-green)}
 .pnl-kpi-value.purple{color:var(--accent-purple)}
-.pnl-kpi-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.pnl-kpi-label{font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
 .pnl-bottom-row{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px}
-.deal-section-label{font-size:.63rem;color:var(--accent-purple);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
-.deal-rates-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-.deal-rate-chip{font-size:.68rem;padding:3px 9px;border-radius:5px;border:1px solid rgba(16,185,129,.25);background:rgba(16,185,129,.05);color:var(--text-secondary)}
-.deal-rate-chip .chip-rate{color:var(--accent-green);font-weight:700;margin-left:3px}
-.deal-table{width:100%;border-collapse:collapse;font-size:.8rem}
-.deal-table td{padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.04)}
-.deal-label{color:var(--text-secondary)}
-.deal-value{text-align:right;font-weight:600;color:var(--text-primary)}
+.deal-section-label{font-size:.72rem;color:var(--accent-purple);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.deal-rates-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.deal-rate-chip{font-size:.76rem;padding:4px 10px;border-radius:5px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.06);color:#c5d8e0}
+.deal-rate-chip .chip-rate{color:var(--accent-green);font-weight:700;margin-left:4px}
+.deal-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.deal-table td{padding:7px 3px;border-bottom:1px solid rgba(255,255,255,.05)}
+.deal-label{color:#c0d0dc;font-size:.85rem}
+.deal-value{text-align:right;font-weight:600;color:var(--text-primary);font-size:.86rem}
 .deal-value.cyan{color:var(--accent-cyan)}
 .deal-value.amber{color:var(--accent-yellow)}
 .deal-value.green{color:var(--accent-green)}
@@ -911,21 +911,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .lever-card.active{border-color:var(--accent-cyan);background:rgba(0,212,255,.07)}
 .lever-card-check{position:absolute;top:6px;right:8px;font-size:.65rem;font-weight:700;color:var(--accent-cyan);opacity:0;transition:opacity .2s}
 .lever-card.active .lever-card-check{opacity:1}
-.lever-bucket-tag{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:3px;margin-bottom:4px;display:inline-block;text-transform:uppercase;letter-spacing:.05em}
+.lever-bucket-tag{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:3px;margin-bottom:5px;display:inline-block;text-transform:uppercase;letter-spacing:.05em}
 .lever-bucket-tag.optimise{background:rgba(16,185,129,.15);color:#10b981}
 .lever-bucket-tag.automate{background:rgba(245,158,11,.15);color:#f59e0b}
 .lever-bucket-tag.augment{background:rgba(124,92,252,.15);color:#7c5cfc}
 .lever-bucket-tag.offshore{background:rgba(0,212,255,.15);color:#00d4ff}
 .lever-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:3px}
-.lever-fit{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
+.lever-fit{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
 .lever-fit.strong{background:rgba(0,212,255,.15);color:var(--accent-cyan)}
 .lever-fit.good{background:rgba(16,185,129,.15);color:#10b981}
 .lever-fit.fair{background:rgba(255,255,255,.07);color:var(--text-muted)}
-.lever-desc{font-size:.65rem;color:var(--text-secondary);line-height:1.35;margin-bottom:2px}
+.lever-desc{font-size:.72rem;color:var(--text-secondary);line-height:1.4;margin-bottom:3px}
 /* Slide 7 lever cards */
 .ts-lever-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
-.ts-lever-fte{font-size:.62rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:1px 6px;border-radius:3px}
-.ts-lever-stack{font-size:.62rem;color:var(--text-muted);margin-top:4px;border-top:1px solid rgba(255,255,255,.05);padding-top:4px;font-style:italic}
+.ts-lever-fte{font-size:.68rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:2px 7px;border-radius:3px}
+.ts-lever-stack{font-size:.68rem;color:var(--text-muted);margin-top:4px;border-top:1px solid rgba(255,255,255,.05);padding-top:4px;font-style:italic}
 .lever-name{font-size:.78rem;font-weight:600;color:var(--text-primary);line-height:1.2}
 .lever-fte{font-size:.67rem;color:var(--text-muted)}
 .lever-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
@@ -942,7 +942,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .strategy-title-block .slide-heading{margin-bottom:2px}
 .strategy-title-block .slide-subtitle{margin-bottom:0}
 .strategy-model-badge{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:6px 12px;flex-shrink:0;text-align:right}
-.smb-label{display:block;font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.smb-label{display:block;font-size:.69rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
 .smb-value{font-size:.8rem;font-weight:700;color:var(--accent-cyan)}
 /* height:0 + flex-grow:1 forces the browser to fill from zero — avoids overflow-auto height collapse bug */
 .strategy-body{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr;gap:18px;flex:1;height:0;min-height:0;margin-top:10px}
@@ -953,7 +953,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slide-strategy .reg-flag-name{font-size:.7rem}
 .strategy-bench-strip{display:flex;gap:14px;flex-wrap:wrap;padding:5px 10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:7px;align-items:center;flex-shrink:0}
 .bench-item{display:flex;align-items:center;gap:5px}
-.bench-label{font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.bench-label{font-size:.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .bench-value{font-size:.76rem;font-weight:700;color:var(--text-primary);white-space:nowrap}
 .bench-value.positive{color:#10b981}
 .bench-value.neutral{color:var(--accent-cyan)}
@@ -978,14 +978,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .slg-fte{font-size:.62rem;font-weight:600;color:#00d4ff;background:rgba(0,212,255,.12);padding:2px 6px;border-radius:3px;white-space:nowrap}
 .slg-ttv{font-size:.6rem;color:#64748b;background:rgba(255,255,255,.05);padding:2px 5px;border-radius:3px;white-space:nowrap}
 /* P·P·T Solution Category tag — appears on each lever card */
-.slg-ppt{font-size:.55rem;font-weight:700;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.slg-ppt{font-size:.63rem;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
 .slg-ppt.people{background:rgba(244,114,182,.15);color:#f472b6}
 .slg-ppt.process{background:rgba(52,211,153,.15);color:#34d399}
 .slg-ppt.technology{background:rgba(245,158,11,.15);color:#f59e0b}
 /* Best-locations badge */
 .slg-locations{display:flex;align-items:center;gap:3px;flex-wrap:wrap;flex-shrink:0;margin-top:2px}
-.slg-loc-label{font-size:.55rem;color:#64748b;white-space:nowrap}
-.slg-loc-chip{font-size:.55rem;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(0,212,255,.1);color:#7dd3ea;white-space:nowrap}
+.slg-loc-label{font-size:.63rem;color:#8599ac;white-space:nowrap}
+.slg-loc-chip{font-size:.63rem;font-weight:600;padding:2px 6px;border-radius:3px;background:rgba(0,212,255,.1);color:#7dd3ea;white-space:nowrap}
 /* Button */
 .slg-btn{background:rgba(255,255,255,.04);border:1px solid #2a3f5a;color:#64748b;padding:4px 10px;border-radius:5px;font-size:.65rem;cursor:pointer;font-family:var(--font-body);transition:all .2s;text-align:center;width:100%;flex-shrink:0}
 .slg-card.active .slg-btn{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.4);color:#00d4ff}
@@ -1004,7 +1004,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .strategy-2x2-wrap{flex:1;height:0;min-height:200px;display:flex;flex-direction:row;align-items:stretch;gap:6px}
 .s2x2-y-axis-wrap{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 0;width:24px;flex-shrink:0}
 .s2x2-y-high,.s2x2-y-low{font-size:.58rem;color:var(--text-muted);white-space:nowrap}
-.s2x2-y-label-text{font-size:.58rem;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em}
+.s2x2-y-label-text{font-size:.64rem;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em}
 .s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;flex:1;min-height:0}
 .s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;overflow:hidden}
 .s2x2-quadrant.q1{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18)}
@@ -1036,23 +1036,23 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 /* === SYNTHESIS INSIGHT CARDS === */
 .syn-panel{display:flex;flex-direction:column;gap:5px;height:100%}
 .syn-panel-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;margin-bottom:2px}
-.syn-panel-title{font-size:.62rem;font-weight:700;color:var(--text-secondary);letter-spacing:.08em;text-transform:uppercase}
-.syn-panel-hint{font-size:.57rem;color:var(--text-muted);font-style:italic}
+.syn-panel-title{font-size:.70rem;font-weight:700;color:var(--text-secondary);letter-spacing:.08em;text-transform:uppercase}
+.syn-panel-hint{font-size:.65rem;color:var(--text-muted);font-style:italic}
 .syn-cards-row{display:flex;flex-direction:column;gap:5px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
 .syn-card{background:rgba(255,255,255,.025);border-radius:7px;border:1px solid rgba(255,255,255,.06);padding:8px 10px;flex-shrink:0;transition:border-color .2s,background .2s}
 .syn-card:hover{border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.02)}
 .syn-card-top{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px}
-.syn-lever-tag,.syn-seg-tag,.syn-dest-tag{font-size:.52rem;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.05em;white-space:nowrap}
+.syn-lever-tag,.syn-seg-tag,.syn-dest-tag{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.05em;white-space:nowrap}
 .syn-seg-tag{background:rgba(124,92,252,.15);color:#a78bfa;border:1px solid rgba(124,92,252,.3);text-transform:none}
 .syn-dest-tag{background:rgba(0,212,255,.1);color:#7dd3ea;border:1px solid rgba(0,212,255,.25);text-transform:none}
-.syn-headline{font-size:.7rem;font-weight:600;color:var(--text-primary);line-height:1.3;margin-bottom:4px}
+.syn-headline{font-size:.76rem;font-weight:600;color:var(--text-primary);line-height:1.35;margin-bottom:5px}
 .syn-body{display:flex;flex-direction:column;gap:2px;margin-bottom:5px}
-.syn-bullet{font-size:.6rem;color:var(--text-secondary);padding-left:10px;position:relative;line-height:1.4}
+.syn-bullet{font-size:.68rem;color:var(--text-secondary);padding-left:10px;position:relative;line-height:1.45}
 .syn-bullet::before{content:'-';position:absolute;left:0;color:var(--text-muted)}
 .syn-metrics{display:flex;gap:10px;padding-top:5px;border-top:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
 .syn-metric-item{display:flex;flex-direction:column;gap:1px}
-.syn-metric-label{font-size:.52rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
-.syn-metric-value{font-size:.65rem;font-weight:700;color:#00d4ff}
+.syn-metric-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.syn-metric-value{font-size:.70rem;font-weight:700;color:#00d4ff}
 .syn-metric-value.syn-pain{color:#a78bfa}
 
 /* === LEVER DETAIL MODAL === */
@@ -1723,6 +1723,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <div class="comm-asn-field"><label class="comm-asn-label">Y1 Ramp</label><input type="number" id="comm-ramp-y1" class="comm-asn-input" value="50" min="10" max="100" step="5"><span class="comm-asn-unit">%</span></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Y2 Ramp</label><input type="number" id="comm-ramp-y2" class="comm-asn-input" value="80" min="10" max="100" step="5"><span class="comm-asn-unit">%</span></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Transform $/FTE</label><input type="number" id="comm-transform-cost" class="comm-asn-input" value="8000" min="0" max="50000" step="500"></div>
+        <div class="comm-asn-field"><label class="comm-asn-label">Tech $/FTE/yr</label><input type="number" id="comm-tech-cost" class="comm-asn-input" value="1500" min="0" max="10000" step="250"></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Discount Rate</label><input type="number" id="comm-discount-rate" class="comm-asn-input" value="10" min="1" max="30" step="1"><span class="comm-asn-unit">%</span></div>
       </div>
     </div>
@@ -1751,6 +1752,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
               <tr><td class="deal-label">Committed FTEs (Steady-State)</td><td class="deal-value cyan" id="deal-ftes">--</td></tr>
               <tr><td class="deal-label">Blended Offshore Rate</td><td class="deal-value" id="deal-blended-rate">--</td></tr>
               <tr><td class="deal-label">Annual Offshore Labour</td><td class="deal-value" id="deal-annual-spend">--</td></tr>
+              <tr><td class="deal-label">Technology &amp; Infra (<span id="deal-tech-per-fte">1,500</span>/FTE/yr)</td><td class="deal-value" style="color:#7dd3ea" id="deal-tech-cost">--</td></tr>
               <tr><td class="deal-label">Mgmt Fee (<span id="deal-mgmt-fee-pct">12</span>%)</td><td class="deal-value amber" id="deal-mgmt-fee">--</td></tr>
               <tr class="deal-divider-row"><td></td><td></td></tr>
               <tr><td class="deal-label">Year 1 Revenue (Ramp)</td><td class="deal-value" id="deal-y1-rev">--</td></tr>
@@ -2662,7 +2664,7 @@ function bindEvents() {
   }
 
   // Deal commercials assumption inputs — live recalculate on Slide 9
-  ['comm-mgmt-fee','comm-contract-years','comm-ramp-y1','comm-ramp-y2','comm-transform-cost','comm-discount-rate'].forEach(id => {
+  ['comm-mgmt-fee','comm-contract-years','comm-ramp-y1','comm-ramp-y2','comm-transform-cost','comm-tech-cost','comm-discount-rate'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     let deb = null;
@@ -4946,6 +4948,7 @@ function getCommercialAssumptions() {
     rampY1:              parseFloat(document.getElementById('comm-ramp-y1')?.value          || 50)   / 100,
     rampY2:              parseFloat(document.getElementById('comm-ramp-y2')?.value          || 80)   / 100,
     transformCostPerFTE: parseFloat(document.getElementById('comm-transform-cost')?.value   || 8000),
+    techCostPerFTEYear:  parseFloat(document.getElementById('comm-tech-cost')?.value        || 1500),
     discountRate:        parseFloat(document.getElementById('comm-discount-rate')?.value    || 10)   / 100
   };
 }
@@ -4962,8 +4965,9 @@ function computeDealCommercials(impact, fin, asn) {
   const blendedRate = totalOffFTEs > 0 ? weightedRateSum / totalOffFTEs : 0;
 
   const annualOffshoreSpend = totalOffFTEs * blendedRate * hours;
-  const annualMgmtFee       = annualOffshoreSpend * asn.mgmtFeePct;
-  const annualClientCharge  = annualOffshoreSpend + annualMgmtFee;
+  const annualTechCost      = totalOffFTEs * (asn.techCostPerFTEYear || 0);
+  const annualMgmtFee       = annualOffshoreSpend * asn.mgmtFeePct;            // mgmt fee on labour only
+  const annualClientCharge  = annualOffshoreSpend + annualTechCost + annualMgmtFee;
 
   const y1Revenue = annualClientCharge * asn.rampY1;
   const y2Revenue = annualClientCharge * asn.rampY2;
@@ -4974,8 +4978,8 @@ function computeDealCommercials(impact, fin, asn) {
     tcv += yr === 1 ? y1Revenue : yr === 2 ? y2Revenue : y3Revenue;
   }
 
-  return { totalOffFTEs, blendedRate, annualOffshoreSpend, annualMgmtFee,
-           annualClientCharge, y1Revenue, y2Revenue, y3Revenue, tcv };
+  return { totalOffFTEs, blendedRate, annualOffshoreSpend, annualTechCost,
+           annualMgmtFee, annualClientCharge, y1Revenue, y2Revenue, y3Revenue, tcv };
 }
 
 function compute3YearPnL(impact, fin, asn) {
@@ -5224,6 +5228,9 @@ function buildFinancialDashboard() {
     setDeal('deal-ftes',         deal.totalOffFTEs || '--');
     setDeal('deal-blended-rate', deal.blendedRate > 0 ? '$' + deal.blendedRate.toFixed(2) + '/hr' : '--');
     setDeal('deal-annual-spend', formatCurrency(deal.annualOffshoreSpend));
+    setDeal('deal-tech-cost',    formatCurrency(deal.annualTechCost));
+    const techPerFteEl = document.getElementById('deal-tech-per-fte');
+    if (techPerFteEl) techPerFteEl.textContent = (asn.techCostPerFTEYear || 1500).toLocaleString();
     setDeal('deal-mgmt-fee',     formatCurrency(deal.annualMgmtFee) + '/yr');
     setDeal('deal-y1-rev',       formatCurrency(deal.y1Revenue));
     setDeal('deal-y2-rev',       formatCurrency(deal.y2Revenue));

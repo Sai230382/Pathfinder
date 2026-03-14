@@ -199,6 +199,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .rate-card .rate-info{flex:1}
 .rate-card .rate-info .country-name{font-size:.8rem;color:var(--text-muted)}
 .rate-card input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:6px 10px;border-radius:6px;font-family:var(--font-body);font-size:.9rem;width:70px;text-align:center}
+/* Transform Only toggle */
+.transform-only-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px}
+.transform-only-label{display:flex;flex-direction:column;gap:2px}
+.transform-only-title{font-size:.85rem;font-weight:600;color:var(--text-primary)}
+.transform-only-hint{font-size:.72rem;color:var(--text-muted)}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:var(--border-subtle);border-radius:12px;cursor:pointer;transition:background .25s}
+.toggle-track::before{content:'';position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.toggle-switch input:checked + .toggle-track{background:var(--accent-purple)}
+.toggle-switch input:checked + .toggle-track::before{transform:translateX(20px)}
+.offshore-collapsed{opacity:.3;pointer-events:none;user-select:none;filter:grayscale(0.5)}
 .offshore-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .offshore-option{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border-subtle);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)}
 .offshore-option:hover{border-color:var(--accent-cyan)}
@@ -2785,8 +2797,20 @@ function renderForm() {
     <!-- Offshore Targets -->
     <div class="form-card full-width">
       <h3><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
-      <div class="offshore-grid" id="offshore-grid"></div>
-      <div id="lang-warn-container" class="lang-warn-container"></div>
+      <div class="transform-only-bar">
+        <div class="transform-only-label">
+          <span class="transform-only-title">Transform Only (No Offshoring)</span>
+          <span class="transform-only-hint">Focus on automation, process re-engineering &amp; AI augmentation — keep all FTEs onsite</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="transform-only-toggle" onchange="toggleTransformOnly(this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div id="offshore-section-wrap">
+        <div class="offshore-grid" id="offshore-grid"></div>
+        <div id="lang-warn-container" class="lang-warn-container"></div>
+      </div>
     </div>
 
     <!-- Analyze Button -->
@@ -3032,6 +3056,21 @@ window.updateRate = function(code, val) {
   formRates[code] = parseInt(val)||1;
 };
 
+window.toggleTransformOnly = function(checked) {
+  const wrap = document.getElementById('offshore-section-wrap');
+  if (!wrap) return;
+  if (checked) {
+    wrap.classList.add('offshore-collapsed');
+    // Clear all offshore selections so CONFIG builds correctly
+    Object.keys(formOffshoreSelections).forEach(k => { formOffshoreSelections[k] = false; });
+    // Uncheck all checkboxes visually
+    document.querySelectorAll('#offshore-grid input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('#offshore-grid .offshore-option').forEach(el => el.classList.remove('selected'));
+  } else {
+    wrap.classList.remove('offshore-collapsed');
+  }
+};
+
 window.toggleOffshore = function(code, el) {
   // Let the checkbox handle it
 };
@@ -3060,11 +3099,12 @@ window.handleAnalyze = async function() {
     }
   }
 
+  const isTransformOnly = document.getElementById('transform-only-toggle')?.checked || false;
   const selectedOffshore = Object.keys(formOffshoreSelections).filter(k=>formOffshoreSelections[k]);
-  if(selectedOffshore.length===0){ alert('Please select at least one offshore location'); return; }
+  if(!isTransformOnly && selectedOffshore.length===0){ alert('Please select at least one offshore location, or enable "Transform Only" mode above.'); return; }
 
-  // Language compatibility gate — warn, but let consultant decide
-  const langWarnings = checkLanguageCompatibility();
+  // Language compatibility gate — warn, but let consultant decide (skip in transform-only mode)
+  const langWarnings = isTransformOnly ? [] : checkLanguageCompatibility();
   if (langWarnings.length > 0) {
     const proceed = await showLanguageWarningModal(langWarnings);
     if (!proceed) return; // consultant chose to review destinations

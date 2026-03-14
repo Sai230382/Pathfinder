@@ -1903,6 +1903,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <div class="rpt-section-title">Savings Breakdown</div>
       <div id="rpt-savings-detail"></div>
     </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Deal Commercials &amp; Investment Case</div>
+      <div id="rpt-deal-kpis"></div>
+      <table class="rpt-table" style="margin-top:10px">
+        <thead><tr><th>Deal Metric</th><th style="text-align:right">Value</th></tr></thead>
+        <tbody id="rpt-deal-tbody"></tbody>
+      </table>
+    </div>
     <div class="rpt-footer">
       <span>Confidential — Prepared by Intelligent Consulting</span>
       <span id="rpt-footer-date-fin"></span>
@@ -1932,6 +1940,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     <div class="rpt-section">
       <div class="rpt-section-title">Pathfinder Synthesis</div>
       <div class="rpt-methodology" id="rpt-synthesis"></div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">Transformation Strategy Insights</div>
+      <div id="rpt-synthesis-insights"></div>
     </div>
     <div class="rpt-footer">
       <span>Confidential — Prepared by Intelligent Consulting</span>
@@ -3865,6 +3877,41 @@ function exportReport() {
     savingsDetailHTML += '</div>';
     document.getElementById('rpt-savings-detail').innerHTML = savingsDetailHTML;
 
+    // === PAGE 3: Deal Commercials & Investment Case ===
+    try {
+      const asnRpt  = getCommercialAssumptions();
+      const dealRpt = computeDealCommercials(impact, fin, asnRpt);
+      const pnlRpt  = compute3YearPnL(impact, fin, asnRpt);
+      const kpiEl   = document.getElementById('rpt-deal-kpis');
+      if (kpiEl) {
+        kpiEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+          <div style="padding:10px;border:2px solid #b45309;border-radius:6px;text-align:center;background:#fffbeb"><div style="font-size:1.15rem;font-weight:700;color:#b45309!important">${pnlRpt.paybackMonths!=null?pnlRpt.paybackMonths+' mo':'>36 mo'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">Payback Period</div></div>
+          <div style="padding:10px;border:2px solid #0369a1;border-radius:6px;text-align:center;background:#f0f9ff"><div style="font-size:1.15rem;font-weight:700;color:#0369a1!important">${formatCurrency(Math.round(pnlRpt.npv||0))}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">NPV (3-Year)</div></div>
+          <div style="padding:10px;border:2px solid #15803d;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.15rem;font-weight:700;color:#15803d!important">${pnlRpt.irr!=null?Math.round(pnlRpt.irr*100)+'%':'n/a'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">IRR</div></div>
+          <div style="padding:10px;border:2px solid #6d28d9;border-radius:6px;text-align:center;background:#faf5ff"><div style="font-size:1.15rem;font-weight:700;color:#6d28d9!important">${formatCurrency(Math.round(dealRpt.tcv||0))}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">Total Contract Value</div></div>
+        </div>`;
+      }
+      const dealTbody = document.getElementById('rpt-deal-tbody');
+      if (dealTbody) {
+        const dRows = [
+          ['Committed FTEs (Steady-State)', String(dealRpt.totalOffFTEs||0)],
+          ['Blended Offshore Rate', dealRpt.blendedRate>0?'$'+dealRpt.blendedRate.toFixed(2)+'/hr':'--'],
+          ['Annual Offshore Labour', formatCurrency(dealRpt.annualOffshoreSpend||0)],
+          ['Technology & Infrastructure ($'+(asnRpt.techCostPerFTEYear||1500).toLocaleString()+'/FTE/yr)', formatCurrency(dealRpt.annualTechCost||0)],
+          ['Management Fee ('+Math.round(asnRpt.mgmtFeePct*100)+'%)', formatCurrency(dealRpt.annualMgmtFee||0)+'/yr'],
+          ['',''],
+          ['Year 1 Revenue (Ramp '+Math.round(asnRpt.rampY1*100)+'%)', formatCurrency(dealRpt.y1Revenue||0)],
+          ['Year 2 Revenue (Ramp '+Math.round(asnRpt.rampY2*100)+'%)', formatCurrency(dealRpt.y2Revenue||0)],
+          ['Year 3 Revenue (Steady-State)', formatCurrency(dealRpt.y3Revenue||0)]
+        ];
+        dealTbody.innerHTML = dRows.map(r => {
+          if(!r[0]) return '<tr><td colspan="2" style="padding:3px;border:none;border-top:1px solid #e5e7eb"></td></tr>';
+          return `<tr><td class="rpt-label">${r[0]}</td><td class="rpt-value" style="text-align:right"><strong>${r[1]}</strong></td></tr>`;
+        }).join('') +
+        `<tr style="font-weight:700;background:#f0fdf4"><td class="rpt-label" style="color:#15803d!important">Total Contract Value (${asnRpt.contractYears} Years)</td><td class="rpt-value" style="text-align:right;color:#15803d!important"><strong>${formatCurrency(dealRpt.tcv||0)}</strong></td></tr>`;
+      }
+    } catch(e) { console.warn('PDF deal section error:', e); }
+
     // === PAGE 4: Diagnostic & Solution Framework ===
     document.getElementById('rpt-date-4').textContent = dateStr;
     document.getElementById('rpt-footer-date-4').textContent = dateStr;
@@ -3919,6 +3966,40 @@ function exportReport() {
     // Synthesis text
     const synthText = document.getElementById('synthesis-text')?.textContent || '';
     document.getElementById('rpt-synthesis').textContent = synthText || 'Complete the Pathfinder diagnostic workflow to generate synthesis.';
+
+    // Transformation Strategy Insights (from Slide 6 synthesis cards)
+    const synInsightsEl = document.getElementById('rpt-synthesis-insights');
+    if (synInsightsEl) {
+      const synCardsRpt = document.querySelectorAll('#strategy-segment-treatments .syn-card');
+      if (synCardsRpt.length > 0) {
+        let insHtml = '<div style="display:flex;flex-direction:column;gap:10px">';
+        synCardsRpt.forEach(card => {
+          const lt  = card.querySelector('.syn-lever-tag')?.textContent?.trim() || '';
+          const st  = card.querySelector('.syn-seg-tag')?.textContent?.trim()   || '';
+          const dt  = card.querySelector('.syn-dest-tag')?.textContent?.trim()  || '';
+          const hl  = card.querySelector('.syn-headline')?.textContent?.trim()  || '';
+          const bls = [...card.querySelectorAll('.syn-bullet')].map(b => b.textContent.replace(/^[-\u2013]\s*/,'').trim());
+          const mts = [...card.querySelectorAll('.syn-metric-item')].map(m =>
+            (m.querySelector('.syn-metric-label')?.textContent?.trim()||'')+': '+(m.querySelector('.syn-metric-value')?.textContent?.trim()||'')
+          ).filter(Boolean);
+          const bc  = ({OPTIMISE:'#059669',AUTOMATE:'#d97706',AUGMENT:'#7c3aed',OFFSHORE:'#0284c7'})[lt.toUpperCase()]||'#374151';
+          insHtml += `<div style="padding:10px 12px;border:1px solid #e5e7eb;border-left:4px solid ${bc};border-radius:0 6px 6px 0;page-break-inside:avoid">
+            <div style="display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap">
+              <span style="font-size:.58rem;font-weight:700;padding:1px 6px;border-radius:3px;background:${bc}22;color:${bc}!important;text-transform:uppercase">${lt}</span>
+              <span style="font-size:.58rem;font-weight:700;padding:1px 6px;border-radius:3px;background:#7c3aed22;color:#7c3aed!important">${st}</span>
+              <span style="font-size:.58rem;padding:1px 6px;border-radius:3px;background:#0ea5e922;color:#0369a1!important">${dt}</span>
+            </div>
+            <div style="font-size:.78rem;font-weight:700;color:#111827!important;margin-bottom:4px">${hl}</div>
+            <ul style="margin:0 0 5px 14px;padding:0">${bls.map(b=>`<li style="font-size:.68rem;color:#374151!important;margin-bottom:2px">${b}</li>`).join('')}</ul>
+            <div style="display:flex;gap:14px;font-size:.62rem;color:#6b7280!important;border-top:1px solid #f3f4f6;padding-top:4px">${mts.map(m=>`<span>${m}</span>`).join('')}</div>
+          </div>`;
+        });
+        insHtml += '</div>';
+        synInsightsEl.innerHTML = insHtml;
+      } else {
+        synInsightsEl.innerHTML = '<p style="font-size:.75rem;color:#666!important;font-style:italic">Navigate through Slide 6 (Transformation Strategy) to generate insights.</p>';
+      }
+    }
 
   } catch(e) {
     console.error('Export report error:', e);
@@ -4000,9 +4081,12 @@ function exportPPT() {
       { fill:{ type:'solid', color:BG2 } },        // Slide 4
       { fill:{ type:'solid', color:BG3 } },        // Slide 5
       { fill:{ type:'solid', color:BG } },         // Slide 6
-      { fill:{ type:'solid', color:BG2 } },        // Slide 7
-      { fill:{ type:'solid', color:BG3 } }         // Slide 8
+      { fill:{ type:'solid', color:BG2 } },        // Slide 7 (Deal Commercials)
+      { fill:{ type:'solid', color:BG3 } },        // Slide 8 (Synthesis Insights)
+      { fill:{ type:'solid', color:BG } },         // Slide 9 (Recommendations)
+      { fill:{ type:'solid', color:BG2 } }         // Slide 10 (Roadmap)
     ];
+    const TOTAL_PPT_SLIDES = 10;
 
     let slideNum = 0;
 
@@ -4019,7 +4103,7 @@ function exportPPT() {
       slide.addShape(pptx.shapes.LINE, { x:0.5, y:6.85, w:12.33, h:0, line:{ color:BORDER, width:0.5 } });
       slide.addText('Confidential - Prepared by Intelligent Consulting', { x:0.5, y:6.9, w:8, h:0.35, fontSize:7.5, color:GRAY, fontFace:'Arial' });
       // Slide number (right-aligned)
-      slide.addText(num + ' / 8', { x:10.83, y:6.9, w:2, h:0.35, fontSize:8, color:GRAY, fontFace:'Arial', align:'right' });
+      slide.addText(num + ' / ' + TOTAL_PPT_SLIDES, { x:10.83, y:6.9, w:2, h:0.35, fontSize:8, color:GRAY, fontFace:'Arial', align:'right' });
       // Small compass logo in footer
       slide.addImage({ data:'data:image/png;base64,'+LOGO_B64, x:12.6, y:6.88, w:0.28, h:0.28 });
     }
@@ -4304,9 +4388,89 @@ function exportPPT() {
     addKPICard(s6, 10.1, 4.6, 2.73, 1.5, formatCurrency(fin.annualSavings*3 - fin.transitionCost), '3-Year Net Value', GREEN);
     addFooter(s6, 6);
 
-    // === SLIDE 7: Recommendations (numbered) ===
+    // === SLIDE 7: Deal Commercials & 3-Year P&L ===
     const s7 = addSlideWithBg();
-    addSectionHeader(s7, 'Recommendations', 'Data-driven insights from the Pathfinder diagnostic');
+    addSectionHeader(s7, 'Deal Commercials', '3-Year P&L, investment case and contract structure');
+    try {
+      const asnPPT  = getCommercialAssumptions();
+      const dealPPT = computeDealCommercials(impact, fin, asnPPT);
+      const pnlPPT  = compute3YearPnL(impact, fin, asnPPT);
+      // KPI strip (4 cards)
+      addKPICard(s7, 0.5,  1.5, 2.8, 1.4, pnlPPT.paybackMonths!=null ? pnlPPT.paybackMonths+' mo' : '>36 mo', 'Payback Period', AMBER);
+      addKPICard(s7, 3.5,  1.5, 2.8, 1.4, '$'+Math.round((pnlPPT.npv||0)/1e5)/10+'M', 'NPV (3-Year)', CYAN);
+      addKPICard(s7, 6.5,  1.5, 2.8, 1.4, pnlPPT.irr!=null ? Math.round(pnlPPT.irr*100)+'%' : 'n/a', 'IRR', GREEN);
+      addKPICard(s7, 9.5,  1.5, 3.3, 1.4, '$'+Math.round((dealPPT.tcv||0)/1e5)/10+'M', 'Total Contract Value', PURPLE);
+      // Deal table (left)
+      const dRows = [
+        [{ text:'Deal Metric',options:{bold:true,color:WHITE,fill:{color:HDR_FILL}} },{ text:'Value',options:{bold:true,color:WHITE,fill:{color:HDR_FILL},align:'right'} }],
+        [{ text:'Committed FTEs',options:{color:WHITE,fill:{color:DARK_CARD}} },{ text:sanitize(String(dealPPT.totalOffFTEs||0)),options:{color:CYAN,bold:true,align:'right',fill:{color:DARK_CARD}} }],
+        [{ text:'Blended Offshore Rate',options:{color:WHITE,fill:{color:BG}} },{ text:dealPPT.blendedRate>0?'$'+dealPPT.blendedRate.toFixed(2)+'/hr':'--',options:{color:WHITE,align:'right',fill:{color:BG}} }],
+        [{ text:'Annual Offshore Labour',options:{color:WHITE,fill:{color:DARK_CARD}} },{ text:sanitize(formatCurrency(dealPPT.annualOffshoreSpend||0)),options:{color:WHITE,align:'right',fill:{color:DARK_CARD}} }],
+        [{ text:'Technology & Infrastructure',options:{color:WHITE,fill:{color:BG}} },{ text:sanitize(formatCurrency(dealPPT.annualTechCost||0)),options:{color:'7dd3ea',align:'right',fill:{color:BG}} }],
+        [{ text:'Management Fee ('+Math.round(asnPPT.mgmtFeePct*100)+'%)',options:{color:WHITE,fill:{color:DARK_CARD}} },{ text:sanitize(formatCurrency(dealPPT.annualMgmtFee||0))+'/yr',options:{color:AMBER,align:'right',fill:{color:DARK_CARD}} }],
+        [{ text:'Year 1 Revenue ('+Math.round(asnPPT.rampY1*100)+'% Ramp)',options:{color:WHITE,fill:{color:BG}} },{ text:sanitize(formatCurrency(dealPPT.y1Revenue||0)),options:{color:WHITE,align:'right',fill:{color:BG}} }],
+        [{ text:'Year 2 Revenue ('+Math.round(asnPPT.rampY2*100)+'% Ramp)',options:{color:WHITE,fill:{color:DARK_CARD}} },{ text:sanitize(formatCurrency(dealPPT.y2Revenue||0)),options:{color:WHITE,align:'right',fill:{color:DARK_CARD}} }],
+        [{ text:'Year 3 Revenue (Steady-State)',options:{color:WHITE,fill:{color:BG}} },{ text:sanitize(formatCurrency(dealPPT.y3Revenue||0)),options:{color:WHITE,align:'right',fill:{color:BG}} }],
+        [{ text:'TOTAL CONTRACT VALUE',options:{bold:true,color:WHITE,fill:{color:HDR_FILL}} },{ text:sanitize(formatCurrency(dealPPT.tcv||0)),options:{bold:true,color:GREEN,align:'right',fill:{color:HDR_FILL}} }]
+      ];
+      s7.addTable(dRows, { x:0.5, y:3.1, w:5.8, colW:[3.7,2.1], fontSize:10, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.36, autoPage:false });
+      // P&L bar chart (right side)
+      s7.addText('3-YEAR P&L WATERFALL', { x:6.6, y:3.0, w:6.2, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
+      const pnlBars = [Math.round(pnlPPT.transformInvestment||0), Math.round(pnlPPT.savY1||0), Math.round(pnlPPT.savY2||0), Math.round(pnlPPT.savY3||0)];
+      if(pnlBars.some(v => v !== 0)) {
+        s7.addChart(pptx.charts.BAR, [{ name:'Cash Flow ($)', labels:['Year 0 (Invest)','Year 1 (Ramp)','Year 2','Year 3'], values:pnlBars }], {
+          x:6.3, y:3.3, w:6.5, h:3.1,
+          showTitle:false, showValue:true, barDir:'col', showLegend:false,
+          chartColors:[AMBER, GREEN_DIM, GREEN, GREEN],
+          dataLabelColor:WHITE, dataLabelFontSize:8,
+          catAxisLabelColor:GRAY, catAxisLabelFontSize:9,
+          valAxisLabelColor:GRAY, valAxisLabelFontSize:8
+        });
+      }
+    } catch(e) { console.warn('PPT deal slide error:', e); }
+    addFooter(s7, 7);
+
+    // === SLIDE 8: Transformation Strategy Insights ===
+    const s8 = addSlideWithBg();
+    addSectionHeader(s8, 'Transformation Strategy', 'Lever x Segment x Destination — prioritised action plan');
+    const synCards = document.querySelectorAll('#strategy-segment-treatments .syn-card');
+    if(synCards.length > 0) {
+      synCards.forEach((card, idx) => {
+        if(idx >= 3) return;
+        const leverTag8 = sanitize(card.querySelector('.syn-lever-tag')?.textContent?.trim() || '');
+        const segTag8   = sanitize(card.querySelector('.syn-seg-tag')?.textContent?.trim()   || '');
+        const destTag8  = sanitize(card.querySelector('.syn-dest-tag')?.textContent?.trim()  || '');
+        const headline8 = sanitize(card.querySelector('.syn-headline')?.textContent?.trim()  || '');
+        const bullets8  = [...card.querySelectorAll('.syn-bullet')].map(b => sanitize(b.textContent.replace(/^[-\u2013]\s*/,'').trim()));
+        const metrics8  = [...card.querySelectorAll('.syn-metric-item')].map(m =>
+          sanitize((m.querySelector('.syn-metric-label')?.textContent?.trim()||'') + ': ' + (m.querySelector('.syn-metric-value')?.textContent?.trim()||''))
+        ).filter(Boolean);
+        const bucketColors8 = { 'OPTIMISE':GREEN, 'AUTOMATE':AMBER, 'AUGMENT':PURPLE, 'OFFSHORE':CYAN };
+        const bCol = bucketColors8[leverTag8] || CYAN;
+        const yPos = 1.55 + idx * 1.72;
+        // Card bg
+        s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:yPos, w:12.33, h:1.58, rectRadius:0.1, fill:{color:DARK_CARD}, line:{color:BORDER, width:0.5} });
+        // Left accent bar
+        s8.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:yPos, w:0.14, h:1.58, fill:{color:bCol} });
+        // Tags row
+        s8.addText(leverTag8,  { x:0.78, y:yPos+0.1,  w:1.1, h:0.25, fontSize:8,  fontFace:'Arial', bold:true, color:bCol });
+        s8.addText(segTag8,    { x:1.98, y:yPos+0.1,  w:1.4, h:0.25, fontSize:8,  fontFace:'Arial', bold:true, color:PURPLE });
+        s8.addText(destTag8,   { x:3.48, y:yPos+0.1,  w:2.0, h:0.25, fontSize:8,  fontFace:'Arial', color:CYAN });
+        // Headline
+        s8.addText(headline8,  { x:0.78, y:yPos+0.37, w:7.0, h:0.36, fontSize:12, fontFace:'Arial', bold:true, color:WHITE });
+        // Bullets (first 3 joined)
+        s8.addText(bullets8.slice(0,3).join('  |  '), { x:0.78, y:yPos+0.75, w:8.5, h:0.3, fontSize:9, fontFace:'Arial', color:GRAY_LIGHT });
+        // Metrics
+        s8.addText(metrics8.join('   '), { x:0.78, y:yPos+1.1, w:8.0, h:0.28, fontSize:8.5, fontFace:'Arial', color:CYAN });
+      });
+    } else {
+      s8.addText('Complete the Transformation Strategy Brief (Slide 6) to generate insights.', { x:0.5, y:3.5, w:12.33, h:0.5, fontSize:14, fontFace:'Arial', color:GRAY, align:'center' });
+    }
+    addFooter(s8, 8);
+
+    // === SLIDE 9: Recommendations (numbered) ===
+    const s9 = addSlideWithBg();
+    addSectionHeader(s9, 'Recommendations', 'Data-driven insights from the Pathfinder diagnostic');
 
     let recCards = [];
     const totalPain = Object.values(selectedPainPoints).reduce((s,a)=>s+a.length, 0);
@@ -4331,25 +4495,25 @@ function exportPPT() {
         const yPos = 1.5 + row * 1.65;
         const numStr = String(i+1).padStart(2, '0');
         // Card background
-        s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:yPos, w:5.9, h:1.45, rectRadius:0.1, fill:{color:DARK_CARD}, line:{color:BORDER, width:0.75} });
+        s9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:yPos, w:5.9, h:1.45, rectRadius:0.1, fill:{color:DARK_CARD}, line:{color:BORDER, width:0.75} });
         // Large number
-        s7.addText(numStr, { x:xPos+0.15, y:yPos+0.1, w:0.6, h:0.8, fontSize:32, fontFace:'Arial', bold:true, color:CYAN_DIM, align:'center' });
+        s9.addText(numStr, { x:xPos+0.15, y:yPos+0.1, w:0.6, h:0.8, fontSize:32, fontFace:'Arial', bold:true, color:CYAN_DIM, align:'center' });
         // Vertical divider
-        s7.addShape(pptx.shapes.LINE, { x:xPos+0.85, y:yPos+0.15, w:0, h:1.15, line:{color:BORDER, width:0.75} });
+        s9.addShape(pptx.shapes.LINE, { x:xPos+0.85, y:yPos+0.15, w:0, h:1.15, line:{color:BORDER, width:0.75} });
         // Title + group tag
-        s7.addText(sanitize(rec.title), { x:xPos+1.0, y:yPos+0.1, w:4.7, h:0.38, fontSize:12.5, fontFace:'Arial', bold:true, color:WHITE });
-        s7.addText(sanitize(rec.group).toUpperCase(), { x:xPos+1.0, y:yPos+0.48, w:4.7, h:0.22, fontSize:7.5, fontFace:'Arial', bold:true, color:PURPLE });
+        s9.addText(sanitize(rec.title), { x:xPos+1.0, y:yPos+0.1, w:4.7, h:0.38, fontSize:12.5, fontFace:'Arial', bold:true, color:WHITE });
+        s9.addText(sanitize(rec.group).toUpperCase(), { x:xPos+1.0, y:yPos+0.48, w:4.7, h:0.22, fontSize:7.5, fontFace:'Arial', bold:true, color:PURPLE });
         // Insight
-        s7.addText(sanitize(rec.insight), { x:xPos+1.0, y:yPos+0.72, w:4.7, h:0.6, fontSize:9.5, fontFace:'Arial', color:GRAY_LIGHT, valign:'top' });
+        s9.addText(sanitize(rec.insight), { x:xPos+1.0, y:yPos+0.72, w:4.7, h:0.6, fontSize:9.5, fontFace:'Arial', color:GRAY_LIGHT, valign:'top' });
       });
     } else {
-      s7.addText('Complete the Pathfinder diagnostic to generate recommendations.', { x:0.5, y:3.5, w:12.33, h:0.5, fontSize:14, fontFace:'Arial', color:GRAY, align:'center' });
+      s9.addText('Complete the Pathfinder diagnostic to generate recommendations.', { x:0.5, y:3.5, w:12.33, h:0.5, fontSize:14, fontFace:'Arial', color:GRAY, align:'center' });
     }
-    addFooter(s7, 7);
+    addFooter(s9, 9);
 
-    // === SLIDE 8: Implementation Roadmap ===
-    const s8 = addSlideWithBg();
-    addSectionHeader(s8, 'Implementation Roadmap', '12-month phased transformation plan');
+    // === SLIDE 10: Implementation Roadmap ===
+    const s10 = addSlideWithBg();
+    addSectionHeader(s10, 'Implementation Roadmap', '12-month phased transformation plan');
 
     const total = impact.totalMovedFTEs;
     const offCodes = Object.keys(CONFIG.offshoreLocations);
@@ -4370,36 +4534,36 @@ function exportPPT() {
     ];
 
     // Timeline bar
-    s8.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:1.55, w:12.33, h:0.06, fill:{color:BORDER} });
+    s10.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:1.55, w:12.33, h:0.06, fill:{color:BORDER} });
     phases.forEach((phase, i) => {
       const barX = 0.5 + i * 4.11;
-      s8.addShape(pptx.shapes.RECTANGLE, { x:barX, y:1.55, w:4.11, h:0.06, fill:{color:phase.color} });
+      s10.addShape(pptx.shapes.RECTANGLE, { x:barX, y:1.55, w:4.11, h:0.06, fill:{color:phase.color} });
       // Timeline dot
-      s8.addShape(pptx.shapes.OVAL, { x:barX-0.08, y:1.46, w:0.24, h:0.24, fill:{color:phase.color}, line:{color:BG, width:2} });
+      s10.addShape(pptx.shapes.OVAL, { x:barX-0.08, y:1.46, w:0.24, h:0.24, fill:{color:phase.color}, line:{color:BG, width:2} });
     });
     // End dot
-    s8.addShape(pptx.shapes.OVAL, { x:12.67, y:1.46, w:0.24, h:0.24, fill:{color:GREEN}, line:{color:BG, width:2} });
+    s10.addShape(pptx.shapes.OVAL, { x:12.67, y:1.46, w:0.24, h:0.24, fill:{color:GREEN}, line:{color:BG, width:2} });
 
     phases.forEach((phase, i) => {
       const xPos = 0.5 + i * 4.2;
-      s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:1.9, w:3.95, h:4.5, rectRadius:0.12, fill:{color:DARK_CARD}, line:{color:phase.color, width:1.2} });
+      s10.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos, y:1.9, w:3.95, h:4.5, rectRadius:0.12, fill:{color:DARK_CARD}, line:{color:phase.color, width:1.2} });
       // Phase header
-      s8.addText(phase.title, { x:xPos+0.2, y:2.0, w:3.55, h:0.35, fontSize:16, fontFace:'Arial', bold:true, color:phase.color });
-      s8.addText(phase.subtitle, { x:xPos+0.2, y:2.3, w:3.55, h:0.3, fontSize:13, fontFace:'Arial', color:WHITE });
-      s8.addText(phase.duration, { x:xPos+0.2, y:2.6, w:3.55, h:0.25, fontSize:9, fontFace:'Arial', color:GRAY });
+      s10.addText(phase.title, { x:xPos+0.2, y:2.0, w:3.55, h:0.35, fontSize:16, fontFace:'Arial', bold:true, color:phase.color });
+      s10.addText(phase.subtitle, { x:xPos+0.2, y:2.3, w:3.55, h:0.3, fontSize:13, fontFace:'Arial', color:WHITE });
+      s10.addText(phase.duration, { x:xPos+0.2, y:2.6, w:3.55, h:0.25, fontSize:9, fontFace:'Arial', color:GRAY });
       // Target pill
-      s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos+0.2, y:2.95, w:3.55, h:0.4, rectRadius:0.06, fill:{color:HDR_FILL} });
-      s8.addText('Target: ' + phase.target, { x:xPos+0.2, y:2.95, w:3.55, h:0.4, fontSize:11, fontFace:'Arial', bold:true, color:phase.color, align:'center' });
+      s10.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:xPos+0.2, y:2.95, w:3.55, h:0.4, rectRadius:0.06, fill:{color:HDR_FILL} });
+      s10.addText('Target: ' + phase.target, { x:xPos+0.2, y:2.95, w:3.55, h:0.4, fontSize:11, fontFace:'Arial', bold:true, color:phase.color, align:'center' });
       // Milestones
-      s8.addText(phase.items.map(item => ({ text:sanitize(item), options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } })),
+      s10.addText(phase.items.map(item => ({ text:sanitize(item), options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } })),
         { x:xPos+0.25, y:3.5, w:3.45, h:2.6, fontFace:'Arial', valign:'top', lineSpacing:22 });
     });
 
     // Next steps bar
-    s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:6.45, w:12.33, h:0.35, rectRadius:0.06, fill:{color:HDR_FILL} });
-    s8.addText('Next Steps:  Schedule stakeholder alignment  |  Finalize destination  |  Initiate pilot recruitment',
+    s10.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:6.45, w:12.33, h:0.35, rectRadius:0.06, fill:{color:HDR_FILL} });
+    s10.addText('Next Steps:  Schedule stakeholder alignment  |  Finalize destination  |  Initiate pilot recruitment',
       { x:0.5, y:6.45, w:12.33, h:0.35, fontSize:9.5, fontFace:'Arial', color:CYAN, align:'center' });
-    addFooter(s8, 8);
+    addFooter(s10, 10);
 
     // === SAVE ===
     const fileName = 'Pathfinder_' + clientName.replace(/[^a-zA-Z0-9]/g,'_') + '_' + now.toISOString().slice(0,10) + '.pptx';

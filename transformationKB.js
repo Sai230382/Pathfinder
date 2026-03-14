@@ -796,16 +796,24 @@ function getRecommendedLevers(painPoints, industryKey, horizontalKey, transformM
       }
     };
 
-    // 1. Guarantee at least 2 People levers (top pain-triggered, or top by score)
-    const peopleSlot = painTriggeredPeople.length > 0 ? painTriggeredPeople : byCategory.people;
-    peopleSlot.slice(0, 2).forEach(add);
-
-    // 2. Guarantee at least 1 Process lever (non-offshore category; top pain-triggered)
+    const peopleSlot  = painTriggeredPeople.length  > 0 ? painTriggeredPeople  : byCategory.people;
     const processSlot = painTriggeredProcess.length > 0 ? painTriggeredProcess : byCategory.process;
-    processSlot.filter(l => l.bucket !== 'offshore').slice(0, 1).forEach(add);
 
-    // 3. Fill remaining slots with top-scoring levers across all categories
-    sorted.forEach(l => add(l));
+    if (transformModel === 'transformOnsite') {
+      // Onsite transformation: 1 People + 1 Process + fill rest with Automate/Augment priority
+      // Goal: surface AI, bot and process automation levers — not just optimise
+      peopleSlot.slice(0, 1).forEach(add);
+      processSlot.filter(l => l.bucket !== 'offshore').slice(0, 1).forEach(add);
+      // Fill remaining 4 slots: automate first, then augment, then optimise
+      ['automate', 'augment', 'optimise'].forEach(bucket => {
+        sorted.filter(l => l.bucket === bucket).forEach(l => add(l));
+      });
+    } else {
+      // Standard offshore model: 2 People + 1 Process + fill rest by score
+      peopleSlot.slice(0, 2).forEach(add);
+      processSlot.filter(l => l.bucket !== 'offshore').slice(0, 1).forEach(add);
+      sorted.forEach(l => add(l));
+    }
 
     // Return final 6 sorted by score descending
     return selected.sort((a, b) => b._score - a._score);

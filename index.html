@@ -5916,6 +5916,8 @@ function buildStrategyBrief() {
   // Lookup solution category meta (P·P·T colours)
   const catMeta = (typeof SOLUTION_CATEGORY_META !== 'undefined') ? SOLUTION_CATEGORY_META : {};
 
+  const isOnsiteMode = (mKey === 'transformOnsite');
+
   grid.innerHTML = topLevers.map(lever => {
     const bucket   = (typeof LEVER_BUCKETS !== 'undefined' ? LEVER_BUCKETS[lever.bucket] : {}) || {};
     const isActive = activatedLevers.has(lever.id);
@@ -5925,13 +5927,22 @@ function buildStrategyBrief() {
     const fitClass = score >= 35 ? 'strong'     : score >= 20 ? 'good'     : 'fair';
     const painMatches = (lever.painTriggers || []).filter(t => painText.includes(t.toLowerCase())).length;
     const cat = lever.solutionCategory || 'process';
-    // Best locations badge (only show if lever has specific locations)
-    const bestLocs = lever.bestLocations || [];
-    const SHORT_NAMES = {IN:'India',PH:'Philippines',PL:'Poland',MX:'Mexico',ZA:'S.Africa',CO:'Colombia',EG:'Egypt',RO:'Romania'};
-    const locNames = bestLocs.map(code => SHORT_NAMES[code] || (COUNTRY_DB && COUNTRY_DB[code] ? COUNTRY_DB[code].name : code));
-    const locHtml = locNames.length > 0
-      ? `<div class="slg-locations"><span class="slg-loc-label">Best from:</span>${locNames.map(n=>`<span class="slg-loc-chip">${n}</span>`).join('')}</div>`
-      : '';
+
+    // Locations / approach block — suppressed in Transform Only, replaced with delivery approach
+    let locHtml = '';
+    if (isOnsiteMode) {
+      // Show onsite delivery approach based on lever bucket
+      const approachMap = { automate:'Onsite AI Tooling', augment:'AI Agent Assist', optimise:'Process Re-design', offshore:'Hybrid Onsite' };
+      const approach = approachMap[lever.bucket] || 'Onsite Delivery';
+      locHtml = `<div class="slg-locations"><span class="slg-loc-label">Approach:</span><span class="slg-loc-chip" style="background:rgba(124,92,252,.12);color:#c4b5fd;border-color:rgba(124,92,252,.3)">${approach}</span></div>`;
+    } else {
+      const bestLocs = lever.bestLocations || [];
+      const SHORT_NAMES = {IN:'India',PH:'Philippines',PL:'Poland',MX:'Mexico',ZA:'S.Africa',CO:'Colombia',EG:'Egypt',RO:'Romania'};
+      const locNames = bestLocs.map(code => SHORT_NAMES[code] || (COUNTRY_DB && COUNTRY_DB[code] ? COUNTRY_DB[code].name : code));
+      if (locNames.length > 0)
+        locHtml = `<div class="slg-locations"><span class="slg-loc-label">Best from:</span>${locNames.map(n=>`<span class="slg-loc-chip">${n}</span>`).join('')}</div>`;
+    }
+
     return `<div class="slg-card ${isActive?'active':''}" onclick="toggleStrategyLever('${lever.id}')">
       <span class="slg-check">+ Added</span>
       <div class="slg-top">
@@ -5972,6 +5983,8 @@ function buildSegment2x2() {
   const treatmentList = document.getElementById('strategy-segment-treatments');
   if (!dotsContainer || !treatmentList) return;
 
+  const isOnsite = (typeof transformationModel !== 'undefined') && transformationModel === 'transformOnsite';
+
   const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
   const activeSegs = Object.entries(CONTACT_SEGMENTS)
     .filter(([k]) => (segConfig[k]||0) > 0)
@@ -5983,67 +5996,122 @@ function buildSegment2x2() {
     return;
   }
 
-  // Quadrant colors for dot borders
+  // ── Update axis labels & quadrant labels to match mode ──────────────────
+  const xLabelEl = document.querySelector('.s2x2-x-label-text');
+  const yLabelEl = document.querySelector('.s2x2-y-label-text');
+  const qLabelEls = document.querySelectorAll('.s2x2-q-label'); // order: q2,q1,q3,q4
+  if (isOnsite) {
+    if (xLabelEl) xLabelEl.textContent = 'Automation Potential';
+    if (yLabelEl) yLabelEl.textContent = 'Contact Volume';
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Process Redesign';       // top-left
+    if (qLabelEls[1]) qLabelEls[1].textContent = 'Quick Win — Automate';   // top-right
+    if (qLabelEls[2]) qLabelEls[2].textContent = 'Retain & Monitor';       // bottom-left
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'AI Assist';              // bottom-right
+  } else {
+    if (xLabelEl) xLabelEl.textContent = 'Offshore Affinity';
+    if (yLabelEl) yLabelEl.textContent = 'Automation Potential';
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Automate Onsite';
+    if (qLabelEls[1]) qLabelEls[1].innerHTML  = 'Automate &amp; Offshore';
+    if (qLabelEls[2]) qLabelEls[2].innerHTML  = 'Retain &amp; Specialise';
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'Offshore Direct';
+  }
+
+  // ── Normalise contact volume for Y-axis (Transform Only mode) ───────────
+  const vols = activeSegs.map(([k]) => segConfig[k] || 0);
+  const maxVol = Math.max(...vols);
+  const minVol = Math.min(...vols);
+  const volRange = maxVol - minVol || 1;
+
+  // Quadrant colors — same positions, mode-appropriate semantics
   const qColors = {
-    q1:'rgba(0,212,255,.7)',    // Automate & Offshore (top-right)
-    q2:'rgba(245,158,11,.7)',   // Automate Onsite (top-left)
-    q3:'rgba(124,92,252,.7)',   // Retain & Specialise (bottom-left)
-    q4:'rgba(16,185,129,.7)'    // Offshore Direct (bottom-right)
+    q1:'rgba(0,212,255,.7)',    // top-right
+    q2:'rgba(245,158,11,.7)',   // top-left
+    q3:'rgba(124,92,252,.7)',   // bottom-left
+    q4:'rgba(16,185,129,.7)'    // bottom-right
   };
 
   const dots = activeSegs.map(([key, seg]) => {
     const eff = (typeof getEffSeg === 'function') ? getEffSeg(key) : seg;
-    const x = (eff.offshoreAffinity   || 0);  // 0→1 → 0→100% from left
-    const y = (eff.automationPotential|| 0);  // 0→1 → 100→0% from top (high = top)
     const pct = segConfig[key] || 0;
-    // Determine quadrant
-    let qColor;
-    if (x >= 0.5 && y >= 0.5)      qColor = qColors.q1; // top-right: A&O
-    else if (x < 0.5 && y >= 0.5)  qColor = qColors.q2; // top-left: Auto Onsite
-    else if (x < 0.5 && y < 0.5)   qColor = qColors.q3; // bottom-left: Retain
-    else                             qColor = qColors.q4; // bottom-right: Offshore
 
-    // Position as % of grid area
+    // Transform Only: X = automationPotential, Y = relative contact volume
+    // Offshore model: X = offshoreAffinity,    Y = automationPotential
+    const normVol = (pct - minVol) / volRange;  // 0→1 spread across segments
+    const x = isOnsite ? (eff.automationPotential || 0) : (eff.offshoreAffinity    || 0);
+    const y = isOnsite ? normVol                        : (eff.automationPotential || 0);
+
+    let qColor;
+    if (x >= 0.5 && y >= 0.5)     qColor = qColors.q1;
+    else if (x < 0.5 && y >= 0.5) qColor = qColors.q2;
+    else if (x < 0.5 && y < 0.5)  qColor = qColors.q3;
+    else                            qColor = qColors.q4;
+
     const leftPct = (x * 100).toFixed(1) + '%';
     const topPct  = ((1 - y) * 100).toFixed(1) + '%';
-
-    // Size dot proportionally to volume (min 28px, max 48px)
     const dotSize = Math.max(28, Math.min(48, 28 + pct * 0.5));
-    // Short label for inside the dot
-    const shortName = seg.name.split(' ')[0]; // first word e.g. "Billing", "Technical"
+    const shortName = seg.name.split(' ')[0];
+
+    const tooltipLine2 = isOnsite
+      ? `${pct}% of volume &nbsp;·&nbsp; Automation: ${Math.round(x*100)}%`
+      : `${pct}% of volume &nbsp;·&nbsp; ${Math.round(x*100)}% offshore fit`;
+    const tooltipLine3 = isOnsite
+      ? `Volume rank: ${Math.round(normVol*100)}% relative`
+      : `Automation potential: ${Math.round(y*100)}%`;
+
     return `<div class="s2x2-dot" style="left:${leftPct};top:${topPct};border-color:${qColor};width:${dotSize}px;height:${dotSize}px;font-size:${dotSize>38?'.58rem':'.52rem'}">
-      <div class="s2x2-dot-tooltip">${seg.icon||''} <strong>${seg.name}</strong><br>${pct}% of volume &nbsp;·&nbsp; ${Math.round(x*100)}% offshore fit<br>Automation potential: ${Math.round(y*100)}%</div>
+      <div class="s2x2-dot-tooltip">${seg.icon||''} <strong>${seg.name}</strong><br>${tooltipLine2}<br>${tooltipLine3}</div>
       <span style="text-align:center;line-height:1.1">${shortName}<br><span style="font-size:.7em;opacity:.8">${pct}%</span></span>
     </div>`;
   }).join('');
   dotsContainer.innerHTML = dots;
 
-  // Treatment list
+  // ── Treatment list — mode-appropriate descriptions ───────────────────────
   const treatments = activeSegs.map(([key, seg]) => {
     const eff = (typeof getEffSeg === 'function') ? getEffSeg(key) : seg;
-    const x = eff.offshoreAffinity   || 0;
-    const y = eff.automationPotential|| 0;
     const pct = segConfig[key] || 0;
-    let treatment, borderColor;
-    if (x >= 0.5 && y >= 0.5) {
-      treatment = 'Automate first, then offshore residual — strong cost reduction potential';
-      borderColor = '#00d4ff';
-    } else if (x < 0.5 && y >= 0.5) {
-      treatment = 'Automate onsite — keep for relationship/compliance; reduce headcount via AI';
-      borderColor = '#f59e0b';
-    } else if (x < 0.5 && y < 0.5) {
-      treatment = 'Retain onsite — complex, relationship-intensive; focus on quality & upskilling';
-      borderColor = '#7c5cfc';
+    const normVol = (pct - minVol) / volRange;
+    const x = isOnsite ? (eff.automationPotential || 0) : (eff.offshoreAffinity    || 0);
+    const y = isOnsite ? normVol                        : (eff.automationPotential || 0);
+
+    let treatment, borderColor, footer;
+    if (isOnsite) {
+      if (x >= 0.5 && y >= 0.5) {
+        treatment   = 'High volume + high automation fit — Quick Win. Deploy AI/bots here first for maximum FTE reduction.';
+        borderColor = '#00d4ff';
+      } else if (x < 0.5 && y >= 0.5) {
+        treatment   = 'High volume but resistant to automation — Process Redesign priority. Map and simplify workflows before tooling.';
+        borderColor = '#f59e0b';
+      } else if (x < 0.5 && y < 0.5) {
+        treatment   = 'Low volume, complex interactions — Retain & Monitor. Invest in agent knowledge tools and upskilling programmes.';
+        borderColor = '#7c5cfc';
+      } else {
+        treatment   = 'Good automation fit, lower volume — apply lightweight AI tools and NLP assist; low risk, incremental gain.';
+        borderColor = '#10b981';
+      }
+      footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.automationPotential||0)*100)}% automation potential`;
     } else {
-      treatment = 'Offshore directly — simple work, high affinity; maximise arbitrage savings';
-      borderColor = '#10b981';
+      if (x >= 0.5 && y >= 0.5) {
+        treatment   = 'Automate first, then offshore residual — strong cost reduction potential';
+        borderColor = '#00d4ff';
+      } else if (x < 0.5 && y >= 0.5) {
+        treatment   = 'Automate onsite — keep for relationship/compliance; reduce headcount via AI';
+        borderColor = '#f59e0b';
+      } else if (x < 0.5 && y < 0.5) {
+        treatment   = 'Retain onsite — complex, relationship-intensive; focus on quality & upskilling';
+        borderColor = '#7c5cfc';
+      } else {
+        treatment   = 'Offshore directly — simple work, high affinity; maximise arbitrage savings';
+        borderColor = '#10b981';
+      }
+      footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.offshoreAffinity||0)*100)}% offshore fit`;
     }
+
     return `<div class="sst-item" style="border-left-color:${borderColor}">
       <span class="sst-icon">${seg.icon||'●'}</span>
       <div>
         <div class="sst-name">${seg.name}</div>
         <div class="sst-treatment">${treatment}</div>
-        <div class="sst-pct">${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.offshoreAffinity||0)*100)}% offshore fit</div>
+        <div class="sst-pct">${footer}</div>
       </div>
     </div>`;
   }).join('');

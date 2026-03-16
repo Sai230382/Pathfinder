@@ -1916,7 +1916,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <div class="comm-asn-field"><label class="comm-asn-label">Contract</label><input type="number" id="comm-contract-years" class="comm-asn-input" value="3" min="1" max="5" step="1"><span class="comm-asn-unit">yrs</span></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Y1 Ramp</label><input type="number" id="comm-ramp-y1" class="comm-asn-input" value="50" min="10" max="100" step="5"><span class="comm-asn-unit">%</span></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Y2 Ramp</label><input type="number" id="comm-ramp-y2" class="comm-asn-input" value="80" min="10" max="100" step="5"><span class="comm-asn-unit">%</span></div>
-        <div class="comm-asn-field"><label class="comm-asn-label">Transform $/FTE</label><input type="number" id="comm-transform-cost" class="comm-asn-input" value="8000" min="0" max="50000" step="500"></div>
+        <div class="comm-asn-field"><label class="comm-asn-label">Transform $/FTE</label><input type="number" id="comm-transform-cost" class="comm-asn-input" value="20000" min="0" max="50000" step="500"></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Tech $/FTE/yr</label><input type="number" id="comm-tech-cost" class="comm-asn-input" value="1500" min="0" max="10000" step="250"></div>
         <div class="comm-asn-field"><label class="comm-asn-label">Discount Rate</label><input type="number" id="comm-discount-rate" class="comm-asn-input" value="10" min="1" max="30" step="1"><span class="comm-asn-unit">%</span></div>
       </div>
@@ -2546,7 +2546,7 @@ let CONFIG = {
   },
   segments: {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10},
   workingHoursPerYear: 2080,
-  transitionCostPerFTE: 5000,
+  transitionCostPerFTE: 20000,
   scenarios: {
     Conservative: {offshorePercent:0.6,csatImpact:-2},
     Moderate:     {offshorePercent:0.8,csatImpact:-5},
@@ -3409,7 +3409,7 @@ function rebuildConfig() {
     offshoreLocations,
     segments: { ...formSegments },
     workingHoursPerYear: 2080,
-    transitionCostPerFTE: 5000,
+    transitionCostPerFTE: 20000,
     scenarios: {
       Conservative: {offshorePercent:0.6,csatImpact:-2},
       Moderate:     {offshorePercent:0.8,csatImpact:-5},
@@ -4084,7 +4084,7 @@ function exportReport() {
         kpiEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;page-break-inside:avoid;break-inside:avoid">
           <div style="padding:10px;border:2px solid #b45309;border-radius:6px;text-align:center;background:#fffbeb"><div style="font-size:1.15rem;font-weight:700;color:#b45309!important">${pnlRpt.paybackMonths!=null?pnlRpt.paybackMonths+' mo':'>36 mo'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">Payback Period</div></div>
           <div style="padding:10px;border:2px solid #0369a1;border-radius:6px;text-align:center;background:#f0f9ff"><div style="font-size:1.15rem;font-weight:700;color:#0369a1!important">${formatCurrency(Math.round(pnlRpt.npv||0))}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">NPV (3-Year)</div></div>
-          <div style="padding:10px;border:2px solid #15803d;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.15rem;font-weight:700;color:#15803d!important">${pnlRpt.irr!=null?Math.round(pnlRpt.irr*100)+'%':'n/a'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">IRR</div></div>
+          <div style="padding:10px;border:2px solid #15803d;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.15rem;font-weight:700;color:#15803d!important">${pnlRpt.irr!=null?(pnlRpt.irr>0.99?'>99%':Math.round(pnlRpt.irr*100)+'%'):'n/a'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">IRR</div></div>
           <div style="padding:10px;border:2px solid #6d28d9;border-radius:6px;text-align:center;background:#faf5ff"><div style="font-size:1.15rem;font-weight:700;color:#6d28d9!important">${formatCurrency(Math.round(dealRpt.tcv||0))}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">Total Contract Value</div></div>
         </div>`;
       }
@@ -4595,7 +4595,7 @@ function exportPPT() {
       // KPI strip (4 cards)
       addKPICard(s7, 0.5,  1.5, 2.8, 1.4, pnlPPT.paybackMonths!=null ? pnlPPT.paybackMonths+' mo' : '>36 mo', 'Payback Period', AMBER);
       addKPICard(s7, 3.5,  1.5, 2.8, 1.4, '$'+Math.round((pnlPPT.npv||0)/1e5)/10+'M', 'NPV (3-Year)', CYAN);
-      addKPICard(s7, 6.5,  1.5, 2.8, 1.4, pnlPPT.irr!=null ? Math.round(pnlPPT.irr*100)+'%' : 'n/a', 'IRR', GREEN);
+      addKPICard(s7, 6.5,  1.5, 2.8, 1.4, pnlPPT.irr!=null ? (pnlPPT.irr>0.99?'>99%':Math.round(pnlPPT.irr*100)+'%') : 'n/a', 'IRR', GREEN);
       addKPICard(s7, 9.5,  1.5, 3.3, 1.4, '$'+Math.round((dealPPT.tcv||0)/1e5)/10+'M', 'Total Contract Value', PURPLE);
       // Deal table (left)
       const dRows = [
@@ -5619,7 +5619,7 @@ function buildFinancialDashboard() {
     const tcvEl = document.getElementById('pnl-tcv');
     if (payEl) payEl.textContent = pnl.paybackMonths != null ? pnl.paybackMonths + ' mo' : '>36 mo';
     if (npvEl) npvEl.textContent = formatCurrency(Math.round(pnl.npv));
-    if (irrEl) irrEl.textContent = pnl.irr != null ? Math.round(pnl.irr * 100) + '%' : 'n/a';
+    if (irrEl) irrEl.textContent = pnl.irr != null ? (pnl.irr > 0.99 ? '>99%' : Math.round(pnl.irr * 100) + '%') : 'n/a';
     if (tcvEl) tcvEl.textContent = formatCurrency(Math.round(deal.tcv));
 
     // Deal panel

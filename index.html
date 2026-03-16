@@ -912,6 +912,146 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 }
 @media(max-width:768px){.title-main{font-size:2.4rem}.title-eyebrow{font-size:.7rem}.title-meta{flex-direction:column;gap:8px}.fte-calculator{flex-direction:column;gap:12px}.channel-inputs{grid-template-columns:repeat(2,1fr)}.client-notes-hint{display:none}}
 
+/* ============================================================
+   RESPONSIVE DESIGN — full breakpoint coverage
+   ============================================================ */
+
+/* -- Tablet landscape additions (≤1024px) adds to existing block above -- */
+@media(max-width:1024px){
+  /* Slide 6 — strategy brief: collapse 2-col to single-col, allow scroll */
+  .slide-strategy{overflow-y:auto!important}
+  .strategy-body{grid-template-columns:1fr;height:auto;flex:none}
+  .strategy-left,.strategy-right{height:auto;overflow:visible}
+  .strategy-lever-grid{height:auto;flex:none;grid-template-rows:auto;grid-template-columns:repeat(2,1fr)}
+  /* Slide 7 — lever row: 6-col → 3-col */
+  .lever-cards-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  /* Slide 9 — P&L: stack chart + deal panel */
+  .pnl-bottom-row{grid-template-columns:1fr}
+}
+
+/* -- Tablet portrait / large mobile (≤768px) -- */
+@media(max-width:768px){
+  :root{--slide-padding:16px}
+  .slide{padding-bottom:80px}
+
+  /* Typography scale-down */
+  .slide-heading{font-size:1.55rem}
+  .slide-subtitle{font-size:.85rem;margin-bottom:14px}
+
+  /* Navigation bar — compact */
+  #slide-nav{padding:8px 14px;gap:10px;bottom:14px}
+  .nav-dot{width:8px;height:8px}
+
+  /* Slide 1 — homes scene: side-by-side → stacked */
+  .homes-scene{flex-direction:column;align-items:center;gap:14px;padding-bottom:0}
+  .homes-or{width:auto;padding-bottom:0;flex-direction:row;gap:10px;align-items:center;justify-content:center}
+  .homes-or #globe-canvas{width:80px!important;height:80px!important}
+  .home-wrapper{padding:0 8px;max-width:94vw;width:100%}
+  .home-card{max-width:100%;padding:14px 18px}
+  .hs-header{margin-bottom:16px}
+
+  /* Slide 3 — pain board: 3-col → 1-col */
+  .pain-board{grid-template-columns:1fr}
+
+  /* Slide 4 — segment inputs: 4-col → 2-col; offshore grid: auto → 2-col */
+  .segment-inputs{grid-template-columns:repeat(2,1fr)}
+  .offshore-grid{grid-template-columns:repeat(2,1fr)}
+  .tier-inputs-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* Slide 6 — strategy lever grid: 2-col cards in single column layout */
+  .strategy-lever-grid{grid-template-columns:repeat(2,1fr)}
+  .strategy-2x2-wrap{min-height:220px}
+
+  /* Slide 7 — lever row: 3-col → 2-col */
+  .lever-cards-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+  /* Slide 9 — P&L KPI strip: flex row → 2×2 grid */
+  .pnl-kpi-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .dashboard-card{padding:14px}
+
+  /* Analysis / comparison tables — horizontal scroll on overflow */
+  .analysis-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Modals — full-width on mobile */
+  .lever-modal,.ai-modal{width:96vw;max-width:96vw;padding:20px 16px;max-height:90vh}
+  .settings-card{width:96vw;max-width:96vw}
+  .ai-modal-overlay,.lever-modal-overlay{align-items:flex-end}
+
+  /* Scenario toggle */
+  .scenario-btn{font-size:11px;padding:6px 10px}
+
+  /* Deal assumptions bar */
+  .comm-assumptions-bar{flex-wrap:wrap;gap:10px;padding:10px 14px}
+}
+
+/* -- Small tablet / mobile landscape (≤640px) -- */
+@media(max-width:640px){
+  :root{--slide-padding:12px}
+  .slide{padding-bottom:70px}
+  .slide-heading{font-size:1.3rem}
+  .slide-subtitle{font-size:.8rem;margin-bottom:10px}
+
+  /* Nav — hide dot strip (too many dots) */
+  .nav-dots{display:none}
+  #slide-nav{gap:8px}
+
+  /* Slide 4 — segment inputs: 2-col → 1-col */
+  .segment-inputs{grid-template-columns:1fr}
+  .offshore-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* Slide 6 — lever grid: 2-col → 1-col; matrix compact */
+  .strategy-lever-grid{grid-template-columns:1fr}
+  .strategy-2x2-wrap{min-height:180px}
+
+  /* Slide 7 — lever row: 2-col → 1-col */
+  .lever-cards-row{grid-template-columns:1fr}
+
+  /* Slide 9 — deal assumptions stack fields */
+  .comm-assumptions-bar{flex-direction:column;align-items:flex-start}
+  .comm-asn-fields{gap:8px;flex-direction:column;align-items:flex-start}
+  .comm-asn-input{width:80px}
+  .deal-table{font-size:.78rem}
+
+  /* P&L KPI values */
+  .pnl-kpi-value{font-size:1.2rem}
+
+  /* Homes scene compact */
+  .home-card{padding:12px 14px}
+  .home-card .home-title{font-size:1rem}
+
+  /* Flow summary cards — stack on mobile */
+  .flow-summary-wrap{flex-direction:column;gap:8px}
+
+  /* Exec summary before/after */
+  .exec-ba-container{gap:8px}
+
+  /* Map minimum height */
+  .map-container,.leaflet-container{min-height:200px}
+}
+
+/* -- Phone portrait (≤480px) -- */
+@media(max-width:480px){
+  :root{--slide-padding:10px}
+  .slide-heading{font-size:1.1rem}
+  .slide-subtitle{font-size:.76rem;margin-bottom:8px}
+
+  .pnl-kpi-value{font-size:1rem}
+  .pnl-kpi-label{font-size:.62rem}
+  .dashboard-card{padding:10px}
+  .lever-card{padding:8px 10px}
+
+  /* Nav arrows slightly smaller */
+  #slide-nav{padding:6px 10px;gap:6px}
+  .nav-arrow{width:26px!important;height:26px!important;font-size:.75rem}
+
+  /* Offshore grid: 2-col → 1-col on very small screens */
+  .offshore-grid{grid-template-columns:1fr}
+
+  /* Homes scene minimal */
+  .homes-or #globe-canvas{width:60px!important;height:60px!important}
+  .home-card{padding:10px 12px}
+}
+
 /* === LEVER PANEL (Slide 6) === */
 .lever-panel{margin-bottom:14px}
 .lever-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}

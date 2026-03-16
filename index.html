@@ -4432,34 +4432,60 @@ function exportPPT() {
 
     // === SLIDE 4: Proposed Transformation ===
     const s4 = addSlideWithBg();
-    addSectionHeader(s4, 'Proposed Transformation', 'Offshore destination strategy and segment alignment');
+    const isOnsitePPT = (typeof transformationModel !== 'undefined') && transformationModel === 'transformOnsite';
+    addSectionHeader(s4, 'Proposed Transformation',
+      isOnsitePPT ? 'Onsite transformation and automation strategy' : 'Offshore destination strategy and segment alignment');
 
-    // Destinations table
-    s4.addText('OFFSHORE DESTINATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
-    const dstRows = [[ { text:'Destination', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL} } }, { text:'FTEs', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Rate/hr', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'right' } } ]];
-    for(const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
-      const ftes = impact.movedByDestination[code] || 0;
-      const cost = ftes * off.hourlyRate * CONFIG.workingHoursPerYear;
-      const rowFill = dstRows.length % 2 === 0 ? DARK_CARD : BG2;
-      dstRows.push([
-        { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
-        { text:ftes.toLocaleString(), options:{ color:CYAN, align:'center', bold:true, fill:{color:rowFill} } },
-        { text:'$'+off.hourlyRate, options:{ color:GRAY_LIGHT, align:'center', fill:{color:rowFill} } },
-        { text:formatCurrency(cost), options:{ color:WHITE, align:'right', fill:{color:rowFill} } }
-      ]);
+    // Left panel — destinations table (offshore) OR transformation approach (onsite)
+    if (isOnsitePPT) {
+      s4.addText('TRANSFORMATION APPROACH', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
+      const approachBullets = [
+        { text:'No offshoring — all roles remain at source locations', options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } },
+        { text:'Automation & AI tooling applied to reduce manual FTE demand', options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } },
+        { text:'Process redesign to improve quality and reduce handle time', options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } },
+        { text:'Knowledge augmentation tools to boost advisor efficiency', options:{ bullet:true, fontSize:10.5, color:WHITE, breakLine:true } }
+      ];
+      s4.addText(approachBullets, { x:0.6, y:1.85, w:5.8, h:2.8, fontFace:'Arial', valign:'top', lineSpacing:22 });
+    } else {
+      s4.addText('OFFSHORE DESTINATIONS', { x:0.6, y:1.4, w:6, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
+      const dstRows = [[ { text:'Destination', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL} } }, { text:'FTEs', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Rate/hr', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'center' } }, { text:'Annual Cost', options:{ bold:true, color:WHITE, fill:{color:HDR_FILL}, align:'right' } } ]];
+      for(const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
+        const ftes = impact.movedByDestination[code] || 0;
+        const cost = ftes * off.hourlyRate * CONFIG.workingHoursPerYear;
+        const rowFill = dstRows.length % 2 === 0 ? DARK_CARD : BG2;
+        dstRows.push([
+          { text:(COUNTRY_DB[code]?.name||code), options:{ color:WHITE, fill:{color:rowFill} } },
+          { text:ftes.toLocaleString(), options:{ color:CYAN, align:'center', bold:true, fill:{color:rowFill} } },
+          { text:'$'+off.hourlyRate, options:{ color:GRAY_LIGHT, align:'center', fill:{color:rowFill} } },
+          { text:formatCurrency(cost), options:{ color:WHITE, align:'right', fill:{color:rowFill} } }
+        ]);
+      }
+      s4.addTable(dstRows, { x:0.5, y:1.8, w:5.9, colW:[2.2,1.0,1.0,1.7], fontSize:10.5, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.38, autoPage:false });
     }
-    s4.addTable(dstRows, { x:0.5, y:1.8, w:5.9, colW:[2.2,1.0,1.0,1.7], fontSize:10.5, fontFace:'Arial', border:{type:'solid',color:BORDER,pt:0.5}, rowH:0.38, autoPage:false });
 
-    // Segment strategy cards
+    // Right panel — segment strategy (labels + grouping change based on model)
     s4.addText('SEGMENT STRATEGY', { x:7, y:1.4, w:5.8, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
-    const highAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.7).sort((a,b)=>b[1].offshoreAffinity-a[1].offshoreAffinity);
-    const midAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity >= 0.5 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.7);
-    const lowAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>0 && CONTACT_SEGMENTS[k].offshoreAffinity < 0.5);
 
-    const stratGroups = [
-      { label:'PRIORITY OFFSHORE', items:highAff, color:GREEN, icon:'>' },
-      { label:'PHASED TRANSITION', items:midAff, color:AMBER, icon:'>>' },
-      { label:'RETAIN ONSHORE', items:lowAff, color:RED, icon:'x' }
+    // Group segments by automation potential (onsite) or offshore affinity (offshore)
+    const s4Segs = Object.entries(CONTACT_SEGMENTS).filter(([k]) => (CONFIG.segments[k]||0) > 0);
+    const highAff = isOnsitePPT
+      ? s4Segs.filter(([,s]) => s.automationPotential >= 0.65).sort((a,b) => b[1].automationPotential - a[1].automationPotential)
+      : s4Segs.filter(([,s]) => s.offshoreAffinity >= 0.7).sort((a,b) => b[1].offshoreAffinity - a[1].offshoreAffinity);
+    const midAff = isOnsitePPT
+      ? s4Segs.filter(([,s]) => s.automationPotential >= 0.35 && s.automationPotential < 0.65)
+      : s4Segs.filter(([,s]) => s.offshoreAffinity >= 0.5 && s.offshoreAffinity < 0.7);
+    const lowAff = isOnsitePPT
+      ? s4Segs.filter(([,s]) => s.automationPotential < 0.35)
+      : s4Segs.filter(([,s]) => s.offshoreAffinity < 0.5);
+
+    const stratGroups = isOnsitePPT ? [
+      { label:'AUTOMATE FIRST',     items:highAff, color:GREEN },
+      { label:'OPTIMISE & AUGMENT', items:midAff,  color:AMBER },
+      { label:'RETAIN & MONITOR',   items:lowAff,  color:RED   }
+    ] : [
+      { label:'PRIORITY OFFSHORE',  items:highAff, color:GREEN },
+      { label:'PHASED TRANSITION',  items:midAff,  color:AMBER },
+      { label:'RETAIN ONSHORE',     items:lowAff,  color:RED   }
     ];
     let stratY = 1.8;
     stratGroups.forEach(g => {
@@ -4472,8 +4498,8 @@ function exportPPT() {
       stratY += 0.45 + g.items.length * 0.32;
     });
 
-    // Top pairings
-    if(narrative.pairings.length > 0) {
+    // Top pairings — offshore mode only
+    if(!isOnsitePPT && narrative.pairings.length > 0) {
       s4.addText('TOP PAIRINGS', { x:0.6, y:4.4, w:12, h:0.3, fontSize:10, fontFace:'Arial', bold:true, color:CYAN });
       const pairBullets = narrative.pairings.slice(0,4).map(p => ({
         text: sanitize((COUNTRY_DB[p.sourceCode]?.name||p.source) + ' -> ' + (COUNTRY_DB[p.destinationCode]?.name||p.destination) + ' (' + p.ftes + ' FTEs) - ' + (p.reasons[0]||'Strong affinity match')),
@@ -5801,21 +5827,28 @@ function buildExecutiveSummary() {
       const retained = impact.retainedBySource[code] || 0;
       html += '<div class="exec-ba-loc-row"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (retained)<span class="loc-ftes">' + retained + ' FTEs</span></div>';
     }
-    for (const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
-      const c = COUNTRY_DB[code];
-      const ftes = impact.movedByDestination[code] || 0;
-      html += '<div class="exec-ba-loc-row" style="color:var(--accent-cyan)"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (offshore)<span class="loc-ftes">' + ftes + ' FTEs</span></div>';
+    const isOnsiteExec = (typeof transformationModel !== 'undefined') && transformationModel === 'transformOnsite';
+    if (!isOnsiteExec) {
+      for (const [code, off] of Object.entries(CONFIG.offshoreLocations)) {
+        const c = COUNTRY_DB[code];
+        const ftes = impact.movedByDestination[code] || 0;
+        html += '<div class="exec-ba-loc-row" style="color:var(--accent-cyan)"><span class="loc-flag">' + (c?.flag || '') + '</span> ' + (c?.name || code) + ' (offshore)<span class="loc-ftes">' + ftes + ' FTEs</span></div>';
+      }
     }
 
-    // Segment Strategy
+    // Segment Strategy — labels depend on model
     if (CONFIG.segments) {
-      const highAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>5 && CONTACT_SEGMENTS[k].offshoreAffinity>=0.8).map(([k,s])=>s.name);
-      const lowAff = Object.entries(CONTACT_SEGMENTS).filter(([k])=>(CONFIG.segments[k]||0)>5 && CONTACT_SEGMENTS[k].offshoreAffinity<0.5).map(([k,s])=>s.name);
-      if (highAff.length > 0) {
-        html += '<div class="exec-ba-item highlight">\u2192 Priority offshore: ' + highAff.join(', ') + '</div>';
-      }
-      if (lowAff.length > 0) {
-        html += '<div class="exec-ba-item">\u2192 Retain onshore: ' + lowAff.join(', ') + '</div>';
+      const execSegs = Object.entries(CONTACT_SEGMENTS).filter(([k]) => (CONFIG.segments[k]||0) > 5);
+      if (isOnsiteExec) {
+        const autoFirst = execSegs.filter(([,s]) => s.automationPotential >= 0.65).map(([,s]) => s.name);
+        const retain    = execSegs.filter(([,s]) => s.automationPotential < 0.35).map(([,s]) => s.name);
+        if (autoFirst.length > 0) html += '<div class="exec-ba-item highlight">\u2192 Automate first: ' + autoFirst.join(', ') + '</div>';
+        if (retain.length > 0)    html += '<div class="exec-ba-item">\u2192 Retain &amp; monitor: ' + retain.join(', ') + '</div>';
+      } else {
+        const highAff = execSegs.filter(([,s]) => s.offshoreAffinity >= 0.8).map(([,s]) => s.name);
+        const lowAff  = execSegs.filter(([,s]) => s.offshoreAffinity < 0.5).map(([,s]) => s.name);
+        if (highAff.length > 0) html += '<div class="exec-ba-item highlight">\u2192 Priority offshore: ' + highAff.join(', ') + '</div>';
+        if (lowAff.length > 0)  html += '<div class="exec-ba-item">\u2192 Retain onshore: ' + lowAff.join(', ') + '</div>';
       }
     }
 

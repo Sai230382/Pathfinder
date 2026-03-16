@@ -1170,21 +1170,23 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .strategy-matrix-sub{font-size:.67rem;color:var(--text-muted);line-height:1.5}
 .s2x2-legend-hint{font-size:.6rem;color:var(--text-muted);font-style:italic}
 /* 2×2 wrap fills remaining height, minimum 200px so it never gets crushed */
-.strategy-2x2-wrap{flex:1;height:0;min-height:200px;display:flex;flex-direction:row;align-items:stretch;gap:6px}
+.strategy-2x2-wrap{flex:1;height:0;min-height:200px;display:flex;flex-direction:row;align-items:stretch;gap:6px;overflow:visible}
 .s2x2-y-axis-wrap{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 0;width:24px;flex-shrink:0}
 .s2x2-y-high,.s2x2-y-low{font-size:.58rem;color:var(--text-muted);white-space:nowrap}
 .s2x2-y-label-text{font-size:.64rem;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em}
-.s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;flex:1;min-height:0}
+.s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;flex:1;min-height:0;overflow:visible}
+#s2x2-dots-container{position:absolute;inset:0;pointer-events:none;z-index:11}
+#s2x2-dots-container .s2x2-dot{pointer-events:all}
 .s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden}
 .s2x2-quadrant.q1{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18)}
 .s2x2-quadrant.q2{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)}
 .s2x2-quadrant.q3{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.15)}
 .s2x2-quadrant.q4{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15)}
-.s2x2-q-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
-.s2x2-quadrant.q1 .s2x2-q-label{color:rgba(0,212,255,.75)}
-.s2x2-quadrant.q2 .s2x2-q-label{color:rgba(245,158,11,.75)}
-.s2x2-quadrant.q3 .s2x2-q-label{color:rgba(124,92,252,.75)}
-.s2x2-quadrant.q4 .s2x2-q-label{color:rgba(16,185,129,.75)}
+.s2x2-q-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;line-height:1.2;position:relative;z-index:12;padding:2px 5px;border-radius:4px;background:rgba(10,22,40,.75);backdrop-filter:blur(2px)}
+.s2x2-quadrant.q1 .s2x2-q-label{color:rgba(0,212,255,.95)}
+.s2x2-quadrant.q2 .s2x2-q-label{color:rgba(245,158,11,.95)}
+.s2x2-quadrant.q3 .s2x2-q-label{color:rgba(124,92,252,.95)}
+.s2x2-quadrant.q4 .s2x2-q-label{color:rgba(16,185,129,.95)}
 .s2x2-axis-x-low{position:absolute;bottom:-18px;left:0;font-size:.6rem;color:var(--text-muted);pointer-events:none}
 .s2x2-axis-x-high{position:absolute;bottom:-18px;right:0;font-size:.6rem;color:var(--text-muted);pointer-events:none}
 .s2x2-x-axis-wrap{display:flex;justify-content:center;padding-left:30px;margin-top:20px;flex-shrink:0}
@@ -6351,9 +6353,13 @@ function buildSegment2x2() {
     else if (x < 0.5 && y < 0.5)  qColor = qColors.q3;
     else                            qColor = qColors.q4;
 
-    const leftPct = (x * 100).toFixed(1) + '%';
-    const topPct  = ((1 - y) * 100).toFixed(1) + '%';
+    // Clamp so dot centres stay within safe zone — prevents clipping at grid edges
+    // Dot radius ≈ half dotSize; using 8% as safe margin so even largest dot (48px) doesn't get cropped
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const dotSize = Math.max(28, Math.min(48, 28 + pct * 0.5));
+    const safeMargin = 8; // percent
+    const leftPct = clamp(x * 100, safeMargin, 100 - safeMargin).toFixed(1) + '%';
+    const topPct  = clamp((1 - y) * 100, safeMargin, 100 - safeMargin).toFixed(1) + '%';
     const shortName = seg.name.split(' ')[0];
 
     const tooltipLine2 = isOnsite

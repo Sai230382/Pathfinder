@@ -200,7 +200,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .rate-card .rate-info .country-name{font-size:.8rem;color:var(--text-muted)}
 .rate-card input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:6px 10px;border-radius:6px;font-family:var(--font-body);font-size:.9rem;width:70px;text-align:center}
 /* Transform Only toggle */
-.transform-only-bar{display:flex;align-items:center;justify-content:center;gap:14px;padding:13px 18px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px;position:relative}
+.transform-only-bar{display:none;align-items:center;justify-content:center;gap:14px;padding:13px 18px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px;position:relative}
+.transform-only-bar.visible{display:flex}
 .transform-only-label{display:flex;flex-direction:column;gap:2px}
 .transform-only-title{font-size:.86rem;font-weight:600;color:var(--text-primary)}
 .transform-only-hint{font-size:.72rem;color:var(--text-muted)}
@@ -5889,6 +5890,17 @@ window.selectTransformationModel = function(model) {
   document.querySelectorAll('.model-card').forEach(card => {
     card.classList.toggle('active', card.dataset.model === model);
   });
+
+  // Show Transform Only bar only for Onsite model — hide + reset for Offshore / Lift & Shift
+  const toBar    = document.querySelector('.transform-only-bar');
+  const toToggle = document.getElementById('transform-only-toggle');
+  if (model === 'transformOnsite') {
+    if (toBar) toBar.classList.add('visible');
+    if (toToggle && !toToggle.checked) { toToggle.checked = true; toggleTransformOnly(true); }
+  } else {
+    if (toBar) toBar.classList.remove('visible');
+    if (toToggle && toToggle.checked) { toToggle.checked = false; toggleTransformOnly(false); }
+  }
 };
 
 // ===== REGULATORY INTELLIGENCE BANNER =====

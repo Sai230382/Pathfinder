@@ -4432,9 +4432,15 @@ function exportPPT() {
 
     // === SLIDE 4: Proposed Transformation ===
     const s4 = addSlideWithBg();
-    const isOnsitePPT = (typeof transformationModel !== 'undefined') && transformationModel === 'transformOnsite';
-    addSectionHeader(s4, 'Proposed Transformation',
-      isOnsitePPT ? 'Onsite transformation and automation strategy' : 'Offshore destination strategy and segment alignment');
+    const pptModel    = (typeof transformationModel !== 'undefined') ? transformationModel : 'transformOffshore';
+    const isOnsitePPT = pptModel === 'transformOnsite';
+    const isLiftPPT   = pptModel === 'liftShift';
+    const subtitleMap = {
+      liftShift:        'Pure offshore arbitrage — move work to lower-cost locations',
+      transformOffshore:'Automate at source, offshore the residual — two-speed savings',
+      transformOnsite:  'Onsite transformation and automation strategy'
+    };
+    addSectionHeader(s4, 'Proposed Transformation', subtitleMap[pptModel] || subtitleMap.transformOffshore);
 
     // Left panel — destinations table (offshore) OR transformation approach (onsite)
     if (isOnsitePPT) {
@@ -4478,14 +4484,16 @@ function exportPPT() {
       ? s4Segs.filter(([,s]) => s.automationPotential < 0.35)
       : s4Segs.filter(([,s]) => s.offshoreAffinity < 0.5);
 
-    const stratGroups = isOnsitePPT ? [
-      { label:'AUTOMATE FIRST',     items:highAff, color:GREEN },
-      { label:'OPTIMISE & AUGMENT', items:midAff,  color:AMBER },
-      { label:'RETAIN & MONITOR',   items:lowAff,  color:RED   }
-    ] : [
-      { label:'PRIORITY OFFSHORE',  items:highAff, color:GREEN },
-      { label:'PHASED TRANSITION',  items:midAff,  color:AMBER },
-      { label:'RETAIN ONSHORE',     items:lowAff,  color:RED   }
+    const stratLabelMap = {
+      transformOnsite:  [ 'AUTOMATE FIRST', 'OPTIMISE & AUGMENT', 'RETAIN & MONITOR'  ],
+      liftShift:        [ 'OFFSHORE DIRECT', 'MOVE & AUTOMATE',   'RETAIN ONSITE'     ],
+      transformOffshore:[ 'AUTOMATE & OFFSHORE', 'PHASED TRANSITION', 'RETAIN & SPECIALISE' ]
+    };
+    const [lHigh, lMid, lLow] = stratLabelMap[pptModel] || stratLabelMap.transformOffshore;
+    const stratGroups = [
+      { label:lHigh, items:highAff, color:GREEN },
+      { label:lMid,  items:midAff,  color:AMBER },
+      { label:lLow,  items:lowAff,  color:RED   }
     ];
     let stratY = 1.8;
     stratGroups.forEach(g => {

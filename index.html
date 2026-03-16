@@ -1175,7 +1175,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .s2x2-y-high,.s2x2-y-low{font-size:.58rem;color:var(--text-muted);white-space:nowrap}
 .s2x2-y-label-text{font-size:.64rem;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em}
 .s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;flex:1;min-height:0}
-.s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;overflow:hidden}
+.s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden}
 .s2x2-quadrant.q1{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18)}
 .s2x2-quadrant.q2{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)}
 .s2x2-quadrant.q3{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.15)}
@@ -1195,6 +1195,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .s2x2-dot-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0a1a2e;border:1px solid #2a3f5a;border-radius:8px;padding:8px 12px;font-size:.7rem;color:#94a3b8;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:30;line-height:1.6;box-shadow:0 4px 20px rgba(0,0,0,.6)}
 .s2x2-dot-tooltip strong{color:#e2e8f0;font-size:.75rem;display:block}
 .s2x2-dot:hover .s2x2-dot-tooltip{opacity:1}
+/* Within-quadrant sub-description */
+.s2x2-q-desc{font-size:.57rem;color:rgba(255,255,255,.3);line-height:1.3;margin-top:3px;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
+/* Matrix reading callout panel */
+#s2x2-callout{flex-shrink:0;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);padding:8px 11px}
+.s2x2-co-title{font-size:.59rem;font-weight:700;color:var(--text-muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.s2x2-co-rows{display:flex;flex-direction:column;gap:4px}
+.s2x2-co-row{display:flex;align-items:flex-start;gap:7px}
+.s2x2-co-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.s2x2-co-body{font-size:.66rem;color:var(--text-secondary);line-height:1.4}
+.s2x2-co-segs{font-weight:700;color:var(--text-primary)}
+.s2x2-co-pct{font-size:.6rem;color:var(--text-muted)}
+.s2x2-co-action{color:var(--text-secondary)}
 /* Segment treatment list — capped so matrix keeps enough height */
 .strategy-segment-treatments{display:flex;flex-direction:column;gap:5px;flex-shrink:0;max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
 .sst-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:rgba(255,255,255,.02);border-radius:7px;border-left:3px solid}
@@ -1803,6 +1815,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <div class="s2x2-x-axis-wrap">
           <span class="s2x2-x-label-text">Offshore Affinity</span>
         </div>
+        <div id="s2x2-callout"><!-- Populated by buildSegment2x2() --></div>
         <div class="strategy-segment-treatments" id="strategy-segment-treatments">
           <!-- Treatment list populated by buildSegment2x2() -->
         </div>
@@ -6285,6 +6298,29 @@ function buildSegment2x2() {
     if (qLabelEls[3]) qLabelEls[3].textContent = 'Offshore Direct';
   }
 
+  // ── Per-quadrant plain-English descriptions (mode-aware) ─────────────────
+  const quadDescs = isOnsite ? {
+    q1: 'High volume + automation fit — deploy bots first, fastest FTE reduction',
+    q2: 'High volume but automation-resistant — redesign processes before adding tooling',
+    q3: 'Low volume, complex — retain & invest in specialist knowledge tools',
+    q4: 'Good automation fit, lower volume — lightweight AI tools for incremental gains'
+  } : {
+    q1: 'Automate first, then offshore residual — two-speed savings, strongest ROI',
+    q2: 'High automation potential but low offshore fit — automate at source, keep onsite',
+    q3: 'Complex or regulated work — retain onsite, invest in quality & upskilling',
+    q4: 'Simple work, strong offshore fit — move directly for immediate labour arbitrage'
+  };
+
+  // ── Inject within-quadrant sub-descriptions ───────────────────────────────
+  const quadEls = document.querySelectorAll('.s2x2-quadrant'); // q2, q1, q3, q4
+  const quadOrder = ['q2','q1','q3','q4'];
+  quadEls.forEach((el, i) => {
+    const qKey = quadOrder[i];
+    let descEl = el.querySelector('.s2x2-q-desc');
+    if (!descEl) { descEl = document.createElement('span'); descEl.className = 's2x2-q-desc'; el.appendChild(descEl); }
+    descEl.textContent = quadDescs[qKey] || '';
+  });
+
   // ── Normalise contact volume for Y-axis (Transform Only mode) ───────────
   const vols = activeSegs.map(([k]) => segConfig[k] || 0);
   const maxVol = Math.max(...vols);
@@ -6333,6 +6369,53 @@ function buildSegment2x2() {
     </div>`;
   }).join('');
   dotsContainer.innerHTML = dots;
+
+  // ── Dynamic callout: group segments by quadrant, generate plain-English summary ──
+  const byQuadrant = { q1:[], q2:[], q3:[], q4:[] };
+  activeSegs.forEach(([key, seg]) => {
+    const eff = (typeof getEffSeg === 'function') ? getEffSeg(key) : seg;
+    const pct = segConfig[key] || 0;
+    const normVol = (pct - minVol) / volRange;
+    const x = isOnsite ? (eff.automationPotential || 0) : (eff.offshoreAffinity    || 0);
+    const y = isOnsite ? normVol                        : (eff.automationPotential || 0);
+    let q;
+    if (x >= 0.5 && y >= 0.5) q = 'q1';
+    else if (x < 0.5 && y >= 0.5) q = 'q2';
+    else if (x < 0.5 && y < 0.5)  q = 'q3';
+    else q = 'q4';
+    byQuadrant[q].push({ key, seg, pct });
+  });
+  const qMeta = {
+    q1:{ color:'#00d4ff', solidColor:'rgba(0,212,255,.15)', label: isOnsite ? 'Quick Win — Automate' : 'Automate & Offshore' },
+    q2:{ color:'#f59e0b', solidColor:'rgba(245,158,11,.15)', label: isOnsite ? 'Process Redesign'    : 'Automate Onsite'     },
+    q3:{ color:'#7c5cfc', solidColor:'rgba(124,92,252,.15)', label: isOnsite ? 'Retain & Monitor'    : 'Retain & Specialise' },
+    q4:{ color:'#10b981', solidColor:'rgba(16,185,129,.15)', label: isOnsite ? 'AI Assist'           : 'Offshore Direct'     }
+  };
+  // Priority order: most actionable first (q1=best opportunity, q4=quick win, q2=onsite, q3=retain)
+  const calloutRows = ['q1','q4','q2','q3']
+    .filter(q => byQuadrant[q].length > 0)
+    .map(q => {
+      const segs = byQuadrant[q];
+      const totalPct = segs.reduce((s, x) => s + x.pct, 0);
+      const segNames = segs.map(s => s.seg.name).join(', ');
+      const meta = qMeta[q];
+      return `<div class="s2x2-co-row">
+        <div class="s2x2-co-dot" style="background:${meta.color}"></div>
+        <div class="s2x2-co-body">
+          <span class="s2x2-co-segs">${segNames}</span>
+          <span class="s2x2-co-pct"> · ${totalPct}% vol</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;margin:0 4px;padding:1px 6px;background:${meta.solidColor};border-radius:3px;font-size:.59rem;font-weight:700;color:${meta.color};vertical-align:middle;line-height:1.4">${meta.label}</span>
+          <span class="s2x2-co-action">— ${quadDescs[q]}</span>
+        </div>
+      </div>`;
+    });
+  const calloutEl = document.getElementById('s2x2-callout');
+  if (calloutEl) {
+    calloutEl.style.display = calloutRows.length > 0 ? '' : 'none';
+    calloutEl.innerHTML = calloutRows.length > 0
+      ? `<div class="s2x2-co-title">&#128270; Reading your matrix</div><div class="s2x2-co-rows">${calloutRows.join('')}</div>`
+      : '';
+  }
 
   // ── Treatment list — mode-appropriate descriptions ───────────────────────
   const treatments = activeSegs.map(([key, seg]) => {

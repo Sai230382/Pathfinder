@@ -2157,7 +2157,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
     <div class="exec-kpi-strip" id="exec-kpi-strip"></div>
     <div class="cta-section">
-      <button class="cta-button primary" onclick="if(confirm('Start a new session? This will clear all current data and return to the home screen.')) navigateToSlide(1,'backward')" style="background:rgba(255,255,255,.06);border-color:var(--border-subtle);color:var(--text-secondary)">New Session</button>
+      <button class="cta-button primary" onclick="startNewSession()" style="background:rgba(255,255,255,.06);border-color:var(--border-subtle);color:var(--text-secondary)">New Session</button>
       <button class="cta-button secondary" onclick="exportReport()">Export PDF Report</button>
       <button class="cta-button secondary" onclick="exportPPT()" style="border-color:var(--accent-purple);color:var(--accent-purple)">Export PowerPoint</button>
     </div>
@@ -5963,6 +5963,66 @@ window.resetSlide4Form = function() {
   formOffshoreSelections = {IN:true, PH:true};
   formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10, complaints:0};
   renderForm(); // re-renders and calls syncTransformOnlyBar inside
+};
+
+// Full session reset — clears all data across every slide and returns to Slide 1
+window.startNewSession = function() {
+  if (!confirm('Start a new session? This will clear all current data and return to the home screen.')) return;
+
+  // 1 — Reset form state (Slide 4)
+  formLocations = [
+    {country:'US', headcount:300, channels:{Phone:120,Email:80,Chat:60,Social:40}},
+    {country:'UK', headcount:200, channels:{Phone:80,Email:50,Chat:45,Social:25}}
+  ];
+  formTiers = {L1:50, L2:30, L3:20};
+  formRates = {};
+  for (const code of Object.keys(COUNTRY_DB)) {
+    formRates[code] = COUNTRY_DB[code].defaultRate;
+  }
+  formOffshoreSelections = {IN:true, PH:true};
+  formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10, complaints:0};
+
+  // 2 — Reset diagnostic context (Slide 2)
+  diagnosticContext = { industry: '', horizontal: '', companySize: 'mid', region: 'americas', clientName: '' };
+
+  // 3 — Reset pain points (Slide 3)
+  selectedPainPoints = { people: [], process: [], technology: [] };
+  clientNotes = '';
+
+  // 4 — Reset transformation model + levers (Slides 2/6)
+  transformationModel = 'transformOffshore';
+  activatedLevers = new Set();
+  effectiveSegments = {};
+  currentScenario = 'Moderate';
+  offshoreSelections = {};
+  initializeSelections();
+
+  // 5 — Reset Slide 2 UI fields visually
+  const indSel = document.getElementById('ctx-industry');
+  if (indSel) indSel.value = '';
+  const horizSel = document.getElementById('ctx-horizontal');
+  if (horizSel) horizSel.value = '';
+  const clientInp = document.getElementById('ctx-client-name');
+  if (clientInp) clientInp.value = '';
+  // Reset size badges → mid
+  document.querySelectorAll('.size-badge').forEach(b => b.classList.toggle('active', b.dataset.size === 'mid'));
+  // Reset region badges → americas
+  document.querySelectorAll('.region-badge').forEach(b => b.classList.toggle('active', b.dataset.region === 'americas'));
+  // Reset model cards → transformOffshore
+  document.querySelectorAll('.model-card').forEach(c => c.classList.toggle('active', c.dataset.model === 'transformOffshore'));
+
+  // 6 — Re-render form (Slide 4) and sync transform bar
+  renderForm();
+
+  // 7 — Destroy any live charts and maps to avoid stale data on re-visit
+  Object.values(chartInstances).forEach(ch => { try { ch.destroy(); } catch(e) {} });
+  chartInstances = {};
+  slide5Animated = false;
+  if (currentStateMap) { try { currentStateMap.remove(); } catch(e) {} currentStateMap = null; }
+  if (transformMap)    { try { transformMap.remove(); }     catch(e) {} transformMap = null; }
+
+  // 8 — Navigate home
+  navigateToSlide(1, 'backward');
 };
 
 window.selectTransformationModel = function(model) {

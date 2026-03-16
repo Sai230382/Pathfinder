@@ -1096,10 +1096,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .ts-lever-fte{font-size:.68rem;font-weight:600;color:var(--accent-cyan);background:rgba(0,212,255,.1);padding:2px 7px;border-radius:3px}
 .ts-lever-stack{font-size:.68rem;color:var(--text-muted);margin-top:4px;border-top:1px solid rgba(255,255,255,.05);padding-top:4px;font-style:italic}
 .lever-name{font-size:.78rem;font-weight:600;color:var(--text-primary);line-height:1.2}
-.lever-fte{font-size:.67rem;color:var(--text-muted)}
-.lever-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
-.lever-triggered{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(124,92,252,.15);color:var(--accent-purple);font-weight:600}
-.lever-tv{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.05);color:var(--text-muted);font-weight:500}
+.lever-fte{font-size:.72rem;font-weight:600;color:#00d4ff;background:rgba(0,212,255,.1);padding:2px 7px;border-radius:4px;display:inline-block}
+.lever-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.lever-triggered{display:inline-block;font-size:.62rem;padding:2px 6px;border-radius:3px;background:rgba(124,92,252,.15);color:var(--accent-purple);font-weight:600}
+.lever-tv{display:inline-block;font-size:.68rem;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.08);color:#c5d4e0;font-weight:500;border:1px solid rgba(255,255,255,.1)}
 .lever-empty{font-size:.78rem;color:var(--text-muted);padding:10px 0}
 .ts-detail-btn{margin-top:6px;background:none;border:1px solid rgba(0,212,255,.25);color:var(--accent-cyan);padding:5px 12px;border-radius:6px;font-size:.68rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
 .ts-detail-btn:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan)}
@@ -1144,8 +1144,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 /* Description fills card height — overflow hidden so long text doesn't break grid rows */
 .slg-desc{font-size:.7rem;color:#94a3b8;line-height:1.45;flex:1;overflow:hidden}
 .slg-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0}
-.slg-fte{font-size:.62rem;font-weight:600;color:#00d4ff;background:rgba(0,212,255,.12);padding:2px 6px;border-radius:3px;white-space:nowrap}
-.slg-ttv{font-size:.6rem;color:#64748b;background:rgba(255,255,255,.05);padding:2px 5px;border-radius:3px;white-space:nowrap}
+.slg-fte{font-size:.7rem;font-weight:700;color:#00d4ff;background:rgba(0,212,255,.13);padding:2px 8px;border-radius:4px;white-space:nowrap;border:1px solid rgba(0,212,255,.2)}
+.slg-ttv{font-size:.68rem;font-weight:500;color:#c5d4e0;background:rgba(255,255,255,.08);padding:2px 7px;border-radius:4px;white-space:nowrap;border:1px solid rgba(255,255,255,.1)}
 /* P·P·T Solution Category tag — appears on each lever card */
 .slg-ppt{font-size:.63rem;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
 .slg-ppt.people{background:rgba(244,114,182,.15);color:#f472b6}
@@ -1196,17 +1196,17 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .s2x2-dot-tooltip strong{color:#e2e8f0;font-size:.75rem;display:block}
 .s2x2-dot:hover .s2x2-dot-tooltip{opacity:1}
 /* Within-quadrant sub-description */
-.s2x2-q-desc{font-size:.57rem;color:rgba(255,255,255,.3);line-height:1.3;margin-top:3px;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
+.s2x2-q-desc{font-size:.67rem;color:rgba(255,255,255,.58);line-height:1.35;margin-top:4px;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
 /* Matrix reading callout panel */
 #s2x2-callout{flex-shrink:0;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);padding:8px 11px}
-.s2x2-co-title{font-size:.59rem;font-weight:700;color:var(--text-muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.s2x2-co-title{font-size:.65rem;font-weight:700;color:var(--text-secondary);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:5px}
 .s2x2-co-rows{display:flex;flex-direction:column;gap:4px}
 .s2x2-co-row{display:flex;align-items:flex-start;gap:7px}
 .s2x2-co-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.s2x2-co-body{font-size:.66rem;color:var(--text-secondary);line-height:1.4}
-.s2x2-co-segs{font-weight:700;color:var(--text-primary)}
-.s2x2-co-pct{font-size:.6rem;color:var(--text-muted)}
-.s2x2-co-action{color:var(--text-secondary)}
+.s2x2-co-body{font-size:.7rem;color:var(--text-secondary);line-height:1.45}
+.s2x2-co-segs{font-weight:700;color:#f1f5f9}
+.s2x2-co-pct{font-size:.65rem;color:var(--text-secondary)}
+.s2x2-co-action{color:#c5d4e0}
 /* Segment treatment list — capped so matrix keeps enough height */
 .strategy-segment-treatments{display:flex;flex-direction:column;gap:5px;flex-shrink:0;max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-subtle) transparent}
 .sst-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:rgba(255,255,255,.02);border-radius:7px;border-left:3px solid}

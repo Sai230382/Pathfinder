@@ -1765,11 +1765,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
       <!-- RIGHT: 2×2 Segment Strategy Matrix -->
       <div class="strategy-right">
         <div class="strategy-matrix-header">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <span class="strategy-matrix-title">Segment Strategy Matrix</span>
-            <span class="s2x2-legend-hint">● each circle = a contact segment, sized by % volume</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="s2x2-legend-hint">● circle = segment, sized by volume %</span>
+              <button onclick="buildStrategyBrief()" title="Refresh matrix with latest inputs" style="display:flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:6px;color:var(--accent-cyan);font-size:.68rem;font-weight:600;cursor:pointer;transition:all .2s;line-height:1.2">↺ Refresh</button>
+            </div>
           </div>
-          <span class="strategy-matrix-sub">X-axis: how suitable for offshore &nbsp;|&nbsp; Y-axis: automation potential &nbsp;|&nbsp; % = contact volume share</span>
+          <span class="strategy-matrix-sub">X-axis: offshore affinity  |  Y-axis: automation potential  |  circle size = % contact volume share</span>
         </div>
         <div class="strategy-2x2-wrap">
           <div class="s2x2-y-axis-wrap">
@@ -6069,6 +6072,33 @@ window.toggleLever = function(id) {
       card.classList.toggle('active', activatedLevers.has(id));
     }
   });
+  // Live-refresh the right column (2x2 matrix + synthesis insights) to reflect lever selection
+  if (currentSlide === 6) {
+    buildSegment2x2();
+    // Re-inject synthesis insights with updated lever set
+    const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : (typeof formSegments !== 'undefined' ? formSegments : {});
+    const allPainPoints = [
+      ...(selectedPainPoints.people    || []),
+      ...(selectedPainPoints.process   || []),
+      ...(selectedPainPoints.technology|| [])
+    ];
+    const mKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
+    const painText = allPainPoints.join(' ').toLowerCase();
+    let liveLevers = [];
+    if (activatedLevers.size > 0 && typeof TRANSFORMATION_KB !== 'undefined') {
+      liveLevers = TRANSFORMATION_KB.filter(l => activatedLevers.has(l.id))
+        .map(l => ({ ...l, _painMatches: (l.painTriggers || []).filter(t => painText.includes(t.toLowerCase())).length }));
+    } else if (typeof getRecommendedLevers === 'function' && allPainPoints.length > 0) {
+      liveLevers = getRecommendedLevers(allPainPoints, diagnosticContext.industry, diagnosticContext.horizontal, mKey, segConfig, 0);
+    }
+    if (typeof generateSynthesisInsights === 'function') {
+      const synHtml = generateSynthesisInsights(liveLevers, segConfig, allPainPoints);
+      if (synHtml) {
+        const treatEl = document.getElementById('strategy-segment-treatments');
+        if (treatEl) treatEl.innerHTML = synHtml;
+      }
+    }
+  }
 };
 
 // ===== SLIDE 6: TRANSFORMATION STRATEGY BRIEF =====
@@ -6082,7 +6112,7 @@ function buildStrategyBrief() {
     ...(selectedPainPoints.process   || []),
     ...(selectedPainPoints.technology|| [])
   ];
-  const segConfig  = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
+  const segConfig  = (CONFIG && CONFIG.segments) ? CONFIG.segments : (typeof formSegments !== 'undefined' ? formSegments : {});
   const scenario   = (typeof currentScenario !== 'undefined' ? currentScenario : 'Moderate').toLowerCase();
   const scenKey    = scenario === 'aggressive' ? 'aggressive' : scenario === 'conservative' ? 'conservative' : 'moderate';
   const painText   = allPainPoints.join(' ').toLowerCase();
@@ -6218,7 +6248,7 @@ function buildSegment2x2() {
 
   const isOnsite = (typeof transformationModel !== 'undefined') && transformationModel === 'transformOnsite';
 
-  const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : {};
+  const segConfig = (CONFIG && CONFIG.segments) ? CONFIG.segments : (typeof formSegments !== 'undefined' ? formSegments : {});
   const activeSegs = Object.entries(CONTACT_SEGMENTS)
     .filter(([k]) => (segConfig[k]||0) > 0)
     .sort((a,b) => (segConfig[b[0]]||0) - (segConfig[a[0]]||0));
@@ -6229,7 +6259,13 @@ function buildSegment2x2() {
     return;
   }
 
-  // ── Update axis labels & quadrant labels to match mode ──────────────────
+  // ── Update axis labels, quadrant labels & subtitle to match mode ─────────
+  const subTitleEl = document.querySelector('.strategy-matrix-sub');
+  if (subTitleEl) {
+    subTitleEl.textContent = isOnsite
+      ? 'X-axis: automation potential  |  Y-axis: relative contact volume  |  circle size = % volume share'
+      : 'X-axis: offshore affinity  |  Y-axis: automation potential  |  circle size = % contact volume share';
+  }
   const xLabelEl = document.querySelector('.s2x2-x-label-text');
   const yLabelEl = document.querySelector('.s2x2-y-label-text');
   const qLabelEls = document.querySelectorAll('.s2x2-q-label'); // order: q2,q1,q3,q4

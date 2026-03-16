@@ -200,10 +200,19 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .rate-card .rate-info .country-name{font-size:.8rem;color:var(--text-muted)}
 .rate-card input{background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary);padding:6px 10px;border-radius:6px;font-family:var(--font-body);font-size:.9rem;width:70px;text-align:center}
 /* Transform Only toggle */
-.transform-only-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px}
+.transform-only-bar{display:flex;align-items:center;justify-content:center;gap:14px;padding:13px 18px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px;position:relative}
 .transform-only-label{display:flex;flex-direction:column;gap:2px}
-.transform-only-title{font-size:.85rem;font-weight:600;color:var(--text-primary)}
+.transform-only-title{font-size:.86rem;font-weight:600;color:var(--text-primary)}
 .transform-only-hint{font-size:.72rem;color:var(--text-muted)}
+/* Info icon + tooltip */
+.to-info-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0}
+.to-info-icon{font-size:1.05rem;color:rgba(124,92,252,.75);cursor:help;line-height:1;transition:color .2s;user-select:none}
+.to-info-wrap:hover .to-info-icon{color:var(--accent-purple)}
+.to-info-box{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);width:276px;background:#1a2a42;border:1px solid rgba(124,92,252,.4);border-radius:10px;padding:12px 14px;font-size:.73rem;color:#c5d4e0;line-height:1.55;z-index:50;pointer-events:none;opacity:0;transition:opacity .18s;white-space:normal;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+.to-info-box strong{color:#a78bfa}
+.to-info-box ul{margin:6px 0 0 0;padding-left:14px;display:flex;flex-direction:column;gap:3px}
+.to-info-box ul li{font-size:.71rem;color:#b8cad8}
+.to-info-wrap:hover .to-info-box{opacity:1}
 .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
 .toggle-switch input{opacity:0;width:0;height:0}
 .toggle-track{position:absolute;inset:0;background:var(--border-subtle);border-radius:12px;cursor:pointer;transition:background .25s}
@@ -895,6 +904,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
   .rpt-rec-section{margin-bottom:14px}
   .rpt-rec-section-title{font-size:.72rem;font-weight:600;color:#888!important;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid #e5e5e5;margin-bottom:8px}
   .rpt-rec-card{padding:10px 12px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;background:#fafbfc;page-break-inside:avoid}
+  /* Deal Commercials — prevent KPI boxes and table rows splitting across pages */
+  #rpt-deal-kpis{page-break-inside:avoid}
+  #rpt-deal-kpis > div{page-break-inside:avoid}
+  .rpt-deal-section{page-break-inside:avoid}
+  .rpt-savings-strip{page-break-inside:avoid}
+  .rpt-section-title + *{page-break-after:avoid}
   .rpt-rec-title{font-size:.82rem;font-weight:700;color:#0a1628!important;margin-bottom:4px}
   .rpt-rec-insight{font-size:.75rem;color:#555!important;line-height:1.5}
   .rpt-rec-badge{display:inline-block;font-size:.6rem;padding:2px 6px;border-radius:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-left:8px}
@@ -2115,7 +2130,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     </div>
     <div class="exec-kpi-strip" id="exec-kpi-strip"></div>
     <div class="cta-section">
-      <button class="cta-button primary" onclick="navigateToSlide(1,'backward')">Restart Pathfinder</button>
+      <button class="cta-button primary" onclick="if(confirm('Start a new session? This will clear all current data and return to the home screen.')) navigateToSlide(1,'backward')" style="background:rgba(255,255,255,.06);border-color:var(--border-subtle);color:var(--text-secondary)">New Session</button>
       <button class="cta-button secondary" onclick="exportReport()">Export PDF Report</button>
       <button class="cta-button secondary" onclick="exportPPT()" style="border-color:var(--accent-purple);color:var(--accent-purple)">Export PowerPoint</button>
     </div>
@@ -2950,14 +2965,27 @@ function renderForm() {
     <div class="form-card full-width">
       <h3><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
       <div class="transform-only-bar">
-        <div class="transform-only-label">
-          <span class="transform-only-title">Transform Only (No Offshoring)</span>
-          <span class="transform-only-hint">Focus on automation, process re-engineering &amp; AI augmentation — keep all FTEs onsite</span>
-        </div>
         <label class="toggle-switch">
           <input type="checkbox" id="transform-only-toggle" onchange="toggleTransformOnly(this.checked)">
           <span class="toggle-track"></span>
         </label>
+        <div class="transform-only-label">
+          <span class="transform-only-title">Transform Only (No Offshoring)</span>
+          <span class="transform-only-hint">Pure automation, AI &amp; process re-engineering — no offshore destinations required</span>
+        </div>
+        <div class="to-info-wrap">
+          <span class="to-info-icon">ⓘ</span>
+          <div class="to-info-box">
+            <strong>Transform Only Mode</strong><br><br>
+            Toggle <strong>ON</strong> when the client wants onsite transformation with no offshoring commitment.<br><br>
+            <ul>
+              <li>Offshore location grid collapses</li>
+              <li>Slide 6 shows Automate &amp; AI levers only</li>
+              <li>Segment matrix switches to Volume × Automation axes</li>
+              <li>No offshore selection required to run the analysis</li>
+            </ul>
+          </div>
+        </div>
       </div>
       <div id="offshore-section-wrap">
         <div class="offshore-grid" id="offshore-grid"></div>
@@ -4024,7 +4052,7 @@ function exportReport() {
       const pnlRpt  = compute3YearPnL(impact, fin, asnRpt);
       const kpiEl   = document.getElementById('rpt-deal-kpis');
       if (kpiEl) {
-        kpiEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+        kpiEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;page-break-inside:avoid;break-inside:avoid">
           <div style="padding:10px;border:2px solid #b45309;border-radius:6px;text-align:center;background:#fffbeb"><div style="font-size:1.15rem;font-weight:700;color:#b45309!important">${pnlRpt.paybackMonths!=null?pnlRpt.paybackMonths+' mo':'>36 mo'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">Payback Period</div></div>
           <div style="padding:10px;border:2px solid #0369a1;border-radius:6px;text-align:center;background:#f0f9ff"><div style="font-size:1.15rem;font-weight:700;color:#0369a1!important">${formatCurrency(Math.round(pnlRpt.npv||0))}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">NPV (3-Year)</div></div>
           <div style="padding:10px;border:2px solid #15803d;border-radius:6px;text-align:center;background:#f0fdf4"><div style="font-size:1.15rem;font-weight:700;color:#15803d!important">${pnlRpt.irr!=null?Math.round(pnlRpt.irr*100)+'%':'n/a'}</div><div style="font-size:.6rem;color:#777!important;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">IRR</div></div>

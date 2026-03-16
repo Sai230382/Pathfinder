@@ -5994,10 +5994,10 @@ function buildStrategyBrief() {
   const scenKey    = scenario === 'aggressive' ? 'aggressive' : scenario === 'conservative' ? 'conservative' : 'moderate';
   const painText   = allPainPoints.join(' ').toLowerCase();
 
-  // Model badge
+  // Model badge — mKey hoisted to function scope (referenced later for isOnsiteMode)
+  const mKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
   const mbv = document.getElementById('smb-model-value');
   if (mbv) {
-    const mKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
     const modelNames = { liftShift:'Lift & Shift', transformOffshore:'Offshore Optimisation', transformOnsite:'Onsite Transformation' };
     mbv.textContent = modelNames[mKey] || mKey;
   }

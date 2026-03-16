@@ -6380,10 +6380,10 @@ function buildSegment2x2() {
   if (isOnsite) {
     if (xLabelEl) xLabelEl.textContent = 'Automation Potential';
     if (yLabelEl) yLabelEl.textContent = 'Contact Volume';
-    if (qLabelEls[0]) qLabelEls[0].textContent = 'Process Redesign';       // top-left
-    if (qLabelEls[1]) qLabelEls[1].textContent = 'Quick Win — Automate';   // top-right
-    if (qLabelEls[2]) qLabelEls[2].textContent = 'Retain & Monitor';       // bottom-left
-    if (qLabelEls[3]) qLabelEls[3].textContent = 'AI Assist';              // bottom-right
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Reimagine the Process';   // top-left
+    if (qLabelEls[1]) qLabelEls[1].textContent = 'Automate Now';           // top-right
+    if (qLabelEls[2]) qLabelEls[2].textContent = 'Protect & Upskill';     // bottom-left
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'AI-Augment';            // bottom-right
   } else {
     if (xLabelEl) xLabelEl.textContent = 'Offshore Affinity';
     if (yLabelEl) yLabelEl.textContent = 'Automation Potential';
@@ -6395,10 +6395,10 @@ function buildSegment2x2() {
 
   // ── Per-quadrant plain-English descriptions (mode-aware) ─────────────────
   const quadDescs = isOnsite ? {
-    q1: 'High volume + automation fit — deploy bots first, fastest FTE reduction',
-    q2: 'High volume but automation-resistant — redesign processes before adding tooling',
-    q3: 'Low volume, complex — retain & invest in specialist knowledge tools',
-    q4: 'Good automation fit, lower volume — lightweight AI tools for incremental gains'
+    q1: 'Automate Now — high volume & automation fit. Deploy bots first for fastest FTE reduction and strongest ROI',
+    q2: 'Reimagine the Process — high volume but automation-resistant. Redesign end-to-end before adding any tooling',
+    q3: 'Protect & Upskill — complex specialist work. Invest in knowledge tools and advisor capability, do not cut costs here',
+    q4: 'AI-Augment — good automation fit, lower volume. Apply lightweight copilots and NLP assist for incremental gains'
   } : {
     q1: 'Automate first, then offshore residual — two-speed savings, strongest ROI',
     q2: 'High automation potential but low offshore fit — automate at source, keep onsite',
@@ -6485,10 +6485,10 @@ function buildSegment2x2() {
     byQuadrant[q].push({ key, seg, pct });
   });
   const qMeta = {
-    q1:{ color:'#00d4ff', solidColor:'rgba(0,212,255,.15)', label: isOnsite ? 'Quick Win — Automate' : 'Automate & Offshore' },
-    q2:{ color:'#f59e0b', solidColor:'rgba(245,158,11,.15)', label: isOnsite ? 'Process Redesign'    : 'Automate Onsite'     },
-    q3:{ color:'#7c5cfc', solidColor:'rgba(124,92,252,.15)', label: isOnsite ? 'Retain & Monitor'    : 'Retain & Specialise' },
-    q4:{ color:'#10b981', solidColor:'rgba(16,185,129,.15)', label: isOnsite ? 'AI Assist'           : 'Offshore Direct'     }
+    q1:{ color:'#00d4ff', solidColor:'rgba(0,212,255,.15)', label: isOnsite ? 'Automate Now'          : 'Automate & Offshore' },
+    q2:{ color:'#f59e0b', solidColor:'rgba(245,158,11,.15)', label: isOnsite ? 'Reimagine the Process': 'Automate Onsite'     },
+    q3:{ color:'#7c5cfc', solidColor:'rgba(124,92,252,.15)', label: isOnsite ? 'Protect & Upskill'    : 'Retain & Specialise' },
+    q4:{ color:'#10b981', solidColor:'rgba(16,185,129,.15)', label: isOnsite ? 'AI-Augment'           : 'Offshore Direct'     }
   };
   // Priority order: most actionable first (q1=best opportunity, q4=quick win, q2=onsite, q3=retain)
   const calloutRows = ['q1','q4','q2','q3']
@@ -6527,16 +6527,16 @@ function buildSegment2x2() {
     let treatment, borderColor, footer;
     if (isOnsite) {
       if (x >= 0.5 && y >= 0.5) {
-        treatment   = 'High volume + high automation fit — Quick Win. Deploy AI/bots here first for maximum FTE reduction.';
+        treatment   = 'Automate Now — high volume, strong automation fit. Deploy bots and AI agents here first. Fastest FTE reduction with highest ROI.';
         borderColor = '#00d4ff';
       } else if (x < 0.5 && y >= 0.5) {
-        treatment   = 'High volume but resistant to automation — Process Redesign priority. Map and simplify workflows before tooling.';
+        treatment   = 'Reimagine the Process — high volume but resistant to automation. Redesign workflows end-to-end before adding tooling. Lean, eliminate, then automate.';
         borderColor = '#f59e0b';
       } else if (x < 0.5 && y < 0.5) {
-        treatment   = 'Low volume, complex interactions — Retain & Monitor. Invest in agent knowledge tools and upskilling programmes.';
+        treatment   = 'Protect & Upskill — complex, specialist interactions. Do not cut costs here. Invest in knowledge management, decision support tools and advisor upskilling.';
         borderColor = '#7c5cfc';
       } else {
-        treatment   = 'Good automation fit, lower volume — apply lightweight AI tools and NLP assist; low risk, incremental gain.';
+        treatment   = 'AI-Augment — good automation fit but lower volume. Apply lightweight AI copilots and NLP assist tools. Incremental gains, low disruption risk.';
         borderColor = '#10b981';
       }
       footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.automationPotential||0)*100)}% automation potential`;

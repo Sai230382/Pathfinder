@@ -6377,34 +6377,53 @@ function buildSegment2x2() {
   const xLabelEl = document.querySelector('.s2x2-x-label-text');
   const yLabelEl = document.querySelector('.s2x2-y-label-text');
   const qLabelEls = document.querySelectorAll('.s2x2-q-label'); // order: q2,q1,q3,q4
+  const modeKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
   if (isOnsite) {
     if (xLabelEl) xLabelEl.textContent = 'Automation Potential';
     if (yLabelEl) yLabelEl.textContent = 'Contact Volume';
-    if (qLabelEls[0]) qLabelEls[0].textContent = 'Reimagine the Process';   // top-left
-    if (qLabelEls[1]) qLabelEls[1].textContent = 'Automate Now';           // top-right
-    if (qLabelEls[2]) qLabelEls[2].textContent = 'Protect & Upskill';     // bottom-left
-    if (qLabelEls[3]) qLabelEls[3].textContent = 'AI-Augment';            // bottom-right
-  } else {
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Reimagine the Process';
+    if (qLabelEls[1]) qLabelEls[1].textContent = 'Automate Now';
+    if (qLabelEls[2]) qLabelEls[2].textContent = 'Protect & Upskill';
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'AI-Augment';
+  } else if (modeKey === 'liftShift') {
     if (xLabelEl) xLabelEl.textContent = 'Offshore Affinity';
     if (yLabelEl) yLabelEl.textContent = 'Automation Potential';
-    if (qLabelEls[0]) qLabelEls[0].textContent = 'Automate Onsite';
-    if (qLabelEls[1]) qLabelEls[1].innerHTML  = 'Automate &amp; Offshore';
-    if (qLabelEls[2]) qLabelEls[2].innerHTML  = 'Retain &amp; Specialise';
-    if (qLabelEls[3]) qLabelEls[3].textContent = 'Offshore Direct';
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Automate in Place';      // top-left: high auto, low offshore
+    if (qLabelEls[1]) qLabelEls[1].textContent = 'Move & Automate';        // top-right: high auto, high offshore
+    if (qLabelEls[2]) qLabelEls[2].textContent = 'Retain Onsite';          // bottom-left: low auto, low offshore
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'Offshore Direct';        // bottom-right: low auto, high offshore
+  } else {
+    // transformOffshore (default)
+    if (xLabelEl) xLabelEl.textContent = 'Offshore Affinity';
+    if (yLabelEl) yLabelEl.textContent = 'Automation Potential';
+    if (qLabelEls[0]) qLabelEls[0].textContent = 'Automate Onsite';        // top-left: high auto, low offshore
+    if (qLabelEls[1]) qLabelEls[1].innerHTML  = 'Automate &amp; Offshore'; // top-right: high auto, high offshore
+    if (qLabelEls[2]) qLabelEls[2].innerHTML  = 'Retain &amp; Specialise'; // bottom-left: low auto, low offshore
+    if (qLabelEls[3]) qLabelEls[3].textContent = 'Offshore Direct';        // bottom-right: low auto, high offshore
   }
 
-  // ── Per-quadrant plain-English descriptions (mode-aware) ─────────────────
-  const quadDescs = isOnsite ? {
-    q1: 'Automate Now — high volume & automation fit. Deploy bots first for fastest FTE reduction and strongest ROI',
-    q2: 'Reimagine the Process — high volume but automation-resistant. Redesign end-to-end before adding any tooling',
-    q3: 'Protect & Upskill — complex specialist work. Invest in knowledge tools and advisor capability, do not cut costs here',
-    q4: 'AI-Augment — good automation fit, lower volume. Apply lightweight copilots and NLP assist for incremental gains'
-  } : {
-    q1: 'Automate first, then offshore residual — two-speed savings, strongest ROI',
-    q2: 'High automation potential but low offshore fit — automate at source, keep onsite',
-    q3: 'Complex or regulated work — retain onsite, invest in quality & upskilling',
-    q4: 'Simple work, strong offshore fit — move directly for immediate labour arbitrage'
+  // ── Per-quadrant plain-English descriptions (model-aware) ─────────────────
+  const quadDescsByMode = {
+    transformOnsite: {
+      q1: 'Automate Now — high volume & automation fit. Deploy bots first for fastest FTE reduction and strongest ROI',
+      q2: 'Reimagine the Process — high volume but automation-resistant. Redesign end-to-end before adding any tooling',
+      q3: 'Protect & Upskill — complex specialist work. Invest in knowledge tools and advisor capability, do not cut costs here',
+      q4: 'AI-Augment — good automation fit, lower volume. Apply lightweight copilots and NLP assist for incremental gains'
+    },
+    liftShift: {
+      q1: 'Automate in Place — strong automation fit but not suitable to offshore. Automate onsite, then reassess for future migration',
+      q2: 'Move & Automate — ideal profile: offshore now AND layer automation for double-speed savings',
+      q3: 'Retain Onsite — complex or regulated work with low offshore suitability. Standardise and upskill before any migration',
+      q4: 'Offshore Direct — straightforward work with strong offshore fit. Move now for immediate labour cost arbitrage'
+    },
+    transformOffshore: {
+      q1: 'Automate Onsite — high automation potential but offshore-resistant. Automate at source; keep the work onsite',
+      q2: 'Automate & Offshore — best ROI: automate first to reduce volume, then offshore the residual for two-speed savings',
+      q3: 'Retain & Specialise — complex or regulated work. Retain onsite, invest in quality, tooling and upskilling',
+      q4: 'Offshore Direct — simple, high-affinity work. Move directly to offshore locations for immediate labour arbitrage'
+    }
   };
+  const quadDescs = quadDescsByMode[modeKey] || quadDescsByMode.transformOffshore;
 
   // ── Inject within-quadrant sub-descriptions ───────────────────────────────
   const quadEls = document.querySelectorAll('.s2x2-quadrant'); // q2, q1, q3, q4
@@ -6485,10 +6504,10 @@ function buildSegment2x2() {
     byQuadrant[q].push({ key, seg, pct });
   });
   const qMeta = {
-    q1:{ color:'#00d4ff', solidColor:'rgba(0,212,255,.15)', label: isOnsite ? 'Automate Now'          : 'Automate & Offshore' },
-    q2:{ color:'#f59e0b', solidColor:'rgba(245,158,11,.15)', label: isOnsite ? 'Reimagine the Process': 'Automate Onsite'     },
-    q3:{ color:'#7c5cfc', solidColor:'rgba(124,92,252,.15)', label: isOnsite ? 'Protect & Upskill'    : 'Retain & Specialise' },
-    q4:{ color:'#10b981', solidColor:'rgba(16,185,129,.15)', label: isOnsite ? 'AI-Augment'           : 'Offshore Direct'     }
+    q1:{ color:'#00d4ff', solidColor:'rgba(0,212,255,.15)', label: isOnsite ? 'Automate Now'           : modeKey==='liftShift' ? 'Move & Automate'      : 'Automate & Offshore' },
+    q2:{ color:'#f59e0b', solidColor:'rgba(245,158,11,.15)', label: isOnsite ? 'Reimagine the Process' : modeKey==='liftShift' ? 'Automate in Place'    : 'Automate Onsite'     },
+    q3:{ color:'#7c5cfc', solidColor:'rgba(124,92,252,.15)', label: isOnsite ? 'Protect & Upskill'     : modeKey==='liftShift' ? 'Retain Onsite'        : 'Retain & Specialise' },
+    q4:{ color:'#10b981', solidColor:'rgba(16,185,129,.15)', label: isOnsite ? 'AI-Augment'            : 'Offshore Direct'                                                       }
   };
   // Priority order: most actionable first (q1=best opportunity, q4=quick win, q2=onsite, q3=retain)
   const calloutRows = ['q1','q4','q2','q3']
@@ -6540,18 +6559,34 @@ function buildSegment2x2() {
         borderColor = '#10b981';
       }
       footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.automationPotential||0)*100)}% automation potential`;
-    } else {
+    } else if (modeKey === 'liftShift') {
       if (x >= 0.5 && y >= 0.5) {
-        treatment   = 'Automate first, then offshore residual — strong cost reduction potential';
+        treatment   = 'Move & Automate — strong offshore fit AND high automation potential. Offshore now and layer automation simultaneously for double-speed savings.';
         borderColor = '#00d4ff';
       } else if (x < 0.5 && y >= 0.5) {
-        treatment   = 'Automate onsite — keep for relationship/compliance; reduce headcount via AI';
+        treatment   = 'Automate in Place — good automation fit but not suitable to offshore. Automate onsite to reduce headcount, then reassess for future migration.';
         borderColor = '#f59e0b';
       } else if (x < 0.5 && y < 0.5) {
-        treatment   = 'Retain onsite — complex, relationship-intensive; focus on quality & upskilling';
+        treatment   = 'Retain Onsite — complex or regulated, low offshore suitability. Standardise processes and upskill the team before any migration is considered.';
         borderColor = '#7c5cfc';
       } else {
-        treatment   = 'Offshore directly — simple work, high affinity; maximise arbitrage savings';
+        treatment   = 'Offshore Direct — straightforward work with strong offshore fit. Move now for immediate labour cost arbitrage. Fastest path to savings.';
+        borderColor = '#10b981';
+      }
+      footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.offshoreAffinity||0)*100)}% offshore fit`;
+    } else {
+      // transformOffshore (default)
+      if (x >= 0.5 && y >= 0.5) {
+        treatment   = 'Automate & Offshore — best ROI profile. Automate first to shrink the volume, then offshore the residual. Two-speed savings, strongest commercial case.';
+        borderColor = '#00d4ff';
+      } else if (x < 0.5 && y >= 0.5) {
+        treatment   = 'Automate Onsite — high automation potential but offshore-resistant due to language, regulation or complexity. Reduce headcount through AI and process tools.';
+        borderColor = '#f59e0b';
+      } else if (x < 0.5 && y < 0.5) {
+        treatment   = 'Retain & Specialise — complex, relationship-intensive work. Retain onsite. Invest in quality programmes, decision support tools and upskilling.';
+        borderColor = '#7c5cfc';
+      } else {
+        treatment   = 'Offshore Direct — simple, high-affinity work. No need to automate first. Move directly to offshore locations for immediate labour arbitrage.';
         borderColor = '#10b981';
       }
       footer = `${pct}% of contact volume · ${seg.complexity} complexity · ${Math.round((eff.offshoreAffinity||0)*100)}% offshore fit`;

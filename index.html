@@ -1881,6 +1881,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
           <span class="slider-mark" style="left:85.7%">80%<br><small>Aggressive</small></span>
         </div>
       </div>
+      <div id="model-offshore-context" style="margin-top:10px;font-size:.72rem;color:var(--text-muted);line-height:1.5;padding:6px 10px;background:rgba(255,255,255,.03);border-radius:6px;border-left:2px solid var(--accent-cyan)"></div>
     </div>
 
     <div class="dashboard-grid">
@@ -5547,6 +5548,20 @@ function buildFinancialDashboard() {
   const impact = calculateOffshoreImpact();
   const fin = calculateFinancials(impact);
 
+  // Model-aware context note on the offshore % slider
+  const ctxEl = document.getElementById('model-offshore-context');
+  if (ctxEl) {
+    const sliderVal = document.getElementById('offshore-slider')?.value || 60;
+    const modelCtx = {
+      liftShift:        `Lift & Shift — targeting ${sliderVal}% of eligible FTEs offshore. Pure labour arbitrage: move as much as possible to lowest-cost locations.`,
+      transformOffshore:`Transform & Offshore — ${sliderVal}% of eligible FTEs offshore after onsite automation reduces the pool. Automation savings stack on top of arbitrage savings.`,
+      transformOnsite:  `Transform Onsite — no offshoring. Savings come entirely from automation, process redesign and efficiency improvements.`
+    };
+    const mKey = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
+    ctxEl.textContent = modelCtx[mKey] || modelCtx.transformOffshore;
+    ctxEl.style.display = 'block';
+  }
+
   // Only animate cards on first build — subsequent calls (slider updates) skip animation
   if (!financialDashboardAnimated) {
     financialDashboardAnimated = true;
@@ -6071,6 +6086,30 @@ window.selectTransformationModel = function(model) {
   document.querySelectorAll('.model-card').forEach(card => {
     card.classList.toggle('active', card.dataset.model === model);
   });
+
+  // Set default offshore % based on model logic:
+  //   Lift & Shift      → 80% Aggressive  (maximise offshore, pure arbitrage)
+  //   Transform Offshore→ 60% Moderate    (automation reduces pool first, offshore residual)
+  //   Transform Onsite  → slider irrelevant (no offshore)
+  const modelDefaults = { liftShift: 80, transformOffshore: 60, transformOnsite: 0 };
+  const defaultPct = modelDefaults[model] ?? 60;
+  const slider = document.getElementById('offshore-slider');
+  const sliderLabel = document.getElementById('slider-value-label');
+  const asnOff = document.getElementById('asn-offshore');
+  if (slider && model !== 'transformOnsite') {
+    slider.value = defaultPct;
+    if (sliderLabel) sliderLabel.textContent = defaultPct + '%';
+    if (asnOff) asnOff.textContent = defaultPct + '%';
+  }
+  // Sync scenario button active state
+  const presetMap = { 40:'Conservative', 60:'Moderate', 80:'Aggressive' };
+  const matchedScenario = presetMap[defaultPct];
+  if (matchedScenario) {
+    currentScenario = matchedScenario;
+    document.querySelectorAll('.scenario-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.scenario === matchedScenario));
+  }
+
   // Sync Slide 4 section heading + toggle bar to new model
   syncTransformOnlyBar();
 };

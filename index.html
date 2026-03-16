@@ -1177,12 +1177,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .s2x2-grid-area{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;flex:1;min-height:0;overflow:visible}
 #s2x2-dots-container{position:absolute;inset:0;pointer-events:none;z-index:11}
 #s2x2-dots-container .s2x2-dot{pointer-events:all}
-.s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;overflow:hidden}
-.s2x2-quadrant.q1{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18)}
-.s2x2-quadrant.q2{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)}
-.s2x2-quadrant.q3{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.15)}
-.s2x2-quadrant.q4{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15)}
-/* Labels sit at the BOTTOM of each quadrant — dots cluster near top/centre so no overlap */
+.s2x2-quadrant{position:relative;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden}
+/* Top quadrants: label top-aligned — dots land in the interior below */
+.s2x2-quadrant.q1{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);justify-content:flex-start}
+.s2x2-quadrant.q2{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);justify-content:flex-start}
+/* Bottom quadrants: label bottom-aligned — dots land in the interior above */
+.s2x2-quadrant.q3{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.15);justify-content:flex-end}
+.s2x2-quadrant.q4{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);justify-content:flex-end}
+/* Labels hug the outer edges of the matrix — always clear of dots */
 .s2x2-q-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
 .s2x2-quadrant.q1 .s2x2-q-label{color:rgba(0,212,255,.95)}
 .s2x2-quadrant.q2 .s2x2-q-label{color:rgba(245,158,11,.95)}

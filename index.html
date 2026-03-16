@@ -202,6 +202,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 /* Transform Only toggle */
 .transform-only-bar{display:none;align-items:center;justify-content:center;gap:14px;padding:13px 18px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:8px;margin-bottom:12px;position:relative}
 .transform-only-bar.visible{display:flex}
+#slide4-reset-btn:hover{background:rgba(239,68,68,.16)!important;border-color:rgba(239,68,68,.45)!important;color:#fca5a5!important}
 .transform-only-label{display:flex;flex-direction:column;gap:2px}
 .transform-only-title{font-size:.86rem;font-weight:600;color:var(--text-primary)}
 .transform-only-hint{font-size:.72rem;color:var(--text-muted)}
@@ -1686,8 +1687,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
   <!-- SLIDE 4: CLIENT INPUT FORM -->
   <section class="slide slide-input" id="slide-4" data-slide="4">
-    <h2 class="slide-heading">Client Configuration</h2>
-    <p class="slide-subtitle">Enter your workforce details — the engine will analyze and generate a transformation blueprint</p>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px">
+      <div>
+        <h2 class="slide-heading" style="margin-bottom:4px">Client Configuration</h2>
+        <p class="slide-subtitle" style="margin:0">Enter your workforce details — the engine will analyze and generate a transformation blueprint</p>
+      </div>
+      <button id="slide4-reset-btn" onclick="resetSlide4Form()" title="Reset all entries to defaults" style="flex-shrink:0;margin-top:6px;display:flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#f87171;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap">
+        ↺ Reset Form
+      </button>
+    </div>
     <div class="input-form-grid" id="input-form">
       <!-- Dynamically populated by JS -->
     </div>
@@ -2791,6 +2799,7 @@ function navigateToSlide(target, direction) {
     case 1: initParticles(); playTitleAnimation(); break;
     case 2: initGlobe(); filterHorizontalsByIndustry(diagnosticContext.industry); break;
     case 3: initPainBoard(); break;
+    case 4: syncTransformOnlyBar(); break;
     case 5: initCurrentStateMap(); buildPainSummaryPanel(); renderRegulatoryBanner('reg-banner-5'); break;
     case 6: buildStrategyBrief(); renderRegulatoryBanner('reg-banner-6s'); break;
     case 7: buildMatrix(); renderRegulatoryBanner('reg-banner-7'); break;
@@ -2964,7 +2973,7 @@ function renderForm() {
 
     <!-- Offshore Targets -->
     <div class="form-card full-width">
-      <h3><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
+      <h3 id="offshore-section-title"><span class="card-icon">\u{1F30D}</span> Target Offshore Locations</h3>
       <div class="transform-only-bar">
         <label class="toggle-switch">
           <input type="checkbox" id="transform-only-toggle" onchange="toggleTransformOnly(this.checked)">
@@ -3004,6 +3013,7 @@ function renderForm() {
   renderRateCards();
   renderOffshoreGrid();
   updateTierValidation();
+  syncTransformOnlyBar(); // sync heading + toggle bar state to current model
 }
 
 function renderSourceLocations() {
@@ -5885,22 +5895,65 @@ window.selectRegion = function(el) {
   diagnosticContext.region = el.dataset.region;
 };
 
+// ===== SLIDE 4 HELPERS =====
+
+// Syncs the "Target Offshore Locations" heading + transform-only bar visibility
+// to the currently selected transformationModel. Called on:
+//   - renderForm() (initial render)
+//   - selectTransformationModel() (model card click on Slide 2)
+//   - navigateToSlide(4) enter hook (case 4)
+function syncTransformOnlyBar() {
+  const model = typeof transformationModel !== 'undefined' ? transformationModel : 'transformOffshore';
+  const toBar    = document.querySelector('.transform-only-bar');
+  const toToggle = document.getElementById('transform-only-toggle');
+  const titleEl  = document.getElementById('offshore-section-title');
+
+  // 1. Update section heading to reflect chosen model
+  if (titleEl) {
+    const headings = {
+      liftShift:        '<span class="card-icon">\u{1F30D}</span> Target Offshore Locations',
+      transformOffshore:'<span class="card-icon">\u{1F30D}</span> Target Offshore Locations',
+      transformOnsite:  '<span class="card-icon">\u2699\uFE0F</span> Onsite Transformation Approach'
+    };
+    titleEl.innerHTML = headings[model] || headings.transformOffshore;
+  }
+
+  // 2. Show toggle bar only for Onsite model
+  if (toBar) {
+    if (model === 'transformOnsite') {
+      toBar.classList.add('visible');
+      if (toToggle && !toToggle.checked) { toToggle.checked = true; toggleTransformOnly(true); }
+    } else {
+      toBar.classList.remove('visible');
+      if (toToggle && toToggle.checked) { toToggle.checked = false; toggleTransformOnly(false); }
+    }
+  }
+}
+
+// Reset Slide 4 form back to default values
+window.resetSlide4Form = function() {
+  if (!confirm('Reset all workforce configuration data to defaults?')) return;
+  formLocations = [
+    {country:'US', headcount:300, channels:{Phone:120,Email:80,Chat:60,Social:40}},
+    {country:'UK', headcount:200, channels:{Phone:80,Email:50,Chat:45,Social:25}}
+  ];
+  formTiers = {L1:50, L2:30, L3:20};
+  formRates = {};
+  for (const code of Object.keys(COUNTRY_DB)) {
+    formRates[code] = COUNTRY_DB[code].defaultRate;
+  }
+  formOffshoreSelections = {IN:true, PH:true};
+  formSegments = {billing:25, techSupport:20, accountMgmt:15, salesRetention:10, orderMgmt:20, generalInquiry:10, complaints:0};
+  renderForm(); // re-renders and calls syncTransformOnlyBar inside
+};
+
 window.selectTransformationModel = function(model) {
   transformationModel = model;
   document.querySelectorAll('.model-card').forEach(card => {
     card.classList.toggle('active', card.dataset.model === model);
   });
-
-  // Show Transform Only bar only for Onsite model — hide + reset for Offshore / Lift & Shift
-  const toBar    = document.querySelector('.transform-only-bar');
-  const toToggle = document.getElementById('transform-only-toggle');
-  if (model === 'transformOnsite') {
-    if (toBar) toBar.classList.add('visible');
-    if (toToggle && !toToggle.checked) { toToggle.checked = true; toggleTransformOnly(true); }
-  } else {
-    if (toBar) toBar.classList.remove('visible');
-    if (toToggle && toToggle.checked) { toToggle.checked = false; toggleTransformOnly(false); }
-  }
+  // Sync Slide 4 section heading + toggle bar to new model
+  syncTransformOnlyBar();
 };
 
 // ===== REGULATORY INTELLIGENCE BANNER =====
